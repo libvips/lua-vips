@@ -91,21 +91,14 @@ local image_mt = {
             local a = ffi.new(gvalue.pdouble_typeof, n)
             for y = 1, height do
                 for x = 1, width do
-                    a[width * y + x] = array[y][x]
+                    a[x + y * width] = array[y][x]
                 end
             end
             local self = 
                 vips.vips_image_new_matrix_from_array(width, height, a, n)
 
-            if not scale then
-                scale = 1
-            end
-            if not offset then
-                offset = 0
-            end
-
-            self:set_type(gvalue.gdouble_type, "scale", scale)
-            self:set_type(gvalue.gdouble_type, "offset", offset)
+            self:set_type(gvalue.gdouble_type, "scale", scale or 1)
+            self:set_type(gvalue.gdouble_type, "offset", offset or 0)
 
             return self
         end,
