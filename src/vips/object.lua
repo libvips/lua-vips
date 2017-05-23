@@ -2,6 +2,8 @@
 -- abstract base class for operation and image
 
 local ffi = require "ffi"
+
+local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 
 local vips = ffi.load("vips")
@@ -101,11 +103,11 @@ local vobject_mt = {
         argument_instance_typeof = ffi.typeof("VipsArgumentInstance*[1]"),
 
         new = function(object)
-            print("vobject.new")
-            print("  ptr =", object)
+            log.msg("vobject.new")
+            log.msg("  ptr =", object)
             ffi.gc(object, 
                 function(x) 
-                    print("unreffing", x)
+                    log.msg("unreffing", x)
                     vips.g_object_unref(x)
                 end
             )
@@ -124,11 +126,12 @@ local vobject_mt = {
 
             return pspec[0].value_type
         end,
+
         set = function(object, name, value)
-            print("vobject.set")
-            print("  object =", object)
-            print("  name =", name)
-            print("  value =", value)
+            log.msg("vobject.set")
+            log.msg("  object =", object)
+            log.msg("  name =", name)
+            log.msg("  value =", value)
 
             local type = object:get_type(name)
             if not type then
@@ -144,10 +147,11 @@ local vobject_mt = {
 
             return true
         end,
+
         get = function(object, name)
-            print("vobject.get")
-            print("  object =", object)
-            print("  name =", name)
+            log.msg("vobject.get")
+            log.msg("  object =", object)
+            log.msg("  name =", name)
 
             local type = object:get_type(name)
             if not type then
@@ -161,9 +165,11 @@ local vobject_mt = {
 
             return gva[0]:get()
         end,
+
         get_error = function ()
             local errstr = ffi.string(vips.vips_error_buffer())
             vips.vips_error_clear()
+
             return errstr
         end,
 

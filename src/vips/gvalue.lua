@@ -1,7 +1,10 @@
 -- manipulate GValue objects from lua
 -- pull in gobject via the vips library
 
-local ffi = require("ffi")
+local ffi = require "ffi" 
+
+local log = require "vips/log" 
+
 local vips = ffi.load("vips")
 
 ffi.cdef[[
@@ -43,11 +46,12 @@ vips.vips_init("")
 local gvalue
 local gvalue_mt = {
     __gc = function(gv)
-        print("freeing gvalue ", gv)
-        print("  type name =", ffi.string(vips.g_type_name(gv.type)))
+        log.msg("freeing gvalue ", gv)
+        log.msg("  type name =", ffi.string(vips.g_type_name(gv.type)))
 
         vips.g_value_unset(gv)
     end,
+
     __index = {
         -- make ffi constructors we can reuse
         gv_typeof = ffi.typeof("GValue"),
@@ -68,26 +72,26 @@ local gvalue_mt = {
             -- with no init, this will initialize with 0, which is what we need
             -- for a blank GValue
             local gv = ffi.new(gvalue.gv_typeof)
-            print("allocating gvalue", gv)
+            log.msg("allocating gvalue", gv)
             return gv
         end,
 
         newp = function()
             local pgv = ffi.new(gvalue.pgv_typeof)
-            print("allocating one-element array of gvalue", pgv)
+            log.msg("allocating one-element array of gvalue", pgv)
             return pgv
         end,
 
         init = function(gv, type)
-            print("starting init")
-            print("  gv =", gv)
-            print("  type name =", ffi.string(vips.g_type_name(type)))
+            log.msg("starting init")
+            log.msg("  gv =", gv)
+            log.msg("  type name =", ffi.string(vips.g_type_name(type)))
             vips.g_value_init(gv, type)
         end,
 
         set = function(gv, value)
-            print("set() value =")
-            print_r(value)
+            log.msg("set() value =")
+            log.msg_r(value)
 
             local gtype = gv.type
 
@@ -147,8 +151,8 @@ local gvalue_mt = {
                  print("unsupported gtype", gtype)
             end
 
-            print("get() result =")
-            print_r(result)
+            log.msg("get() result =")
+            log.msg_r(result)
 
             return result
         end,

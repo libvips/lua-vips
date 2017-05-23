@@ -39,9 +39,9 @@ to `~/.bashrc`
 
 ### Test
 
-Run the test script with:
+Run the example script with:
 
-	luajit test/test-vimage.lua
+	luajit example/hello-world.lua
 
 ### Links
 

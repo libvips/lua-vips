@@ -1,6 +1,8 @@
 -- manage VipsImage
 
 local ffi = require "ffi"
+
+local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 local vobject = require "vips/object"
 local voperation = require "vips/operation"
@@ -23,7 +25,7 @@ ffi.cdef[[
 local vimage
 local vimage_mt = {
     __add = function(self, other)
-        print("__add type(other) =", type(other))
+        log.msg("__add type(other) =", type(other))
 
         if type(other) == "number" then
             return self:linear({1}, {other})

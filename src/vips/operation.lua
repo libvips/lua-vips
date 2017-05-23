@@ -2,10 +2,12 @@
 -- lookup and call operations
 
 local ffi = require "ffi"
-local gvalue = require "vips/gvalue"
-local vobject = require "vips/object"
 local bit = require "bit"
 local band = bit.band
+
+local log = require "vips/log"
+local gvalue = require "vips/gvalue"
+local vobject = require "vips/object"
 
 local vips = ffi.load("vips")
 
@@ -31,43 +33,6 @@ ffi.cdef[[
     void vips_object_unref_outputs (VipsOperation *operation);
 
 ]]
-
-function print_r(t)  
-    local print_r_cache = {}
-    local function sub_print_r(t, indent)
-        if (print_r_cache[tostring(t)]) then
-            print(indent .. "*" .. tostring(t))
-        else
-            print_r_cache[tostring(t)] = true
-            if type(t) == "table" then
-                for pos, val in pairs(t) do
-                    if type(val) == "table" then
-                        print(indent .. 
-                            "[" .. pos .. "] => " ..  tostring(t) .. " {")
-                        sub_print_r(val, indent .. 
-                            string.rep(" ", string.len(pos) + 8))
-                        print(indent .. 
-                            string.rep(" ", string.len(pos) + 6) .. "}")
-                    elseif type(val) == "string" then
-                        print(indent .. "[ ".. pos .. '] => "' .. val .. '"')
-                    else
-                        print(indent .. "[" .. pos .. "] => " .. tostring(val))
-                    end
-                end
-            else
-                print(indent .. tostring(t))
-            end
-        end
-    end
-    if type(t) == "table" then
-        print(tostring(t) .. " {")
-        sub_print_r(t, "  ")
-        print("}")
-    else
-        sub_print_r(t, "  ")
-    end
-    print()
-end
 
 local REQUIRED = 1
 local CONSTRUCT = 2
@@ -126,11 +91,11 @@ local voperation_mt = {
 
             local arguments = operation:getargs()
 
-            print(name, "needs:")
-            print_r(arguments)
+            log.msg(name, "needs:")
+            log.msg_r(arguments)
 
-            print("passed:")
-            print_r(call_args)
+            log.msg("passed:")
+            log.msg_r(call_args)
 
             local n = 0
             for i = 1, #arguments do
@@ -155,8 +120,8 @@ local voperation_mt = {
                     error("final argument is not a table")
                 end
             else
-                print("#call_args =", #call_args)
-                print("n =", n)
+                log.msg("#call_args =", #call_args)
+                log.msg("n =", n)
                 error("wrong number of arguments to " .. name)
             end
 
@@ -168,7 +133,7 @@ local voperation_mt = {
                 end
             end
 
-            print("constructing ...")
+            log.msg("constructing ...")
             local operation2 = vips.vips_cache_operation_build(operation);
             if operation2 == nil then
                 vips.vips_object_unref_outputs(operation)
@@ -177,7 +142,7 @@ local voperation_mt = {
             end
             operation = operation2
 
-            print("getting output ...")
+            log.msg("getting output ...")
             result = {}
             n = 1
             for i = 1, #arguments do

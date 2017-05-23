@@ -4,5 +4,6 @@ return {
     gvalue = require "vips/gvalue",
     object = require "vips/object",
     operation = require "vips/operation",
-    image = require "vips/image"
+    image = require "vips/image",
+    log = require "vips/log"
 }
