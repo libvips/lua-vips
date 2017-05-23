@@ -84,7 +84,7 @@ local voperation_mt = {
 
             local operation = vips.vips_operation_new(name)
             if operation == nil then
-                print("no such operation", vobject.get_error())
+                error("no such operation\n" .. vobject.get_error())
                 return
             end
             operation:object():new()
@@ -137,7 +137,7 @@ local voperation_mt = {
             local operation2 = vips.vips_cache_operation_build(operation);
             if operation2 == nil then
                 vips.vips_object_unref_outputs(operation)
-                print("build error", vobject.get_error())
+                error("build error" .. vobject.get_error())
                 return nil
             end
             operation = operation2

@@ -8,8 +8,25 @@ print("get height:")
 local height = im:height()
 print("height = ", height)
 
-x = image.frank(1, 2, 3)
-im.frank(1, 2, 3)
+status, err = pcall(
+    function()
+        x = image.frank(1, 2, 3)
+    end
+)
+if not status then
+    print("frank failed with:")
+    print(err)
+end
+
+status, err = pcall(
+    function()
+        im.frank(1, 2, 3)
+    end
+)
+if not status then
+    print("frank failed with:")
+    print(err)
+end
 
 image2 = im:invert()
 

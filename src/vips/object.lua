@@ -113,6 +113,7 @@ local vobject_mt = {
             )
             return object
         end,
+
         get_type = function(object, name)
             local pspec = vobject.pspec_typeof()
             local argument_class = vobject.argument_class_typeof()
@@ -121,7 +122,8 @@ local vobject_mt = {
                 pspec, argument_class, argument_instance)
 
             if result ~= 0 then
-                return nil
+                -- so 0 means does not exist
+                return 0
             end
 
             return pspec[0].value_type
@@ -135,8 +137,8 @@ local vobject_mt = {
 
             local type = object:get_type(name)
             if not type then
-                print("field", name, "does not exist for object", object)
-                return false
+                error("field " .. name .. 
+                    "does not exist for object " .. object)
             end
 
             local gv = gvalue.new()
@@ -155,8 +157,8 @@ local vobject_mt = {
 
             local type = object:get_type(name)
             if not type then
-                print("field", name, "does not exist for object", object)
-                return nil
+                error("field " .. name .. 
+                    " does not exist for object " .. object)
             end
 
             local gva = gvalue.newp()
