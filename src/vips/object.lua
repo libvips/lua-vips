@@ -91,8 +91,8 @@ ffi.cdef[[
 
 ]]
 
-local vobject
-local vobject_mt = {
+local object
+local object_mt = {
     -- no __gc method, we don't build these things ourselves, just wrap the
     -- pointer, so we use ffi.gc() instead
     __index = {
@@ -102,23 +102,23 @@ local vobject_mt = {
         argument_class_typeof = ffi.typeof("VipsArgumentClass*[1]"),
         argument_instance_typeof = ffi.typeof("VipsArgumentInstance*[1]"),
 
-        new = function(object)
-            log.msg("vobject.new")
-            log.msg("  ptr =", object)
-            ffi.gc(object, 
+        new = function(self)
+            log.msg("object.new")
+            log.msg("  ptr =", self)
+            ffi.gc(self, 
                 function(x) 
                     log.msg("unreffing", x)
                     vips.g_object_unref(x)
                 end
             )
-            return object
+            return self
         end,
 
-        get_typeof = function(object, name)
-            local pspec = vobject.pspec_typeof()
-            local argument_class = vobject.argument_class_typeof()
-            local argument_instance = vobject.argument_instance_typeof()
-            local result = vips.vips_object_get_argument(object, name,
+        get_typeof = function(self, name)
+            local pspec = object.pspec_typeof()
+            local argument_class = object.argument_class_typeof()
+            local argument_instance = object.argument_instance_typeof()
+            local result = vips.vips_object_get_argument(self, name,
                 pspec, argument_class, argument_instance)
 
             if result ~= 0 then
@@ -129,43 +129,42 @@ local vobject_mt = {
             return pspec[0].value_type
         end,
 
-        set = function(object, name, value)
-            log.msg("vobject.set")
-            log.msg("  object =", object)
-            log.msg("  name =", name)
-            log.msg("  value =", value)
-
-            local type = object:get_typeof(name)
-            if not type then
-                error("field " .. name .. 
-                    "does not exist for object " .. object)
-            end
-
-            local gv = gvalue.new()
-            gv:init(object:get_typeof(name))
-            gv:set(value)
-
-            vips.g_object_set_property(object, name, gv)
-
-            return true
-        end,
-
-        get = function(object, name)
-            log.msg("vobject.get")
-            log.msg("  object =", object)
+        get = function(self, name)
+            log.msg("object.get")
+            log.msg("  self =", self)
             log.msg("  name =", name)
 
-            local type = object:get_typeof(name)
+            local type = self:get_typeof(name)
             if not type then
                 error("field " .. name .. 
-                    " does not exist for object " .. object)
+                    " does not exist for object " .. self)
             end
 
             local gva = gvalue.newp()
-            gva[0]:init(object:get_typeof(name))
-            vips.g_object_get_property(object, name, gva)
+            gva[0]:init(self:get_typeof(name))
+            vips.g_object_get_property(self, name, gva)
 
             return gva[0]:get()
+        end,
+
+        set = function(self, name, value)
+            log.msg("object.set")
+            log.msg("  self =", self)
+            log.msg("  name =", name)
+            log.msg("  value =", value)
+
+            local gtype = self:get_typeof(name)
+            if gtype == 0 then
+                error("field " .. name .. 
+                    "does not exist for object " .. self)
+            end
+
+            local gv = gvalue.new()
+            gv:init(gtype)
+            gv:set(value)
+            vips.g_object_set_property(self, name, gv)
+
+            return true
         end,
 
         get_error = function ()
@@ -178,6 +177,6 @@ local vobject_mt = {
     }
 }
 
-vobject = ffi.metatype("VipsObject", vobject_mt)
-return vobject
+object = ffi.metatype("VipsObject", object_mt)
+return object
 
