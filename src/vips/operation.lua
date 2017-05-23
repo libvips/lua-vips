@@ -7,7 +7,7 @@ local band = bit.band
 
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
-local vobject = require "vips/object"
+local object = require "vips/object"
 
 local vips = ffi.load("vips")
 
@@ -50,7 +50,7 @@ local voperation_mt = {
 
         -- cast to an object
         object = function(self)
-            return ffi.cast(vobject.typeof, self)
+            return ffi.cast(object.typeof, self)
         end,
 
         get = function(self, name)
@@ -84,7 +84,7 @@ local voperation_mt = {
 
             local operation = vips.vips_operation_new(name)
             if operation == nil then
-                error("no such operation\n" .. vobject.get_error())
+                error("no such operation\n" .. object.get_error())
                 return
             end
             operation:object():new()
@@ -137,8 +137,7 @@ local voperation_mt = {
             local operation2 = vips.vips_cache_operation_build(operation);
             if operation2 == nil then
                 vips.vips_object_unref_outputs(operation)
-                error("build error" .. vobject.get_error())
-                return nil
+                error("unable to build operator\n" .. object.get_error())
             end
             operation = operation2
 

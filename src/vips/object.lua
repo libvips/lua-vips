@@ -114,7 +114,7 @@ local vobject_mt = {
             return object
         end,
 
-        get_type = function(object, name)
+        get_typeof = function(object, name)
             local pspec = vobject.pspec_typeof()
             local argument_class = vobject.argument_class_typeof()
             local argument_instance = vobject.argument_instance_typeof()
@@ -135,14 +135,14 @@ local vobject_mt = {
             log.msg("  name =", name)
             log.msg("  value =", value)
 
-            local type = object:get_type(name)
+            local type = object:get_typeof(name)
             if not type then
                 error("field " .. name .. 
                     "does not exist for object " .. object)
             end
 
             local gv = gvalue.new()
-            gv:init(object:get_type(name))
+            gv:init(object:get_typeof(name))
             gv:set(value)
 
             vips.g_object_set_property(object, name, gv)
@@ -155,14 +155,14 @@ local vobject_mt = {
             log.msg("  object =", object)
             log.msg("  name =", name)
 
-            local type = object:get_type(name)
+            local type = object:get_typeof(name)
             if not type then
                 error("field " .. name .. 
                     " does not exist for object " .. object)
             end
 
             local gva = gvalue.newp()
-            gva[0]:init(object:get_type(name))
+            gva[0]:init(object:get_typeof(name))
             vips.g_object_get_property(object, name, gva)
 
             return gva[0]:get()

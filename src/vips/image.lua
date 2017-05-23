@@ -4,8 +4,8 @@ local ffi = require "ffi"
 
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
-local vobject = require "vips/object"
-local voperation = require "vips/operation"
+local object = require "vips/object"
+local operation = require "vips/operation"
 
 local vips = ffi.load("vips")
 
@@ -39,7 +39,11 @@ local vimage_mt = {
     __index = {
         -- cast to an object
         object = function(self)
-            return ffi.cast(vobject.typeof, self)
+            return ffi.cast(object.typeof, self)
+        end,
+
+        get_typeof = function(self, name)
+            return self:object():get_typeof(name)
         end,
 
         get = function(self, name)
@@ -59,15 +63,21 @@ local vimage_mt = {
         end,
 
         new_from_file = function(filename, ...)
-            local operation_name = 
-                ffi.string(vips.vips_foreign_find_load(filename))
-            return voperation.call(operation_name, filename, unpack{...})
+            local operation_name = vips.vips_foreign_find_load(filename)
+            if operation_name == nil then
+                error(object.get_error())
+            end
+            return operation.call(ffi.string(operation_name), 
+                filename, unpack{...})
         end,
 
         write_to_file = function(self, filename, ...)
-            local operation_name = 
-                ffi.string(vips.vips_foreign_find_save(filename))
-            return voperation.call(operation_name, self, filename, unpack{...})
+            local operation_name = vips.vips_foreign_find_save(filename)
+            if operation_name == nil then
+                error(object.get_error())
+            end
+            return operation.call(ffi.string(operation_name), 
+                self, filename, unpack{...})
         end,
 
     }
@@ -76,7 +86,7 @@ local vimage_mt = {
 setmetatable(vimage_mt.__index, {
     __index = function(table, name)
         return function(...)
-            return voperation.call(name, unpack{...})
+            return operation.call(name, unpack{...})
         end
     end
 })

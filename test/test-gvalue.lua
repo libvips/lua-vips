@@ -1,15 +1,15 @@
-local gvalue = require "vips/gvalue"
+local vips = require "vips"
 
 local value
 
-value = gvalue.new()
+value = vips.gvalue.new()
 value:init(gvalue.gint_type)
 value:set(12)
 print("set value of 12")
 print("fetch value:")
 print("   ", value:get())
 
-value = gvalue.new()
+value = vips.gvalue.new()
 value:init(gvalue.gstr_type)
 value:set("banana")
 print("set value of banana")
