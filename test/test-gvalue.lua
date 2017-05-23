@@ -1,4 +1,4 @@
-local gvalue = require("gvalue_connector")
+local gvalue = require "vips/gvalue"
 
 local value
 
