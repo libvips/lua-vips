@@ -97,6 +97,35 @@ local voperation_mt = {
             log.msg("passed:")
             log.msg_r(call_args)
 
+            -- count required input args
+            local n_required = 0
+            for i = 1, #arguments do
+                local flags = arguments[i].flags
+
+                if band(flags, INPUT) ~= 0 and 
+                    band(flags, REQUIRED) ~= 0 and 
+                    band(flags, DEPRECATED) == 0 then
+                    n_required = n_required + 1
+                end
+            end
+
+            -- so we should have been passed n_required, or n_required + 1 if
+            -- there's a table of options at the end
+            local last_arg
+            if #call_args == n_required then 
+                last_arg = nil
+            elseif #call_args == n_required + 1 then
+                last_arg = call_args[#call_args]
+                if type(last_arg) ~= "table" then
+                    error("unable to call " .. name .. ": " .. #call_args ..
+                        " arguments given, " .. n_required .. 
+                        ", but final argument is not a table")
+                end
+            else
+                error("unable to call " .. name .. ": " .. #call_args ..
+                    " arguments given, but " .. n_required ..  " required")
+            end
+
             local n = 0
             for i = 1, #arguments do
                 local flags = arguments[i].flags
@@ -111,20 +140,6 @@ local voperation_mt = {
                 end
             end
 
-            local last_arg
-            if #call_args == n then 
-                last_arg = nil
-            elseif #call_args == n + 1 then
-                last_arg = call_args[#call_args]
-                if type(last_arg) ~= "table" then
-                    error("final argument is not a table")
-                end
-            else
-                log.msg("#call_args =", #call_args)
-                log.msg("n =", n)
-                error("wrong number of arguments to " .. name)
-            end
-
             if last_arg then
                 for k, v in pairs(last_arg) do
                     if not operation:set(k, v) then
@@ -137,7 +152,7 @@ local voperation_mt = {
             local operation2 = vips.vips_cache_operation_build(operation);
             if operation2 == nil then
                 vips.vips_object_unref_outputs(operation)
-                error("unable to build operator\n" .. object.get_error())
+                error("unable to call " .. name .. "\n" .. object.get_error())
             end
             operation = operation2
 

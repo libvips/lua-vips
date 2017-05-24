@@ -2,7 +2,7 @@
 
 local logging_on = false
 
-local log
+local log = {}
 log = {
     enable = function(on)
         logging_on = on
@@ -14,44 +14,52 @@ log = {
         end
     end,
 
-    msg_r = function(t)
-        local log_r_cache = {}
-        local function sub_log_r(t, indent)
-            if (log_r_cache[tostring(t)]) then
-                log.msg(indent .. "*" .. tostring(t))
+    prettyprint_table = function(p, t)
+        local p_r_cache = {}
+        local function sub_p_r(t, indent)
+            if (p_r_cache[tostring(t)]) then
+                p(indent .. "*" .. tostring(t))
             else
-                log_r_cache[tostring(t)] = true
+                p_r_cache[tostring(t)] = true
                 if type(t) == "table" then
                     for pos, val in pairs(t) do
                         if type(val) == "table" then
-                            log.msg(indent .. 
+                            p(indent .. 
                                 "[" .. pos .. "] => " ..  tostring(t) .. " {")
-                            sub_log_r(val, indent .. 
+                            sub_p_r(val, indent .. 
                                 string.rep(" ", string.len(pos) + 8))
-                            log.msg(indent .. 
+                            p(indent .. 
                                 string.rep(" ", string.len(pos) + 6) .. "}")
                         elseif type(val) == "string" then
-                            log.msg(indent .. "[".. pos .. '] => "' .. 
+                            p(indent .. "[".. pos .. '] => "' .. 
                                 val .. '"')
                         else
-                            log.msg(indent .. "[" .. pos .. "] => " .. 
+                            p(indent .. "[" .. pos .. "] => " .. 
                                 tostring(val))
                         end
                     end
                 else
-                    log.msg(indent .. tostring(t))
+                    p(indent .. tostring(t))
                 end
             end
         end
         if type(t) == "table" then
-            log.msg(tostring(t) .. " {")
-            sub_log_r(t, "  ")
-            log.msg("}")
+            p(tostring(t) .. " {")
+            sub_p_r(t, "  ")
+            p("}")
         else
-            sub_log_r(t, "  ")
+            sub_p_r(t, "  ")
         end
-        log.msg()
-    end
+        p()
+    end,
+
+    msg_r = function(t)
+        log.prettyprint_table(log.msg, t)
+    end,
+
+    print_r = function(t)
+        log.prettyprint_table(print, t)
+    end,
 
 }
 

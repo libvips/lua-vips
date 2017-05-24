@@ -34,9 +34,12 @@ v, x, y, outs, xes, yes = image4:max{size = 10}
 print("max value =", v)
 print("x =", x)
 print("y =", y)
-print("outs =", outs)
-print("xes =", outs)
-print("yes =", outs)
+print("outs =")
+vips.log.print_r(outs)
+print("xes =")
+vips.log.print_r(xes)
+print("yes =")
+vips.log.print_r(yes)
 
 image1 = image4 + image4
 image1 = image4 + 12
