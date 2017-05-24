@@ -42,6 +42,7 @@ ffi.cdef[[
     void* g_value_get_object (GValue* value);
     double* vips_value_get_array_double (const GValue* value, int* n);
     int* vips_value_get_array_int (const GValue* value, int* n);
+    void* vips_value_get_blob (const GValue* value, size_t* length);
 
 ]]
 
@@ -64,6 +65,7 @@ local gvalue_mt = {
         image_typeof = ffi.typeof("VipsImage*"),
         pint_typeof = ffi.typeof("int[?]"),
         pdouble_typeof = ffi.typeof("double[?]"),
+        psize_typeof = ffi.typeof("size_t[?]"),
 
         -- look up some common gtypes at init for speed
         gint_type = vips.g_type_from_name("gint"),
@@ -74,6 +76,7 @@ local gvalue_mt = {
         image_type = vips.g_type_from_name("VipsImage"),
         array_double_type = vips.g_type_from_name("VipsArrayDouble"),
         array_int_type = vips.g_type_from_name("VipsArrayInt"),
+        blob_type = vips.g_type_from_name("VipsBlob"),
 
         new = function()
             -- with no init, this will initialize with 0, which is what we need
@@ -128,9 +131,9 @@ local gvalue_mt = {
                 local n = #value
                 local a = ffi.new(gvalue.pint_typeof, n, value)
 
-                vips.vips_value_set_array_int(gv, a, n)
+            elseif gtype == gvalue.blob_type then
             else
-                 error("unsupported gtype " .. gvalue.type_name(gtype))
+                 error("unsupported gtype for set " .. gvalue.type_name(gtype))
             end
         end,
 
@@ -156,7 +159,7 @@ local gvalue_mt = {
             elseif gtype == gvalue.array_double_type then
                 local pint = ffi.new(gvalue.pint_typeof, 1)
 
-                array = vips.vips_value_get_array_double(gv, pint)
+                local array = vips.vips_value_get_array_double(gv, pint)
                 result = {}
                 for i = 0, pint[0] - 1 do
                     result[i + 1] = array[i]
@@ -164,13 +167,19 @@ local gvalue_mt = {
             elseif gtype == gvalue.array_int_type then
                 local pint = ffi.new(gvalue.pint_typeof, 1)
 
-                array = vips.vips_value_get_array_int(gv, pint)
+                local array = vips.vips_value_get_array_int(gv, pint)
                 result = {}
                 for i = 0, pint[0] - 1 do
                     result[i + 1] = array[i]
                 end
+            elseif gtype == gvalue.blob_type then
+                local psize = ffi.new(gvalue.psize_typeof, 1)
+
+                local array = vips.vips_value_get_blob(gv, psize)
+
+                result = ffi.string(array, psize[0])
             else
-                 error("unsupported gtype " .. gvalue.type_name(gtype))
+                 error("unsupported gtype for get " .. gvalue.type_name(gtype))
             end
 
             log.msg("get() result =")
