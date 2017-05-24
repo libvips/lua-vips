@@ -48,6 +48,16 @@ local function is_2D(table)
     return true
 end
 
+local function map(fn, array)
+    local new_array = {}
+
+    for i,v in ipairs(array) do
+        new_array[i] = fn(v)
+    end
+
+    return new_array
+end
+
 local image
 local image_mt = {
     __add = function(self, other)
@@ -61,6 +71,91 @@ local image_mt = {
             return self:add(other)
         end
     end,
+
+    __sub = function(self, other)
+        if type(other) == "number" then
+            return self:linear({1}, {-other})
+        elseif type(other) == "table" then
+            return self:linear({1}, map(function(x) return -x end, other))
+        else
+            return self:subtract(other)
+        end
+    end,
+
+    __mul = function(self, other)
+        if type(other) == "number" then
+            return self:linear({other}, {0})
+        elseif type(other) == "table" then
+            return self:linear(other, {0})
+        else
+            return self:multiply(other)
+        end
+    end,
+
+    __div = function(self, other)
+        if type(other) == "number" then
+            return self:linear({1}, {1 / other})
+        elseif type(other) == "table" then
+            return self:linear({1}, map(function(x) return x ^ -1 end, other))
+        else
+            return self:divide(other)
+        end
+    end,
+
+    __mod = function(self, other)
+        if type(other) == "number" then
+            return self:remainder_const({other})
+        elseif type(other) == "table" then
+            return self:remainder_const(other)
+        else
+            return self:remainder(other)
+        end
+    end,
+
+    __unm = function(self)
+        return self:linear({-1}, {0})
+    end,
+
+    __pow = function(self, other)
+        if type(other) == "number" then
+            return self:math2_const({other}, "pow")
+        elseif type(other) == "table" then
+            return self:math2_const(other, "pow")
+        else
+            return self:math2(other, "pow")
+        end
+    end,
+
+    __eq = function(self, other)
+        -- this is only called for two images
+        return self:relational(other, "equal")
+    end,
+
+    __lt = function(self, other)
+        if type(other) == "number" then
+            return self:relational_const({other}, "less")
+        elseif type(other) == "table" then
+            return self:relational_const(other, "less")
+        else
+            return self:relational(other, "less")
+        end
+    end,
+
+    __le = function(self, other)
+        if type(other) == "number" then
+            return self:relational_const({other}, "lesseq")
+        elseif type(other) == "table" then
+            return self:relational_const(other, "lesseq")
+        else
+            return self:relational(other, "lesseq")
+        end
+    end,
+
+    -- others are
+    -- __concat (.. to join bands, perhaps?)
+    -- __call (image(x, y) to get pixel, perhaps)
+    -- __len (#image to get bands?)
+    -- could add image[n] with number arg to invoke __index and 
 
     __index = {
         -- cast to an object
