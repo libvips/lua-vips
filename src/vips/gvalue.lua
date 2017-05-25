@@ -44,12 +44,12 @@ ffi.cdef[[
     int g_value_get_enum (GValue* value);
     unsigned int g_value_get_flags (GValue* value);
     const char* g_value_get_string (GValue* value);
+    const char* vips_value_get_ref_string (const GValue* value, size_t* length);
     void* g_value_get_object (GValue* value);
     double* vips_value_get_array_double (const GValue* value, int* n);
     int* vips_value_get_array_int (const GValue* value, int* n);
     void* vips_value_get_blob (const GValue* value, size_t* length);
     VipsImage** vips_value_get_array_image (const GValue* value, int* n);
-
 
 ]]
 
@@ -86,6 +86,7 @@ local gvalue_mt = {
         array_int_type = vips.g_type_from_name("VipsArrayInt"),
         array_double_type = vips.g_type_from_name("VipsArrayDouble"),
         array_image_type = vips.g_type_from_name("VipsArrayImage"),
+        refstr_type = vips.g_type_from_name("VipsRefString"),
         blob_type = vips.g_type_from_name("VipsBlob"),
 
         new = function()
@@ -141,7 +142,7 @@ local gvalue_mt = {
                 vips.g_value_set_enum(gv, enum_value)
             elseif fundamental == gvalue.gflags_type then
                 vips.g_value_set_flags(gv, value)
-            elseif gtype == gvalue.gstr_type then
+            elseif gtype == gvalue.gstr_type or gtype == gvalue.refstr_type then
                 vips.g_value_set_string(gv, value)
             elseif gtype == gvalue.image_type then
                 vips.g_value_set_object(gv, value)
@@ -196,6 +197,12 @@ local gvalue_mt = {
                 result = vips.g_value_get_flags(gv)
             elseif gtype == gvalue.gstr_type then
                 result = ffi.string(vips.g_value_get_string(gv))
+            elseif gtype == gvalue.refstr_type then
+                local psize = ffi.new(gvalue.psize_typeof, 1)
+
+                local cstr = vips.vips_value_get_ref_string(gv, psize)
+
+                result = ffi.string(cstr, psize[0])
             elseif gtype == gvalue.image_type then
                 result = ffi.cast(gvalue.image_typeof, 
                     vips.g_value_get_object(gv))

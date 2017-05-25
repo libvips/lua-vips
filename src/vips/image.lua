@@ -152,6 +152,15 @@ image_mt = {
         return self:lesseq(other)
     end,
 
+    __tostring = function(self)
+        return self:filename() .. ": " .. 
+            self:width() .. "x" .. self:height() .. " " .. 
+            self:format() .. ", " ..
+            self:bands() .. " bands, " ..
+            self:interpretation() .. ", " ..
+            self:get("vips-loader")
+    end,
+
     -- others are
     -- __concat (.. to join bands, perhaps?)
     -- __call (image(x, y) to get pixel, perhaps)
@@ -311,6 +320,10 @@ image_mt = {
 
         yoffset = function(self)
             return self:get("yoffset")
+        end,
+
+        filename = function(self)
+            return self:get("filename")
         end,
 
         -- many-image input operations
