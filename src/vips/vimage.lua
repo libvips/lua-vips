@@ -78,16 +78,6 @@ local function call_enum(self, other, base, op)
     end
 end
 
-local function image_to_left(left, right)
-    if image.is_image(left) then
-        return left, right
-    elseif image.is_image(right) then
-        return right, left
-    else
-        error("must have one image argument")
-    end
-end
-
 image_mt = {
 
     __add = function(left, right)
