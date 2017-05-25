@@ -6,5 +6,5 @@ return {
     vobject = require "vips/vobject",
     voperation = require "vips/voperation",
     vimage = require "vips/vimage",
-    image = require "vips/image",
+    Image = require "vips/Image",
 }

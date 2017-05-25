@@ -29,6 +29,6 @@ build = {
        ["vips.vobject"] = "src/vips/vobject.lua",
        ["vips.voperation"] = "src/vips/voperation.lua",
        ["vips.vimage"] = "src/vips/vimage.lua",
-       ["vips.image"] = "src/vips/image.lua"
+       ["vips.Image"] = "src/vips/Image.lua"
    }
 }

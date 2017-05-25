@@ -1,5 +1,12 @@
 local vips = require "vips"
 
+im = vips.vimage.new_from_file("images/Gugg_coloured.jpg")
+im = vips.Image.new(im)
+im = im + 50
+im:write_to_file("x.jpg")
+
+error()
+
 local im = vips.operation.call("black", 100, 200, {bands = 3})
 
 print("")

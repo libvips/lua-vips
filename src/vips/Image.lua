@@ -18,10 +18,14 @@ function Image.new(vimage)
     return image
 end
 
-function Image.is_image(self)
-    return self.vimage:is_image()
-end
-
 function Image.mt.__add(left, right)
     print( "in __add!")
 end
+
+function Image.mt.__index(table, name)
+    return function(...)
+        return vimage[name](unpack{...})
+    end
+end
+
+return Image

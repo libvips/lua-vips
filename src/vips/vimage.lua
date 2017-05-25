@@ -81,9 +81,6 @@ end
 image_mt = {
 
     __add = function(self, other)
-        print("in __add")
-        print("no!! really, I am __add")
-
         log.msg("__add type(other) =", type(other))
 
         if type(other) == "number" then
