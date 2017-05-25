@@ -58,6 +58,16 @@ local function map(fn, array)
     return new_array
 end
 
+local function call_enum(image, other, base, operation)
+    if type(other) == "number" then
+        return self[base .. "_const"](self, {other}, operation)
+    elseif type(other) == "table" then
+        return self[base .. "_const"](self, other, operation)
+    else
+        return self[base](self, other, operation)
+    end
+end
+
 local image
 local image_mt = {
     __add = function(self, other)
@@ -117,38 +127,20 @@ local image_mt = {
     end,
 
     __pow = function(self, other)
-        if type(other) == "number" then
-            return self:math2_const({other}, "pow")
-        elseif type(other) == "table" then
-            return self:math2_const(other, "pow")
-        else
-            return self:math2(other, "pow")
-        end
+        return self:pow(other)
     end,
 
     __eq = function(self, other)
-        -- this is only called for two images
+        -- this is only called for pairs of images
         return self:relational(other, "equal")
     end,
 
     __lt = function(self, other)
-        if type(other) == "number" then
-            return self:relational_const({other}, "less")
-        elseif type(other) == "table" then
-            return self:relational_const(other, "less")
-        else
-            return self:relational(other, "less")
-        end
+        return self:less(other)
     end,
 
     __le = function(self, other)
-        if type(other) == "number" then
-            return self:relational_const({other}, "lesseq")
-        elseif type(other) == "table" then
-            return self:relational_const(other, "lesseq")
-        else
-            return self:relational(other, "lesseq")
-        end
+        return self:lesseq(other)
     end,
 
     -- others are
@@ -162,6 +154,8 @@ local image_mt = {
         object = function(self)
             return ffi.cast(object.typeof, self)
         end,
+
+        -- constructors
 
         new_from_file = function(filename, ...)
             local operation_name = vips.vips_foreign_find_load(filename)
@@ -198,6 +192,8 @@ local image_mt = {
             return self
         end,
 
+        -- writers
+
         write_to_file = function(self, filename, ...)
             local operation_name = vips.vips_foreign_find_save(filename)
             if operation_name == nil then
@@ -206,6 +202,8 @@ local image_mt = {
             return operation.call(ffi.string(operation_name), 
                 self, filename, unpack{...})
         end,
+
+        -- get/set metadata
 
         -- image get/set reads and writes the header, object get/set reads and
         -- writes GObject properties
@@ -235,6 +233,8 @@ local image_mt = {
             self:set_type(gtype, name, value)
         end,
 
+        -- standard header fields
+
         width = function(self)
             return self:get("width")
         end,
@@ -245,6 +245,176 @@ local image_mt = {
 
         size = function(self)
             return self:width(), self:height()
+        end,
+
+        format = function(self)
+            return self:get("format")
+        end,
+
+        -- enum expansions
+
+        pow = function(self, other)
+            return call_enum(self, other, "math2", "pow")
+        end,
+
+        wop = function(self, other)
+            return call_enum(self, other, "math2", "wop")
+        end,
+
+        lshift = function(self, other)
+            return call_enum(self, other, "boolean", "lshift")
+        end,
+
+        rshift = function(self, other)
+            return call_enum(self, other, "boolean", "rshift")
+        end,
+
+        andimage = function(self, other)
+            return call_enum(self, other, "boolean", "and")
+        end,
+
+        orimage = function(self, other)
+            return call_enum(self, other, "boolean", "or")
+        end,
+
+        eorimage = function(self, other)
+            return call_enum(self, other, "boolean", "eor")
+        end,
+
+        less = function(self, other)
+            return call_enum(self, other, "relational", "less")
+        end,
+
+        lesseq = function(self, other)
+            return call_enum(self, other, "relational", "lesseq")
+        end,
+
+        more = function(self, other)
+            return call_enum(self, other, "relational", "more")
+        end,
+
+        moreeq = function(self, other)
+            return call_enum(self, other, "relational", "moreeq")
+        end,
+
+        equal = function(self, other)
+            return call_enum(self, other, "relational", "equal")
+        end,
+
+        noteq = function(self, other)
+            return call_enum(self, other, "relational", "noteq")
+        end,
+
+        floor = function(self)
+            return self:round("floor")
+        end,
+
+        ceil = function(self)
+            return self:round("ceil")
+        end,
+
+        rint = function(self)
+            return self:round("rint")
+        end,
+
+        bandand = function(self)
+            return self:bandbool("and")
+        end,
+
+        bandor = function(self)
+            return self:bandbool("or")
+        end,
+
+        bandeor = function(self)
+            return self:bandbool("eor")
+        end,
+
+        real = function(self)
+            return self:complexget("real")
+        end,
+
+        imag = function(self)
+            return self:complexget("imag")
+        end,
+
+        polar = function(self)
+            return self:complex("polar")
+        end,
+
+        rect = function(self)
+            return self:complex("rect")
+        end,
+
+        conj = function(self)
+            return self:complex("conj")
+        end,
+
+        sin = function(self)
+            return self:math("sin")
+        end,
+
+        cos = function(self)
+            return self:math("cos")
+        end,
+
+        tan = function(self)
+            return self:math("tan")
+        end,
+
+        asin = function(self)
+            return self:math("asin")
+        end,
+
+        acos = function(self)
+            return self:math("acos")
+        end,
+
+        atan = function(self)
+            return self:math("atan")
+        end,
+
+        exp = function(self)
+            return self:math("exp")
+        end,
+
+        exp10 = function(self)
+            return self:math("exp10")
+        end,
+
+        log = function(self)
+            return self:math("log")
+        end,
+
+        log10 = function(self)
+            return self:math("log10")
+        end,
+
+        erode = function(self, mask)
+            return self:morph(mask, "erode")
+        end,
+
+        dilate = function(self, mask)
+            return self:morph(mask, "dilate")
+        end,
+
+        fliphor = function(self)
+            return self:flip("horizontal")
+        end,
+
+        flipver = function(self)
+            return self:flip("vertical")
+        end,
+
+        rot90 = function(self)
+            return self:rot("d90")
+        end,
+
+        rot180 = function(self)
+            return self:rot("d180")
+        end,
+
+        rot270 = function(self)
+            return self:rot("d270")
         end,
 
     }

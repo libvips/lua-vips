@@ -23,6 +23,10 @@ ffi.cdef[[
     unsigned long int g_type_from_name (const char* name);
     unsigned long int g_type_fundamental (unsigned long int gtype);
 
+    int vips_enum_from_nick (const char* domain, 
+        unsigned long int gtype, const char* str);
+    const char *vips_enum_nick (unsigned long int gtype, int value);
+
     void g_value_set_int (GValue* value, int i);
     void g_value_set_double (GValue* value, double d);
     void g_value_set_enum (GValue* value, int e);
@@ -66,6 +70,7 @@ local gvalue_mt = {
         pint_typeof = ffi.typeof("int[?]"),
         pdouble_typeof = ffi.typeof("double[?]"),
         psize_typeof = ffi.typeof("size_t[?]"),
+        pstr_typeof = ffi.typeof("char*[?]"),
 
         -- look up some common gtypes at init for speed
         gint_type = vips.g_type_from_name("gint"),
@@ -115,7 +120,20 @@ local gvalue_mt = {
             elseif gtype == gvalue.gdouble_type then
                 vips.g_value_set_double(gv, value)
             elseif fundamental == gvalue.genum_type then
-                vips.g_value_set_enum(gv, value)
+                local enum_value 
+                if type(value) == "string" then
+                    enum_value = 
+                        vips.vips_enum_from_nick("lua-vips", gtype, value)
+
+                    if enum_value < 0 then
+                        error("no such enum " .. value .. "\n" .. 
+                            object.get_error())
+                    end
+                else
+                    enum_value = value
+                end
+
+                vips.g_value_set_enum(gv, enum_value)
             elseif fundamental == gvalue.gflags_type then
                 vips.g_value_set_flags(gv, value)
             elseif gtype == gvalue.gstr_type then
@@ -148,7 +166,15 @@ local gvalue_mt = {
             elseif gtype == gvalue.gdouble_type then
                 result = vips.g_value_get_double(gv)
             elseif fundamental == gvalue.genum_type then
-                result = vips.g_value_get_enum(gv)
+                local enum_value = vips.g_value_get_enum(gv)
+
+                local cstr = vips.vips_enum_nick(gtype, enum_value)
+
+                if cstr == nil then
+                    error("value not in enum")
+                end
+
+                result = ffi.string(cstr)
             elseif fundamental == gvalue.gflags_type then
                 result = vips.g_value_get_flags(gv)
             elseif gtype == gvalue.gstr_type then
