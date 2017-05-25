@@ -7,7 +7,8 @@ image = image:sin()
 
 image = image + 12
 
-print("format =", image:format())
-print("image =", image)
+print("after add, image =", image)
+
+error()
 
 image:write_to_file("x.jpg")

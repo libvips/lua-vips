@@ -196,7 +196,13 @@ local gvalue_mt = {
             elseif fundamental == gvalue.gflags_type then
                 result = vips.g_value_get_flags(gv)
             elseif gtype == gvalue.gstr_type then
-                result = ffi.string(vips.g_value_get_string(gv))
+                local cstr = vips.g_value_get_string(gv)
+
+                if cstr ~= nil then
+                    result = ffi.string(cstr)
+                else
+                    result = nil
+                end
             elseif gtype == gvalue.refstr_type then
                 local psize = ffi.new(gvalue.psize_typeof, 1)
 

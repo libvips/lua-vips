@@ -79,7 +79,11 @@ local function call_enum(image, other, base, operation)
 end
 
 image_mt = {
+
     __add = function(self, other)
+        print("in __add")
+        print("no!! really, I am __add")
+
         log.msg("__add type(other) =", type(other))
 
         if type(other) == "number" then
@@ -153,12 +157,17 @@ image_mt = {
     end,
 
     __tostring = function(self)
-        return self:filename() .. ": " .. 
+        local result = (self:filename() or "(nil)") .. ": " ..
             self:width() .. "x" .. self:height() .. " " .. 
             self:format() .. ", " ..
             self:bands() .. " bands, " ..
-            self:interpretation() .. ", " ..
-            self:get("vips-loader")
+            self:interpretation()
+
+        if self:get_typeof("vips-loader") ~= 0 then
+            result = result .. ", " .. self:get("vips-loader")
+        end
+
+        return result
     end,
 
     -- others are
