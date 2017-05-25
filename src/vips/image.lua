@@ -193,7 +193,7 @@ image_mt = {
         end,
 
         is_image = function(value)
-            return type(value) == "table" and getmetatable(value) == image_mt
+            return ffi.istype(gvalue.image_typeof, value) 
         end,
 
         -- constructors

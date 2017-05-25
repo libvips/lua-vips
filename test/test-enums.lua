@@ -5,6 +5,8 @@ print("on load, image =", image)
 
 image = image:sin()
 
+print("after sin, image =", image)
+
 image = image + 12
 
 print("after add, image =", image)
