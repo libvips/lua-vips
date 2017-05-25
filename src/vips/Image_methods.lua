@@ -187,13 +187,15 @@ function Image.mt.__sub(self, other)
     end
 end
 
-function Image.mt.__mul(self, other)
-    if type(other) == "number" then
-        return self:linear({other}, {0})
-    elseif is_pixel(other) then
-        return self:linear(other, {0})
+function Image.mt.__mul(a, b)
+    a, b = swap_Image_left(a, b)
+
+    if type(b) == "number" then
+        return a:linear({b}, {0})
+    elseif is_pixel(b) then
+        return a:linear(b, {0})
     else
-        return self:multiply(other)
+        return a:multiply(b)
     end
 end
 
@@ -221,8 +223,12 @@ function Image.mt.__unm(self)
     return self:linear({-1}, {0})
 end
 
-function Image.mt.__pow(self, other)
-    return self:pow(other)
+function Image.mt.__pow(a, b)
+    if Image.is_image(a) then
+        return a:pow(b)
+    else
+        return b:wop(a)
+    end
 end
 
 function Image.mt.__eq(self, other)
@@ -253,10 +259,10 @@ function Image.mt.__tostring(self)
 end
 
     -- others are
-    -- __concat (.. to join bands, perhaps?)
     -- __call (image(x, y) to get pixel, perhaps)
+    -- __concat (.. to join bands, perhaps?)
     -- __len (#image to get bands?)
-    -- could add image[n] with number arg to invoke __index and 
+    -- could add image[n] with number arg to extract a band
 
 
 -- instance methods
