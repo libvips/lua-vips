@@ -8,6 +8,7 @@ local band = bit.band
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 local vobject = require "vips/vobject"
+local Image = require "vips/Image"
 
 local vips = ffi.load("vips")
 
@@ -62,7 +63,8 @@ local voperation_mt = {
             if match_image then
                 local gtype = self:vobject():get_typeof(name)
 
-                if gtype == gvalue.image_type then
+                if gtype == gvalue.image_type and 
+                    not Image.is_Image(value) then
                     value = match_image:imageize(value)
                 end
             end

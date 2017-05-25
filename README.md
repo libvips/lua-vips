@@ -10,11 +10,11 @@ This binding works, but is not yet finished. See the issues.
 ```lua
 vips = require "vips"
 
-image = vips.image.text("Hello <i>World!</i>", {dpi = 300})
+image = vips.Image.text("Hello <i>World!</i>", {dpi = 300})
 image = image:invert()
 image:write_to_file("x.png")
 
-image = vips.image.thumbnail("somefile.jpg", 128)
+image = vips.Image.thumbnail("somefile.jpg", 128)
 image:write_to_file("tiny.jpg")
 ```
 

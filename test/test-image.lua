@@ -1,13 +1,18 @@
 local vips = require "vips"
 
-im = vips.vimage.new_from_file("images/Gugg_coloured.jpg")
-im = vips.Image.new(im)
+--vips.log.enable(true)
+
+print("loading ..")
+im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
+print("im =", im)
+
+print("adding ..")
 im = im + 50
+
+print("saving ..")
 im:write_to_file("x.jpg")
 
-error()
-
-local im = vips.operation.call("black", 100, 200, {bands = 3})
+local im = vips.voperation.call("black", 100, 200, {bands = 3})
 
 print("")
 print("get height:")
@@ -16,7 +21,7 @@ print("height = ", height)
 
 status, err = pcall(
     function()
-        x = vips.image.frank(1, 2, 3)
+        x = vips.Image.frank(1, 2, 3)
     end
 )
 if not status then
@@ -26,9 +31,9 @@ end
 
 image2 = im:invert()
 
-image3 = vips.image.black(1, 2, {bands = 3})
+image3 = vips.Image.black(1, 2, {bands = 3})
 
-image4 = vips.image.new_from_file("images/Gugg_coloured.jpg")
+image4 = vips.Image.new_from_file("images/Gugg_coloured.jpg")
 image4 = image4:invert()
 image4:write_to_file("x.jpg")
 
@@ -50,7 +55,6 @@ vips.log.print_r(yes)
 
 image1 = image4 + image4
 image1 = image4 + 12
-image4 = vips.image.new_from_file("images/Gugg_coloured.jpg")
 image1 = image4 + {40, 0, -12}
 
 image1:write_to_file("x.jpg")

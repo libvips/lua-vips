@@ -3,7 +3,10 @@
 
 local ffi = require "ffi" 
 
-local log = require "vips/log" 
+local log = require "vips/log"
+
+-- we need to be able to wrap and unwrap Image tables
+local Image = require "vips/Image"
 
 local vips = ffi.load("vips")
 
@@ -14,8 +17,6 @@ ffi.cdef[[
     } GValue;
 
     typedef struct _VipsImage VipsImage;
-
-    void vips_init (const char* argv0);
 
     void g_value_init (GValue* value, unsigned long int type);
     void g_value_unset (GValue* value);
@@ -53,10 +54,7 @@ ffi.cdef[[
 
 ]]
 
--- this will add the vips types as well
-vips.vips_init("")
-
-local gvalue
+local gvalue = {}
 local gvalue_mt = {
     __gc = function(gv)
         log.msg("freeing gvalue ", gv)
@@ -145,7 +143,7 @@ local gvalue_mt = {
             elseif gtype == gvalue.gstr_type or gtype == gvalue.refstr_type then
                 vips.g_value_set_string(gv, value)
             elseif gtype == gvalue.image_type then
-                vips.g_value_set_object(gv, value)
+                vips.g_value_set_object(gv, value.vimage)
             elseif gtype == gvalue.array_int_type then
                 local n = #value
                 local a = ffi.new(gvalue.pint_typeof, n, value)
@@ -163,7 +161,7 @@ local gvalue_mt = {
 
                 local a = vips_value_get_array_image(gv, nil)
                 for i = 0, n - 1 do
-                    a[i] = value[i + 1]
+                    a[i] = value[i + 1].vimage
                 end
 
             elseif gtype == gvalue.blob_type then
@@ -210,8 +208,10 @@ local gvalue_mt = {
 
                 result = ffi.string(cstr, psize[0])
             elseif gtype == gvalue.image_type then
-                result = ffi.cast(gvalue.image_typeof, 
-                    vips.g_value_get_object(gv))
+                local vobject = vips.g_value_get_object(gv)
+                local vimage = ffi.cast(gvalue.image_typeof, vobject)
+
+                result = Image.new(vimage)
 
             elseif gtype == gvalue.array_int_type then
                 local pint = ffi.new(gvalue.pint_typeof, 1)
@@ -237,7 +237,7 @@ local gvalue_mt = {
                 local array = vips.vips_value_get_array_image(gv, pint)
                 result = {}
                 for i = 0, pint[0] - 1 do
-                    result[i + 1] = array[i]
+                    result[i + 1] = Image.new(array[i])
                 end
 
             elseif gtype == gvalue.blob_type then
