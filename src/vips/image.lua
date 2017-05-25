@@ -192,6 +192,21 @@ local image_mt = {
             return self
         end,
 
+        new_from_image = function(self, value)
+            local pixel = (self.black(1, 1) + value).cast(self.format())
+            local image = pixel.embed(0, 0, self:width(), self:height(),
+                {extend = "copy"})
+            image = image.copy{
+                interpretation = self:interpretation(),
+                xres = self:xres(),
+                yres =  self:yres(),
+                xoffset = self:xoffset(),
+                yoffset = self:yoffset()
+            }
+
+            return image
+        end,
+
         -- writers
 
         write_to_file = function(self, filename, ...)
@@ -247,8 +262,32 @@ local image_mt = {
             return self:width(), self:height()
         end,
 
+        bands = function(self)
+            return self:get("bands")
+        end,
+
         format = function(self)
             return self:get("format")
+        end,
+
+        interpretation = function(self)
+            return self:get("interpretation")
+        end,
+
+        xres = function(self)
+            return self:get("xres")
+        end,
+
+        yres = function(self)
+            return self:get("yres")
+        end,
+
+        xoffset = function(self)
+            return self:get("xoffset")
+        end,
+
+        yoffset = function(self)
+            return self:get("yoffset")
         end,
 
         -- many-image input operations
