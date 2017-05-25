@@ -347,6 +347,19 @@ image_mt = {
             return operation.call("bandrank", {self, unpack(other)})
         end,
 
+        -- convenience functions
+
+        bandsplit = function(self)
+            local result 
+
+            result = {}
+            for i in 0, self:bands() do
+                result[i + 1] = self:extract_band(i)
+            end
+
+            return result
+        end,
+
         -- special behaviour wrappers
 
         ifthenelse = function(self, then_value, else_value, options)
