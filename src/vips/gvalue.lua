@@ -37,6 +37,7 @@ ffi.cdef[[
         const double* array, int n );
     void vips_value_set_array_int (GValue* value, 
         const int* array, int n );
+    void vips_value_set_array_image (GValue *value, int n);
 
     int g_value_get_int (GValue* value);
     double g_value_get_double (GValue* value);
@@ -47,6 +48,8 @@ ffi.cdef[[
     double* vips_value_get_array_double (const GValue* value, int* n);
     int* vips_value_get_array_int (const GValue* value, int* n);
     void* vips_value_get_blob (const GValue* value, size_t* length);
+    VipsImage** vips_value_get_array_image (const GValue* value, int* n);
+
 
 ]]
 
@@ -67,6 +70,7 @@ local gvalue_mt = {
         gv_typeof = ffi.typeof("GValue"),
         pgv_typeof = ffi.typeof("GValue[1]"),
         image_typeof = ffi.typeof("VipsImage*"),
+        pimage_typeof = ffi.typeof("VipsImage*[?]"),
         pint_typeof = ffi.typeof("int[?]"),
         pdouble_typeof = ffi.typeof("double[?]"),
         psize_typeof = ffi.typeof("size_t[?]"),
@@ -79,8 +83,9 @@ local gvalue_mt = {
         genum_type = vips.g_type_from_name("GEnum"),
         gflags_type = vips.g_type_from_name("GFlags"),
         image_type = vips.g_type_from_name("VipsImage"),
-        array_double_type = vips.g_type_from_name("VipsArrayDouble"),
         array_int_type = vips.g_type_from_name("VipsArrayInt"),
+        array_double_type = vips.g_type_from_name("VipsArrayDouble"),
+        array_image_type = vips.g_type_from_name("VipsArrayImage"),
         blob_type = vips.g_type_from_name("VipsBlob"),
 
         new = function()
@@ -140,16 +145,28 @@ local gvalue_mt = {
                 vips.g_value_set_string(gv, value)
             elseif gtype == gvalue.image_type then
                 vips.g_value_set_object(gv, value)
+            elseif gtype == gvalue.array_int_type then
+                local n = #value
+                local a = ffi.new(gvalue.pint_typeof, n, value)
+
             elseif gtype == gvalue.array_double_type then
                 local n = #value
                 local a = ffi.new(gvalue.pdouble_typeof, n, value)
 
                 vips.vips_value_set_array_double(gv, a, n)
-            elseif gtype == gvalue.array_int_type then
+
+            elseif gtype == gvalue.array_image_type then
                 local n = #value
-                local a = ffi.new(gvalue.pint_typeof, n, value)
+
+                vips.vips_value_set_array_image(gv, n)
+
+                local a = vips_value_get_array_image(gv, nil)
+                for i = 0, n - 1 do
+                    a[i] = value[i + 1]
+                end
 
             elseif gtype == gvalue.blob_type then
+
             else
                  error("unsupported gtype for set " .. gvalue.type_name(gtype))
             end
@@ -182,14 +199,7 @@ local gvalue_mt = {
             elseif gtype == gvalue.image_type then
                 result = ffi.cast(gvalue.image_typeof, 
                     vips.g_value_get_object(gv))
-            elseif gtype == gvalue.array_double_type then
-                local pint = ffi.new(gvalue.pint_typeof, 1)
 
-                local array = vips.vips_value_get_array_double(gv, pint)
-                result = {}
-                for i = 0, pint[0] - 1 do
-                    result[i + 1] = array[i]
-                end
             elseif gtype == gvalue.array_int_type then
                 local pint = ffi.new(gvalue.pint_typeof, 1)
 
@@ -198,6 +208,25 @@ local gvalue_mt = {
                 for i = 0, pint[0] - 1 do
                     result[i + 1] = array[i]
                 end
+
+            elseif gtype == gvalue.array_double_type then
+                local pint = ffi.new(gvalue.pint_typeof, 1)
+
+                local array = vips.vips_value_get_array_double(gv, pint)
+                result = {}
+                for i = 0, pint[0] - 1 do
+                    result[i + 1] = array[i]
+                end
+
+            elseif gtype == gvalue.array_image_type then
+                local pint = ffi.new(gvalue.pint_typeof, 1)
+
+                local array = vips.vips_value_get_array_image(gv, pint)
+                result = {}
+                for i = 0, pint[0] - 1 do
+                    result[i + 1] = array[i]
+                end
+
             elseif gtype == gvalue.blob_type then
                 local psize = ffi.new(gvalue.psize_typeof, 1)
 

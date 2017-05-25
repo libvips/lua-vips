@@ -251,6 +251,40 @@ local image_mt = {
             return self:get("format")
         end,
 
+        -- many-image input operations
+        --
+        -- these don't wrap well automatically, since self is always separate
+
+        bandjoin = function(self, other, options)
+            -- allow a single untable arg as well
+            if type(other) ~= "table" then
+                other = {other}
+            end
+
+            -- if other is all constants, we can use bandjoin_const
+            local all_constant = true
+            for i = 1, #other do
+                if type(other[i]) ~= "number" then
+                    all_constant = false
+                    break
+                end
+            end
+
+            if all_constant then
+                return operation.call("bandjoin_const", self, other)
+            else
+                return operation.call("bandjoin", {self, unpack(other)})
+            end
+        end,
+
+        bandrank = function(self, other, options)
+            if type(other) ~= "table" then
+                other = {other}
+            end
+
+            return operation.call("bandrank", {self, unpack(other)})
+        end,
+
         -- enum expansions
 
         pow = function(self, other)
