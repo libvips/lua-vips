@@ -7,7 +7,7 @@ local band = bit.band
 
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
-local object = require "vips/object"
+local vobject = require "vips/vobject"
 
 local vips = ffi.load("vips")
 
@@ -43,31 +43,31 @@ local OUTPUT = 32
 local DEPRECATED = 64
 local MODIFY = 128
 
-local voperation
+local voperation = {}
 local voperation_mt = {
     __index = {
         argumentmap_typeof = ffi.typeof("VipsArgumentMapFn"),
 
-        -- cast to an object
-        object = function(self)
-            return ffi.cast(object.typeof, self)
+        -- cast to a vobject
+        vobject = function(self)
+            return ffi.cast(vobject.typeof, self)
         end,
 
         get = function(self, name)
-            return self:object():get(name)
+            return self:vobject():get(name)
         end,
 
         set = function(self, name, match_image, value)
             -- if the object wants an image and we have a constant, imageize it
             if match_image then
-                local gtype = self:object():get_typeof(name)
+                local gtype = self:vobject():get_typeof(name)
 
                 if gtype == gvalue.image_type then
                     value = match_image:imageize(value)
                 end
             end
 
-            return self:object():set(name, value)
+            return self:vobject():set(name, value)
         end,
 
         -- this is slow ... call as little as possible
@@ -91,14 +91,14 @@ local voperation_mt = {
         call = function(name, ...)
             local call_args = {...}
 
-            local operation = vips.vips_operation_new(name)
-            if operation == nil then
-                error("no such operation\n" .. object.get_error())
+            local vop = vips.vips_operation_new(name)
+            if vop == nil then
+                error("no such operation\n" .. vobject.get_error())
                 return
             end
-            operation:object():new()
+            vop:vobject():new()
 
-            local arguments = operation:getargs()
+            local arguments = vop:getargs()
 
             log.msg(name, "needs:")
             log.msg_r(arguments)
@@ -154,7 +154,7 @@ local voperation_mt = {
                     band(flags, REQUIRED) ~= 0 and 
                     band(flags, DEPRECATED) == 0 then
                     n = n + 1
-                    if not operation:set(arguments[i].name, 
+                    if not vop:set(arguments[i].name, 
                         match_image, call_args[n]) then
                         return
                     end
@@ -163,19 +163,19 @@ local voperation_mt = {
 
             if last_arg then
                 for k, v in pairs(last_arg) do
-                    if not operation:set(k, match_image, v) then
+                    if not vop:set(k, match_image, v) then
                         return
                     end
                 end
             end
 
             log.msg("constructing ...")
-            local operation2 = vips.vips_cache_operation_build(operation);
-            if operation2 == nil then
-                vips.vips_object_unref_outputs(operation)
-                error("unable to call " .. name .. "\n" .. object.get_error())
+            local vop2 = vips.vips_cache_operation_build(vop)
+            if vop2 == nil then
+                vips.vips_object_unref_outputs(vop)
+                error("unable to call " .. name .. "\n" .. vobject.get_error())
             end
-            operation = operation2
+            vop = vop2
 
             log.msg("getting output ...")
             result = {}
@@ -186,7 +186,7 @@ local voperation_mt = {
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, REQUIRED) ~= 0 and 
                     band(flags, DEPRECATED) == 0 then
-                    result[n] = operation:get(arguments[i].name)
+                    result[n] = vop:get(arguments[i].name)
                     n = n + 1
                 end
             end
@@ -197,7 +197,7 @@ local voperation_mt = {
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, REQUIRED) == 0 and 
                     band(flags, DEPRECATED) == 0 then
-                    result[n] = operation:get(arguments[i].name)
+                    result[n] = vop:get(arguments[i].name)
                     n = n + 1
                 end
             end
@@ -207,7 +207,7 @@ local voperation_mt = {
 
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, DEPRECATED) ~= 0 then
-                    result[n] = operation:get(arguments[i].name)
+                    result[n] = vop:get(arguments[i].name)
                     n = n + 1
                 end
             end

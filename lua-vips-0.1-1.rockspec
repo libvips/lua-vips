@@ -26,8 +26,9 @@ build = {
        vips = "src/vips.lua",
        ["vips.log"] = "src/vips/log.lua",
        ["vips.gvalue"] = "src/vips/gvalue.lua",
-       ["vips.object"] = "src/vips/object.lua",
-       ["vips.operation"] = "src/vips/operation.lua",
+       ["vips.vobject"] = "src/vips/vobject.lua",
+       ["vips.voperation"] = "src/vips/voperation.lua",
+       ["vips.vimage"] = "src/vips/vimage.lua",
        ["vips.image"] = "src/vips/image.lua"
    }
 }

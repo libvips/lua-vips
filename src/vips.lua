@@ -1,9 +1,10 @@
 -- top include for lua-vips
 
 return { 
+    log = require "vips/log",
     gvalue = require "vips/gvalue",
-    object = require "vips/object",
-    operation = require "vips/operation",
+    vobject = require "vips/vobject",
+    voperation = require "vips/voperation",
+    vimage = require "vips/vimage",
     image = require "vips/image",
-    log = require "vips/log"
 }

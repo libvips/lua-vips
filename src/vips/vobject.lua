@@ -1,5 +1,5 @@
 -- manage VipsObject
--- abstract base class for operation and image
+-- abstract base class for voperation and vimage
 
 local ffi = require "ffi"
 
@@ -91,19 +91,19 @@ ffi.cdef[[
 
 ]]
 
-local object
-local object_mt = {
+local vobject = {}
+local vobject_mt = {
     -- no __gc method, we don't build these things ourselves, just wrap the
     -- pointer, so we use ffi.gc() instead
     __index = {
-        -- types to get ref back from vips_object_get_argument
+        -- types to get ref back from vips_object_get_argument()
         typeof = ffi.typeof("VipsObject*"),
         pspec_typeof = ffi.typeof("GParamSpec*[1]"),
         argument_class_typeof = ffi.typeof("VipsArgumentClass*[1]"),
         argument_instance_typeof = ffi.typeof("VipsArgumentInstance*[1]"),
 
         new = function(self)
-            log.msg("object.new")
+            log.msg("vobject.new")
             log.msg("  ptr =", self)
             ffi.gc(self, 
                 function(x) 
@@ -115,9 +115,9 @@ local object_mt = {
         end,
 
         get_typeof = function(self, name)
-            local pspec = object.pspec_typeof()
-            local argument_class = object.argument_class_typeof()
-            local argument_instance = object.argument_instance_typeof()
+            local pspec = vobject.pspec_typeof()
+            local argument_class = vobject.argument_class_typeof()
+            local argument_instance = vobject.argument_instance_typeof()
             local result = vips.vips_object_get_argument(self, name,
                 pspec, argument_class, argument_instance)
 
@@ -130,7 +130,7 @@ local object_mt = {
         end,
 
         get = function(self, name)
-            log.msg("object.get")
+            log.msg("vobject.get")
             log.msg("  self =", self)
             log.msg("  name =", name)
 
@@ -148,7 +148,7 @@ local object_mt = {
         end,
 
         set = function(self, name, value)
-            log.msg("object.set")
+            log.msg("vobject.set")
             log.msg("  self =", self)
             log.msg("  name =", name)
             log.msg("  value =", value)
@@ -177,6 +177,6 @@ local object_mt = {
     }
 }
 
-object = ffi.metatype("VipsObject", object_mt)
-return object
+vobject = ffi.metatype("VipsObject", vobject_mt)
+return vobject
 
