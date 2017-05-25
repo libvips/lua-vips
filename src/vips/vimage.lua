@@ -78,17 +78,27 @@ local function call_enum(self, other, base, op)
     end
 end
 
+local function image_to_left(left, right)
+    if image.is_image(left) then
+        return left, right
+    elseif image.is_image(right) then
+        return right, left
+    else
+        error("must have one image argument")
+    end
+end
+
 image_mt = {
 
-    __add = function(self, other)
-        log.msg("__add type(other) =", type(other))
+    __add = function(left, right)
+        left, right = image_to_left(left, right)
 
-        if type(other) == "number" then
-            return self:linear({1}, {other})
-        elseif is_pixel(other) then
-            return self:linear({1}, other)
+        if type(right) == "number" then
+            return left:linear({1}, {right})
+        elseif is_pixel(right) then
+            return left:linear({1}, right)
         else
-            return self:add(other)
+            return left:add(right)
         end
     end,
 
