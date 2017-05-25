@@ -31,6 +31,20 @@ ffi.cdef[[
 
 ]]
 
+local image = {}
+local image_mt = {}
+
+local function is_image(value)
+    return type(value) == "table" and getmetatable(value) == image_mt
+end
+
+-- either a single number, or a table of numbers
+local function is_pixel(value)
+    return type(value) == "number" or
+        (type(value) == "table" and not is_image(value))
+end
+
+-- test for rectangular array of something
 local function is_2D(table)
     if type(table) ~= "table" then
         return false
@@ -51,7 +65,7 @@ end
 local function map(fn, array)
     local new_array = {}
 
-    for i,v in ipairs(array) do
+    for i, v in ipairs(array) do
         new_array[i] = fn(v)
     end
 
@@ -61,21 +75,20 @@ end
 local function call_enum(image, other, base, operation)
     if type(other) == "number" then
         return self[base .. "_const"](self, {other}, operation)
-    elseif type(other) == "table" then
+    elseif is_pixel(other) then
         return self[base .. "_const"](self, other, operation)
     else
         return self[base](self, other, operation)
     end
 end
 
-local image
-local image_mt = {
+image_mt = {
     __add = function(self, other)
         log.msg("__add type(other) =", type(other))
 
         if type(other) == "number" then
             return self:linear({1}, {other})
-        elseif type(other) == "table" then
+        elseif is_pixel(other) then
             return self:linear({1}, other)
         else
             return self:add(other)
@@ -85,7 +98,7 @@ local image_mt = {
     __sub = function(self, other)
         if type(other) == "number" then
             return self:linear({1}, {-other})
-        elseif type(other) == "table" then
+        elseif is_pixel(other) then
             return self:linear({1}, map(function(x) return -x end, other))
         else
             return self:subtract(other)
@@ -95,7 +108,7 @@ local image_mt = {
     __mul = function(self, other)
         if type(other) == "number" then
             return self:linear({other}, {0})
-        elseif type(other) == "table" then
+        elseif is_pixel(other) then
             return self:linear(other, {0})
         else
             return self:multiply(other)
@@ -105,7 +118,7 @@ local image_mt = {
     __div = function(self, other)
         if type(other) == "number" then
             return self:linear({1}, {1 / other})
-        elseif type(other) == "table" then
+        elseif is_pixel(other) then
             return self:linear({1}, map(function(x) return x ^ -1 end, other))
         else
             return self:divide(other)
@@ -115,7 +128,7 @@ local image_mt = {
     __mod = function(self, other)
         if type(other) == "number" then
             return self:remainder_const({other})
-        elseif type(other) == "table" then
+        elseif is_pixel(other) then
             return self:remainder_const(other)
         else
             return self:remainder(other)
@@ -150,9 +163,19 @@ local image_mt = {
     -- could add image[n] with number arg to invoke __index and 
 
     __index = {
-        -- cast to an object
+        -- internal
+
         object = function(self)
             return ffi.cast(object.typeof, self)
+        end,
+
+        imageize = function(self, value)
+            -- careful! self can be nil if value is a 2D array
+            if is_2D(value) then
+                return image.new_from_array(value)
+            else
+                return self:new_from_image(value)
+            end
         end,
 
         -- constructors
@@ -322,6 +345,34 @@ local image_mt = {
             end
 
             return operation.call("bandrank", {self, unpack(other)})
+        end,
+
+        -- special behaviour wrappers
+
+        ifthenelse = function(self, then_value, else_value, options)
+            -- We need different imageize rules for this. We need then_value 
+            -- and else_value to match each other first, and only if they 
+            -- are both constants do we match to self.
+
+            local match_image
+
+            for i, v in pairs({then_value, else_value, self}) do
+                if is_image(v) then
+                    match_image = v
+                    break
+                end
+            end
+
+            if not is_image(then_value) then
+                then_value = match_image:imageize(then_value)
+            end
+
+            if not is_image(else_value) then
+                else_value = match_image:imageize(else_value)
+            end
+
+            return operation.call("ifthenelse", self, 
+                then_value, else_value, options)
         end,
 
         -- enum expansions
