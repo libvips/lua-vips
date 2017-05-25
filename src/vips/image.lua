@@ -34,14 +34,10 @@ ffi.cdef[[
 local image = {}
 local image_mt = {}
 
-local function is_image(value)
-    return type(value) == "table" and getmetatable(value) == image_mt
-end
-
 -- either a single number, or a table of numbers
 local function is_pixel(value)
     return type(value) == "number" or
-        (type(value) == "table" and not is_image(value))
+        (type(value) == "table" and not image.is_image(value))
 end
 
 -- test for rectangular array of something
@@ -176,6 +172,10 @@ image_mt = {
             else
                 return self:new_from_image(value)
             end
+        end,
+
+        is_image = function(value)
+            return type(value) == "table" and getmetatable(value) == image_mt
         end,
 
         -- constructors
@@ -357,17 +357,17 @@ image_mt = {
             local match_image
 
             for i, v in pairs({then_value, else_value, self}) do
-                if is_image(v) then
+                if image.is_image(v) then
                     match_image = v
                     break
                 end
             end
 
-            if not is_image(then_value) then
+            if not image.is_image(then_value) then
                 then_value = match_image:imageize(then_value)
             end
 
-            if not is_image(else_value) then
+            if not image.is_image(else_value) then
                 else_value = match_image:imageize(else_value)
             end
 

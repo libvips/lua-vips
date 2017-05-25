@@ -57,7 +57,16 @@ local voperation_mt = {
             return self:object():get(name)
         end,
 
-        set = function(self, name, value)
+        set = function(self, name, match_image, value)
+            -- if the object wants an image and we have a constant, imageize it
+            if match_image then
+                local gtype = self:object():get_typeof(name)
+
+                if gtype == gvalue.image_type then
+                    value = match_image:imageize(value)
+                end
+            end
+
             return self:object():set(name, value)
         end,
 
@@ -126,6 +135,17 @@ local voperation_mt = {
                     " arguments given, but " .. n_required ..  " required")
             end
 
+            -- the first image argument is the thing we expand constants to
+            -- match
+            local match_image
+            for i = 1, #call_args do
+                if type(call_args[i]) == "table" and
+                    call_args[i]["is_table"] ~= nil then
+                    match_image = call_args[i]
+                    break
+                end
+            end
+
             local n = 0
             for i = 1, #arguments do
                 local flags = arguments[i].flags
@@ -134,7 +154,8 @@ local voperation_mt = {
                     band(flags, REQUIRED) ~= 0 and 
                     band(flags, DEPRECATED) == 0 then
                     n = n + 1
-                    if not operation:set(arguments[i].name, call_args[n]) then
+                    if not operation:set(arguments[i].name, 
+                        match_image, call_args[n]) then
                         return
                     end
                 end
@@ -142,7 +163,7 @@ local voperation_mt = {
 
             if last_arg then
                 for k, v in pairs(last_arg) do
-                    if not operation:set(k, v) then
+                    if not operation:set(k, match_image, v) then
                         return
                     end
                 end
