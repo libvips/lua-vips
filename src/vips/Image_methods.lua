@@ -127,9 +127,9 @@ function Image.new_from_array(array, scale, offset)
 
     local n = width * height
     local a = ffi.new(gvalue.pdouble_typeof, n)
-    for y = 1, height do
-        for x = 1, width do
-            a[x + y * width] = array[y][x]
+    for y = 0, height - 1 do
+        for x = 0, width - 1 do
+            a[x + y * width] = array[y + 1][x + 1]
         end
     end
     local vimage = vips.vips_image_new_matrix_from_array(width, height, a, n)
@@ -141,16 +141,16 @@ function Image.new_from_array(array, scale, offset)
     return image
 end
 
-function Image.new_from_image(self, value)
-    local pixel = (Image.black(1, 1) + value):cast(self:format())
-    local image = pixel:embed(0, 0, self:width(), self:height(),
+function Image.new_from_image(base_image, value)
+    local pixel = (Image.black(1, 1) + value):cast(base_image:format())
+    local image = pixel:embed(0, 0, base_image:width(), base_image:height(),
         {extend = "copy"})
     image = image:copy{
-        interpretation = self:interpretation(),
-        xres = self:xres(),
-        yres =  self:yres(),
-        xoffset = self:xoffset(),
-        yoffset = self:yoffset()
+        interpretation = base_image:interpretation(),
+        xres = base_image:xres(),
+        yres =  base_image:yres(),
+        xoffset = base_image:xoffset(),
+        yoffset = base_image:yoffset()
     }
 
     return image
@@ -276,9 +276,14 @@ Image.mt.__index = {
         return ffi.cast(vobject.typeof, self.vimage)
     end,
 
-    -- handy to have as an instance method too
+    -- handy to have as instance methods too
+
     imageize = function(self, value)
         return Image.imageize(self, value)
+    end,
+
+    new_from_image = function(self, value)
+        return Image.new_from_image(self, value)
     end,
 
     -- writers

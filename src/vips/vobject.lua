@@ -136,8 +136,7 @@ local vobject_mt = {
 
             local type = self:get_typeof(name)
             if not type then
-                error("field " .. name .. 
-                    " does not exist for object " .. self)
+                error("field " .. name ..  " does not exist")
             end
 
             local gva = gvalue.newp()
@@ -155,8 +154,7 @@ local vobject_mt = {
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error("field " .. name .. 
-                    "does not exist for object " .. self)
+                error("field " .. name ..  " does not exist")
             end
 
             local gv = gvalue.new()
