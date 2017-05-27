@@ -106,7 +106,9 @@ describe("test image creation", function()
 
         it("can load a jpeg from a buffer", function()
             local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
-            local buf = im:write_to_buffer(".jpg")
+            local f = io.open("images/Gugg_coloured.jpg", "rb")
+            local buf = f:read("*all")
+            f:close()
             local im2 = vips.Image.new_from_buffer(buf)
 
             assert.are.equal(im:width(), im2:width())
