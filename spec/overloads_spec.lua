@@ -324,4 +324,30 @@ describe("test overload", function()
         end
     )
 
+    test_binary("lesseq", 
+        function(a, b)
+            return vips.Image.mt.__le(a, b)
+        end,
+        function(a, b)
+            if a <= b then
+                return 255
+            else
+                return 0
+            end
+        end
+    )
+
+    test_binary("moreeq", 
+        function(a, b)
+            return vips.Image.mt.__le(b, a)
+        end,
+        function(a, b)
+            if a >= b then
+                return 255
+            else
+                return 0
+            end
+        end
+    )
+
 end)

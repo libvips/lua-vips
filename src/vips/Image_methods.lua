@@ -279,8 +279,12 @@ function Image.mt.__lt(a, b)
     end
 end
 
-function Image.mt.__le(self, other)
-    return self:lesseq(other)
+function Image.mt.__le(a, b)
+    if Image.is_Image(a) then
+        return a:lesseq(b)
+    else
+        return b:moreeq(a)
+    end
 end
 
 function Image.mt.__tostring(self)
