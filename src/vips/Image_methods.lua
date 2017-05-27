@@ -14,6 +14,7 @@ local vips = ffi.load("vips")
 ffi.cdef[[
     const char* vips_foreign_find_load (const char *name);
     const char* vips_foreign_find_save (const char* name);
+    const char* vips_foreign_find_save_buffer(const char *suffix);
 
     VipsImage* vips_image_new_matrix_from_array (int width, int height,
             const double* array, int size);
@@ -340,6 +341,14 @@ Image.mt.__index = {
         return voperation.call(ffi.string(name), self, filename, unpack{...})
     end,
 
+    write_to_buffer = function(self, format_string, ...)
+        local name = vips.vips_foreign_find_save_buffer(format_string)
+        if name == nil then
+            error(vobject.get_error())
+        end
+
+        return voperation.call(ffi.string(name), self, unpack{...})
+    end,
     -- get/set metadata
 
     get_typeof = function(self, name)
