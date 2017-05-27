@@ -16,6 +16,7 @@ return {
     vobject = require "vips/vobject",
     voperation = require "vips/voperation",
     vimage = require "vips/vimage",
+    vbuffer = require "vips/vbuffer",
     Image = require "vips/Image",
     require "vips/Image_methods",
 }

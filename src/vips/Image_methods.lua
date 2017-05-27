@@ -8,11 +8,13 @@ local vobject = require "vips/vobject"
 local voperation = require "vips/voperation"
 local vimage = require "vips/vimage"
 local Image = require "vips/Image"
+local vbuffer = require "vips/vbuffer"
 
 local vips = ffi.load("vips")
 
 ffi.cdef[[
     const char* vips_foreign_find_load (const char *name);
+    const char* vips_foreign_find_load_buffer(const void *data, size_t size);
     const char* vips_foreign_find_save (const char* name);
     const char* vips_foreign_find_save_buffer(const char *suffix);
 
@@ -165,6 +167,19 @@ function Image.new_from_image(base_image, value)
     }
 
     return image
+end
+
+function Image.new_from_buffer(format_string, data, ...)
+    local buffer = vbuffer.new()
+    buffer:append_luastr_right(data)
+    local buf, buflen = buffer:get()
+    local buflen2 = tonumber(buflen)
+
+    local name = vips.vips_foreign_find_load_buffer(buf, buflen2)
+    if name == nil then
+        error(vobject.get_error())
+    end
+    return voperation.call(ffi.string(name), buf, unpack{...})
 end
 
 -- this is for undefined class methods, like Image.text
