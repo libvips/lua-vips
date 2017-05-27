@@ -89,9 +89,9 @@ describe("test image creation", function()
 
         it("can write a jpeg to buffer", function()
             local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
-            local str = im:write_to_buffer(".jpg")
+            local buf = im:write_to_buffer(".jpg")
             local f = io.open("x.jpg", "w+b")
-            f:write(str)
+            f:write(buf)
             f:close()
             local im2 = vips.Image.new_from_file("x.jpg")
 
@@ -100,12 +100,23 @@ describe("test image creation", function()
             assert.are.equal(im:format(), im2:format())
             assert.are.equal(im:xres(), im2:xres())
             assert.are.equal(im:yres(), im2:yres())
-            -- remove for test created file
+            -- remove test file
             os.remove("x.jpg")
         end)
 
-    end)
+        it("can load a jpeg from a buffer", function()
+            local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
+            local buf = im:write_to_buffer(".jpg")
+            local im2 = vips.Image.new_from_buffer(buf)
 
+            assert.are.equal(im:width(), im2:width())
+            assert.are.equal(im:height(), im2:height())
+            assert.are.equal(im:format(), im2:format())
+            assert.are.equal(im:xres(), im2:xres())
+            assert.are.equal(im:yres(), im2:yres())
+        end)
+
+    end)
 
     describe("test vips creators", function()
         it("can call vips_black()", function()
