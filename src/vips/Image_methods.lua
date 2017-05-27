@@ -348,6 +348,7 @@ Image.mt.__index = {
 
     get = function(self, name)
         local gva = gvalue.newp()
+
         local result = vips.vips_image_get(self.vimage, name, gva)
         if result ~= 0 then
             error("unable to get " .. name)

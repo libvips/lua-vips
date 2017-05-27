@@ -1,4 +1,4 @@
--- test image new/load/etc.
+-- test all operator overloads
 
 require 'busted.runner'()
 
