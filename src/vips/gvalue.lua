@@ -18,6 +18,9 @@ ffi.cdef[[
 
     typedef struct _VipsImage VipsImage;
 
+    void* g_malloc(size_t size);
+    void g_free(void* data);
+
     void g_value_init (GValue* value, unsigned long int type);
     void g_value_unset (GValue* value);
     const char* g_type_name (unsigned long int type);
@@ -39,6 +42,8 @@ ffi.cdef[[
     void vips_value_set_array_int (GValue* value, 
         const int* array, int n );
     void vips_value_set_array_image (GValue *value, int n);
+    void vips_value_set_blob (GValue* value,
+            void (*free_fn)(void* data), void* data, size_t length);
 
     int g_value_get_int (GValue* value);
     double g_value_get_double (GValue* value);
@@ -49,8 +54,8 @@ ffi.cdef[[
     void* g_value_get_object (GValue* value);
     double* vips_value_get_array_double (const GValue* value, int* n);
     int* vips_value_get_array_int (const GValue* value, int* n);
-    void* vips_value_get_blob (const GValue* value, size_t* length);
     VipsImage** vips_value_get_array_image (const GValue* value, int* n);
+    void* vips_value_get_blob (const GValue* value, size_t* length);
 
 ]]
 
@@ -148,6 +153,8 @@ local gvalue_mt = {
                 local n = #value
                 local a = ffi.new(gvalue.pint_typeof, n, value)
 
+                vips.vips_value_set_array_int(gv, a, n)
+
             elseif gtype == gvalue.array_double_type then
                 local n = #value
                 local a = ffi.new(gvalue.pdouble_typeof, n, value)
@@ -165,6 +172,16 @@ local gvalue_mt = {
                 end
 
             elseif gtype == gvalue.blob_type then
+                -- we need to set the blob to a copy of the lua string that vips
+                -- can own
+                local n = #value
+
+                local buf = vips.g_malloc(n)
+                ffi.copy(buf, value, n)
+
+                vips.vips_value_set_blob(gv, 
+                    function(p) vips.g_free(p) end, 
+                    buf, n)
 
             else
                  error("unsupported gtype for set " .. gvalue.type_name(gtype))

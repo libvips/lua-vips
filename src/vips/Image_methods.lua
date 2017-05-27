@@ -8,15 +8,14 @@ local vobject = require "vips/vobject"
 local voperation = require "vips/voperation"
 local vimage = require "vips/vimage"
 local Image = require "vips/Image"
-local vbuffer = require "vips/vbuffer"
 
 local vips = ffi.load("vips")
 
 ffi.cdef[[
-    const char* vips_foreign_find_load (const char *name);
-    const char* vips_foreign_find_load_buffer(const void *data, size_t size);
+    const char* vips_foreign_find_load (const char* name);
+    const char* vips_foreign_find_load_buffer (const void* data, size_t size);
     const char* vips_foreign_find_save (const char* name);
-    const char* vips_foreign_find_save_buffer(const char *suffix);
+    const char* vips_foreign_find_save_buffer (const char* suffix);
 
     VipsImage* vips_image_new_matrix_from_array (int width, int height,
             const double* array, int size);
@@ -128,6 +127,15 @@ function Image.new_from_file(filename, ...)
     return voperation.call(ffi.string(name), filename, unpack{...})
 end
 
+function Image.new_from_buffer(data, format_string, ...)
+    local name = vips.vips_foreign_find_load_buffer(data, #data)
+    if name == nil then
+        error(vobject.get_error())
+    end
+
+    return voperation.call(ffi.string(name), data, unpack{...})
+end
+
 function Image.new_from_array(array, scale, offset)
     local width
     local height
@@ -167,19 +175,6 @@ function Image.new_from_image(base_image, value)
     }
 
     return image
-end
-
-function Image.new_from_buffer(format_string, data, ...)
-    local buffer = vbuffer.new()
-    buffer:append_luastr_right(data)
-    local buf, buflen = buffer:get()
-    local buflen2 = tonumber(buflen)
-
-    local name = vips.vips_foreign_find_load_buffer(buf, buflen2)
-    if name == nil then
-        error(vobject.get_error())
-    end
-    return voperation.call(ffi.string(name), buf, unpack{...})
 end
 
 -- this is for undefined class methods, like Image.text
@@ -364,6 +359,7 @@ Image.mt.__index = {
 
         return voperation.call(ffi.string(name), self, unpack{...})
     end,
+
     -- get/set metadata
 
     get_typeof = function(self, name)
@@ -372,6 +368,7 @@ Image.mt.__index = {
 
     get = function(self, name)
         local gva = gvalue.newp()
+
         local result = vips.vips_image_get(self.vimage, name, gva)
         if result ~= 0 then
             error("unable to get " .. name)
