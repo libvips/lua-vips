@@ -77,6 +77,16 @@ local function is_pixel(value)
         (type(value) == "table" and not Image.is_Image(value))
 end
 
+local function call_enum(image, other, base, operation)
+    if type(other) == "number" then
+        return image[base .. "_const"](image, operation, {other})
+    elseif is_pixel(other) then
+        return image[base .. "_const"](image, operation, other)
+    else
+        return image[base](image, other, operation)
+    end
+end
+
 -- class methods
 
 function Image.imageize(self, value)
@@ -177,13 +187,23 @@ function Image.mt.__add(a, b)
     end
 end
 
-function Image.mt.__sub(self, other)
-    if type(other) == "number" then
-        return self:linear({1}, {-other})
-    elseif is_pixel(other) then
-        return self:linear({1}, map(function(x) return -x end, other))
+function Image.mt.__sub(a, b)
+    if Image.is_Image(a) then
+        if type(b) == "number" then
+            return a:linear({1}, {-b})
+        elseif is_pixel(b) then
+            return a:linear({1}, map(function(x) return -x end, b))
+        else
+            return a:subtract(b)
+        end
     else
-        return self:subtract(other)
+        -- therefore a is a constant and b is an image
+        if type(a) == "number" then
+            return (b * -1):linear({1}, {a})
+        else
+            -- assume a is a pixel
+            return (b * -1):linear({1}, a)
+        end
     end
 end
 
@@ -199,36 +219,51 @@ function Image.mt.__mul(a, b)
     end
 end
 
-function Image.mt.__div(self, other)
-    if type(other) == "number" then
-        return self:linear({1}, {1 / other})
-    elseif is_pixel(other) then
-        return self:linear({1}, map(function(x) return x ^ -1 end, other))
+function Image.mt.__div(a, b)
+    if Image.is_Image(a) then
+        if type(b) == "number" then
+            return a:linear({1 / b}, {0})
+        elseif is_pixel(b) then
+            return a:linear(map(function(x) return x ^ -1 end, b), {0})
+        else
+            return a:divide(b)
+        end
     else
-        return self:divide(other)
+        -- therefore a is a constant and b is an image
+        if type(a) == "number" then
+            return (b ^ -1):linear({a}, {0})
+        else
+            -- assume a is a pixel
+            return (b ^ -1):linear(a, {0})
+        end
     end
 end
 
-function Image.mt.__mod(self, other)
-    if type(other) == "number" then
-        return self:remainder_const({other})
-    elseif is_pixel(other) then
-        return self:remainder_const(other)
+function Image.mt.__mod(a, b)
+    if not Image.is_Image(a) then
+        error("constant % image not supported by libvips")
+    end
+
+    if type(b) == "number" then
+        return a:remainder_const({b})
+    elseif is_pixel(b) then
+        return a:remainder_const(b)
     else
-        return self:remainder(other)
+        return a:remainder(b)
     end
 end
 
 function Image.mt.__unm(self)
-    return self:linear({-1}, {0})
+    return self * -1
 end
 
 function Image.mt.__pow(a, b)
-    if Image.is_image(a) then
+    if Image.is_Image(a) then
         return a:pow(b)
     else
         return b:wop(a)
     end
+
 end
 
 function Image.mt.__eq(self, other)
@@ -236,8 +271,12 @@ function Image.mt.__eq(self, other)
     return self:relational(other, "equal")
 end
 
-function Image.mt.__lt(self, other)
-    return self:less(other)
+function Image.mt.__lt(a, b)
+    if Image.is_Image(a) then
+        return a:less(b)
+    else
+        return b:more(a)
+    end
 end
 
 function Image.mt.__le(self, other)
@@ -428,17 +467,17 @@ Image.mt.__index = {
         local match_image
 
         for i, v in pairs({then_value, else_value, self}) do
-            if image.is_image(v) then
+            if Image.is_Image(v) then
                 match_image = v
                 break
             end
         end
 
-        if not image.is_image(then_value) then
+        if not Image.is_Image(then_value) then
             then_value = match_image:imageize(then_value)
         end
 
-        if not image.is_image(else_value) then
+        if not Image.is_Image(else_value) then
             else_value = match_image:imageize(else_value)
         end
 
