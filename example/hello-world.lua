@@ -5,4 +5,5 @@ vips = require "vips"
 
 image = vips.Image.text("Hello <i>World!</i>", {dpi = 300})
 image = image:invert()
+print("writting to x.png ...")
 image:write_to_file("x.png")
