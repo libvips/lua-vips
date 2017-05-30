@@ -34,6 +34,7 @@ ffi.cdef[[
         unsigned long int gtype, const char* str);
     const char *vips_enum_nick (unsigned long int gtype, int value);
 
+    void g_value_set_boolean (GValue* value, int v_boolean);
     void g_value_set_int (GValue* value, int i);
     void g_value_set_double (GValue* value, double d);
     void g_value_set_enum (GValue* value, int e);
@@ -48,6 +49,7 @@ ffi.cdef[[
     void vips_value_set_blob (GValue* value,
             void (*free_fn)(void* data), void* data, size_t length);
 
+    int g_value_get_boolean (const GValue* value);
     int g_value_get_int (GValue* value);
     double g_value_get_double (GValue* value);
     int g_value_get_enum (GValue* value);
@@ -92,6 +94,7 @@ local gvalue_mt = {
         pstr_typeof = ffi.typeof("char*[?]"),
 
         -- look up some common gtypes at init for speed
+        gbool_type = vips.g_type_from_name("gboolean"),
         gint_type = vips.g_type_from_name("gint"),
         gdouble_type = vips.g_type_from_name("gdouble"),
         gstr_type = vips.g_type_from_name("gchararray"),
@@ -138,7 +141,9 @@ local gvalue_mt = {
             local gtype = gv.type
             local fundamental = vips.g_type_fundamental(gtype)
 
-            if gtype == gvalue.gint_type then
+            if gtype == gvalue.gbool_type then
+                vips.g_value_set_boolean(gv, value)
+            elseif gtype == gvalue.gint_type then
                 vips.g_value_set_int(gv, value)
             elseif gtype == gvalue.gdouble_type then
                 vips.g_value_set_double(gv, value)
@@ -208,7 +213,9 @@ local gvalue_mt = {
 
             local result
 
-            if gtype == gvalue.gint_type then
+            if gtype == gvalue.gbool_type then
+                result = vips.g_value_get_boolean(gv)
+            elseif gtype == gvalue.gint_type then
                 result = vips.g_value_get_int(gv)
             elseif gtype == gvalue.gdouble_type then
                 result = vips.g_value_get_double(gv)

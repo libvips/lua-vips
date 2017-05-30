@@ -62,9 +62,10 @@ You need:
 
 Then to run the test suite:
 
-	busted .
+	(cd spec; for i in *_spec.lua; do luajit $i; done)
 
-You seem to need the `.`, perhaps a problem with penlight?
+You can't do `busted .`, unfortunately, since busted `fork()`s between files
+and this breaks luajit ffi (I think).
 
 ### Test
 
