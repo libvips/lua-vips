@@ -74,8 +74,6 @@ ffi.cdef[[
         unsigned long int offset;
     } VipsArgumentClass;
 
-    void g_object_unref (void* object);
-
     int vips_object_get_argument (VipsObject* object, 
         const char *name, GParamSpec** pspec, 
         VipsArgumentClass** argument_class,
@@ -89,6 +87,9 @@ ffi.cdef[[
     const char* vips_error_buffer (void);
     void vips_error_clear (void);
 
+    void vips_object_print_all (void);
+
+
 ]]
 
 local vobject = {}
@@ -101,6 +102,11 @@ local vobject_mt = {
         pspec_typeof = ffi.typeof("GParamSpec*[1]"),
         argument_class_typeof = ffi.typeof("VipsArgumentClass*[1]"),
         argument_instance_typeof = ffi.typeof("VipsArgumentInstance*[1]"),
+
+        print_all = function()
+            collectgarbage()
+            vips.vips_object_print_all()
+        end,
 
         new = function(self)
             log.msg("vobject.new")

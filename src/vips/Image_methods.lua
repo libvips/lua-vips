@@ -109,9 +109,11 @@ end
 
 -- constructors
 
+-- we add an unref finalizer too! be careful
 function Image.new(vimage)
     local image = {}
 
+    vobject.new(vimage)
     image.vimage = vimage
     setmetatable(image, Image.mt)
 

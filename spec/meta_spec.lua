@@ -4,7 +4,7 @@ require 'busted.runner'()
 
 describe("metadata", function()
     vips = require("vips")
-    --vips.log.enable(true)
+    vips.log.enable(true)
 
     local array = {1, 2, 3, 4}
     local im = vips.Image.new_from_array(array)

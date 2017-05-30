@@ -21,6 +21,9 @@ ffi.cdef[[
     void* g_malloc(size_t size);
     void g_free(void* data);
 
+    void g_object_ref (void* object);
+    void g_object_unref (void* object);
+
     void g_value_init (GValue* value, unsigned long int type);
     void g_value_unset (GValue* value);
     const char* g_type_name (unsigned long int type);
@@ -225,8 +228,15 @@ local gvalue_mt = {
 
                 result = ffi.string(cstr, psize[0])
             elseif gtype == gvalue.image_type then
-                local vobject = vips.g_value_get_object(gv)
-                local vimage = ffi.cast(gvalue.image_typeof, vobject)
+                -- g_value_get_object() will not add a ref ... that is
+                -- held by the gvalue
+                local vo = vips.g_value_get_object(gv)
+                local vimage = ffi.cast(gvalue.image_typeof, vo)
+
+                -- we want a ref that will last with the life of the vimage: 
+                -- this ref is matched by the unref that's attached to finalize
+                -- by Image.new() 
+                vips.g_object_ref(vimage)
 
                 result = Image.new(vimage)
 
@@ -254,7 +264,14 @@ local gvalue_mt = {
                 local array = vips.vips_value_get_array_image(gv, pint)
                 result = {}
                 for i = 0, pint[0] - 1 do
-                    result[i + 1] = Image.new(array[i])
+                    -- this will make a new cdata object 
+                    local vimage = array[i]
+
+                    -- vips_value_get_array_image() adds a ref for each image in
+                    -- the array ... we must remember to drop them
+                    vobject.new(vimage)
+
+                    result[i + 1] = Image.new(vimage)
                 end
 
             elseif gtype == gvalue.blob_type then
