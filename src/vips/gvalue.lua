@@ -60,7 +60,16 @@ ffi.cdef[[
     VipsImage** vips_value_get_array_image (const GValue* value, int* n);
     void* vips_value_get_blob (const GValue* value, size_t* length);
 
+    void vips_object_print_all (void);
+
 ]]
+
+local function print_all(msg)
+    collectgarbage()
+    print(msg)
+    vips.vips_object_print_all()
+    print()
+end
 
 local gvalue = {}
 local gvalue_mt = {
@@ -103,6 +112,8 @@ local gvalue_mt = {
             return gv
         end,
 
+        -- this won't be unset() automatically! you need to
+        -- g_value_unset() yourself after calling
         newp = function()
             local pgv = ffi.new(gvalue.pgv_typeof)
             log.msg("allocating one-element array of gvalue", pgv)

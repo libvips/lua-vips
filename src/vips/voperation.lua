@@ -97,20 +97,11 @@ local voperation_mt = {
         call = function(name, ...)
             local call_args = {...}
 
-            print("calling ", name)
-
-            print("before call:")
-            vobject.print_all()
-
             local vop = vips.vips_operation_new(name)
             if vop == nil then
-                vips.vips_object_unref_outputs(vop)
                 error("no such operation\n" .. vobject.get_error())
             end
             vop:new()
-
-            print("after operation new:")
-            vobject.print_all()
 
             local arguments = vop:getargs()
 
@@ -140,13 +131,11 @@ local voperation_mt = {
             elseif #call_args == n_required + 1 then
                 last_arg = call_args[#call_args]
                 if type(last_arg) ~= "table" then
-                    vips.vips_object_unref_outputs(vop)
                     error("unable to call " .. name .. ": " .. #call_args ..
                         " arguments given, " .. n_required .. 
                         ", but final argument is not a table")
                 end
             else
-                vips.vips_object_unref_outputs(vop)
                 error("unable to call " .. name .. ": " .. #call_args ..
                     " arguments given, but " .. n_required ..  " required")
             end
@@ -172,7 +161,6 @@ local voperation_mt = {
                     n = n + 1
                     if not vop:set(arguments[i].name, 
                         match_image, call_args[n]) then
-                        vips.vips_object_unref_outputs(vop)
                         error("unable to call " .. name .. "\n" .. 
                             vobject.get_error())
                     end
@@ -182,48 +170,25 @@ local voperation_mt = {
             if last_arg then
                 for k, v in pairs(last_arg) do
                     if not vop:set(k, match_image, v) then
-                        vips.vips_object_unref_outputs(vop)
                         error("unable to call " .. name .. "\n" .. 
                             vobject.get_error())
                     end
                 end
             end
 
-            print("before construct:")
-            vobject.print_all()
-
             log.msg("constructing ...")
             local vop2 = vips.vips_cache_operation_build(vop)
             if vop2 == nil then
-                vips.vips_object_unref_outputs(vop)
                 error("unable to call " .. name .. "\n" .. vobject.get_error())
             end
             vop2:new()
-
-            print("after vop2:new():")
-            vobject.print_all()
-
-            print("vop = ", vop)
-            print("vop2 = ", vop2)
-
-            if vop2 == vop then
-                print("cache miss ...")
-                vips.vips_object_unref_outputs(vop)
-                vop = vop2
-                vop2 = nil
-            else
-                print("cache hit ...")
-                vips.vips_object_unref_outputs(vop)
-                vips.vips_object_unref_outputs(vop2)
-                vop = vop2
-                vop2 = nil
-            end
-
-            print("after post-construct realignment:")
-            vobject.print_all()
+            vop = vop2
+            vop2 = nil
 
             log.msg("getting output ...")
-            result = {}
+
+            local result = {}
+            local vob = vop:vobject()
             n = 1
             for i = 1, #arguments do
                 local flags = arguments[i].flags
@@ -231,7 +196,7 @@ local voperation_mt = {
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, REQUIRED) ~= 0 and 
                     band(flags, DEPRECATED) == 0 then
-                    result[n] = vop:vobject():get(arguments[i].name)
+                    result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
             end
@@ -242,7 +207,7 @@ local voperation_mt = {
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, REQUIRED) == 0 and 
                     band(flags, DEPRECATED) == 0 then
-                    result[n] = vop:vobject():get(arguments[i].name)
+                    result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
             end
@@ -252,16 +217,13 @@ local voperation_mt = {
 
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, DEPRECATED) ~= 0 then
-                    result[n] = vop:vobject():get(arguments[i].name)
+                    result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
             end
 
             vips.vips_object_unref_outputs(vop)
             vop = nil
-
-            print("at end of call:")
-            vobject.print_all()
 
             return unpack(result)
         end,

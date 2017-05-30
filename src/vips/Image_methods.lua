@@ -92,9 +92,6 @@ end
 -- class methods
 
 function Image.imageize(self, value)
-    print("in imageize")
-    print("self =", self)
-    print("value =", value)
     -- careful! self can be nil if value is a 2D array
     if is_2D(value) then
         return Image.new_from_array(value)
@@ -369,14 +366,18 @@ Image.mt.__index = {
     end,
 
     get = function(self, name)
-        local gva = gvalue.newp()
+        local pgv = gvalue.newp()
 
-        local result = vips.vips_image_get(self.vimage, name, gva)
+        local result = vips.vips_image_get(self.vimage, name, pgv)
         if result ~= 0 then
             error("unable to get " .. name)
         end
 
-        return gva[0]:get()
+        local result = pgv[0]:get()
+
+        vips.g_value_unset(pgv[0])
+
+        return result
     end,
 
     set_type = function(self, gtype, name, value)
