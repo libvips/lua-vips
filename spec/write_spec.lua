@@ -56,3 +56,34 @@ describe("test image write to file", function()
     end)
 
 end)
+
+describe("test image from buffer", function()
+    vips = require("vips")
+    -- vips.log.enable(true)
+
+    it("can write a jpeg to buffer", function()
+        local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
+        local buf = im:write_to_buffer(".jpg")
+        local f = io.open("x.jpg", "w+b")
+        f:write(buf)
+        f:close()
+        local im2 = vips.Image.new_from_file("x.jpg")
+
+        assert.are.equal(im:width(), im2:width())
+        assert.are.equal(im:height(), im2:height())
+        assert.are.equal(im:format(), im2:format())
+        assert.are.equal(im:xres(), im2:xres())
+        assert.are.equal(im:yres(), im2:yres())
+        -- remove test file
+        os.remove("x.jpg")
+    end)
+
+    it("can write a jpeg to buffer with an option", function()
+        local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
+        local buf = im:write_to_buffer(".jpg")
+        local buf2 = im:write_to_buffer(".jpg", {Q = 100})
+
+        assert.is.True(#buf2 > #buf)
+    end)
+
+end)

@@ -85,7 +85,7 @@ describe("test image creation", function()
 
     end)
 
-    describe("test image to buffer", function()
+    describe("test image from buffer", function()
 
         it("can write a jpeg to buffer", function()
             local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
