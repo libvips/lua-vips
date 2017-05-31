@@ -284,10 +284,24 @@ function Image.mt.__eq(self, other)
 end
 
 function Image.mt.__lt(a, b)
+    print("in image __lt")
+    print("a =", a)
+    print("b =", b)
+
     if Image.is_Image(a) then
-        return a:less(b)
+
+        local result = a:less(b)
+
+        print("result =", result)
+
+        return result
+        
     else
-        return b:more(a)
+        local result = b:more(a)
+
+        print("result =", result)
+
+        return result
     end
 end
 

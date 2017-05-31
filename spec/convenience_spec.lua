@@ -109,5 +109,15 @@ describe("test convenience functions", function()
 
     end)
 
+    it("can call ifthenelse with two images and one constant", function ()
+        local result = im:more(2):ifthenelse(im + 3, 2)
+
+        assert.are.equal(result:width(), 4)
+        assert.are.equal(result:height(), 1)
+        assert.are.equal(result:bands(), 1)
+        assert.are.equal(result:avg(), 17 / 4)
+
+    end)
+
 end)
 
