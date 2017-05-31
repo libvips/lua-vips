@@ -312,8 +312,11 @@ describe("test overload", function()
             assert.are.equal(b:extract_band(0):avg(), 2.5)
         end)
 
-        it("can count bands with '#'", function ()
+        pending("can count bands with '#' ... needs luajit 2.1", function ()
             local n = #im2
+
+            print("n = ", n)
+            print("im2:bands() = ", im2:bands())
 
             assert.are.equal(n, 3)
         end)

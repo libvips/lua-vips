@@ -3,8 +3,12 @@
 A Lua binding for the libvips image processing library. This binding uses ffi
 and needs luajit 2.0 or later. 
 
-This binding works and has a test-suite, but is not yet documented. See the
-issues.
+libvips is a fast image processing library with low memory needs. See:
+
+http://jcupitt.github.io/libvips
+
+This binding works and has a fairly complete test-suite which it passes with no 
+errors or leaks, but is not yet documented. See the issues.
 
 # Example
 
@@ -45,27 +49,23 @@ image:write_to_file("tiny.jpg")
 # How it works
 
 libvips has quite a bit of introspection machinery built in. This Lua binding
-opens the vips library with ffi and uses the introspection facilities to build
+opens the vips library with ffi and uses these introspection facilities to build
 a complete binding at runtime. 
+
+It uses `__index` to call into libvips, so `image:hough_circle()`, for example,
+will perform a Hough transform, even though this binding knows nothing about
+the `hough_circle` operator. 
+
+This means this binding is small and very simple to maintain. It will expand
+automatically as features are added to libvips. 
+
+You can also use the standard libvips docs directly, see:
+
+http://jcupitt.github.io/libvips/API/current/
 
 # Development
 
 ### Setup for ubuntu 17.04
-
-You need to make your own luajit and luarocks that know about each other or
-`busted` will not work. See this repo:
-
-https://github.com/torch/luajit-rocks
-
-See the README, but briefly:
-
-	rm -rf ~/.luarocks
-	git clone https://github.com/torch/luajit-rocks
-	cd luajit-rocks
-	mkdir build
-	cd build/
-	cmake .. -DCMAKE_INSTALL_PREFIX=/home/john/.luarocks -DWITH_LUAJIT21=ON
-	make install
 
 Configure `luarocks` for a local tree
 
