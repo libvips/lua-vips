@@ -278,40 +278,8 @@ function Image.mt.__pow(a, b)
 
 end
 
-function Image.mt.__eq(self, other)
-    -- this is only called for pairs of images
-    return self:relational(other, "equal")
-end
-
-function Image.mt.__lt(a, b)
-    print("in image __lt")
-    print("a =", a)
-    print("b =", b)
-
-    if Image.is_Image(a) then
-
-        local result = a:less(b)
-
-        print("result =", result)
-
-        return result
-        
-    else
-        local result = b:more(a)
-
-        print("result =", result)
-
-        return result
-    end
-end
-
-function Image.mt.__le(a, b)
-    if Image.is_Image(a) then
-        return a:lesseq(b)
-    else
-        return b:moreeq(a)
-    end
-end
+-- unfortunately, lua does not let you return non-bools from <, >, <=, >=, ==,
+-- ~=, so there's no point overloading these ... call :more(2) etc. instead
 
 function Image.mt.__tostring(self)
     local result = (self:filename() or "(nil)") .. ": " ..
@@ -327,12 +295,18 @@ function Image.mt.__tostring(self)
     return result
 end
 
-    -- others are
-    -- __call (image(x, y) to get pixel, perhaps)
-    -- __concat (.. to join bands, perhaps?)
-    -- __len (#image to get bands?)
-    -- could add image[n] with number arg to extract a band
+function Image.mt.__call(self, x, y)
+    -- getpoint() will return a table for a pixel
+    return unpack(self:getpoint(x, y))
+end
 
+function Image.mt.__concat(self, other)
+    return self:bandjoin(other)
+end
+
+function Image.mt.__len(self)
+    return self:bands()
+end
 
 -- instance methods
 
@@ -460,7 +434,7 @@ Image.mt.__index = {
 
     bandjoin = function(self, other, options)
         -- allow a single untable arg as well
-        if type(other) ~= "table" then
+        if type(other) == "number" or Image.is_Image(other) then
             other = {other}
         end
 
@@ -699,9 +673,10 @@ Image.mt.__index = {
 Image.mt.mt = {
     -- this is for undefined instance methods, like image:linear
     __index = function(table, name)
-        return function(...)
-            return voperation.call(name, unpack{...})
-        end
+        return 
+            function(...)
+                return voperation.call(name, unpack{...})
+            end
     end
 }
 

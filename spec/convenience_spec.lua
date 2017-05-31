@@ -30,6 +30,17 @@ describe("test convenience functions", function()
     local array = {1, 2, 3, 4}
     local im = vips.Image.new_from_array(array)
 
+    it("can join one image bandwise", function ()
+        local im2 = im:bandjoin(im)
+
+        assert.are.equal(im2:width(), 4)
+        assert.are.equal(im2:height(), 1)
+        assert.are.equal(im2:bands(), 2)
+        assert.are.equal(im2:extract_band(0):avg(), 2.5)
+        assert.are.equal(im2:extract_band(1):avg(), 2.5)
+
+    end)
+
     it("can join images bandwise", function ()
         local im2 = im:bandjoin({im + 1, im + 2})
 
