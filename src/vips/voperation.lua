@@ -140,9 +140,7 @@ local voperation_mt = {
 
             local arguments = vop:getargs()
 
-            log.msg(name, "needs:")
-            log.msg_r(arguments)
-
+            log.msg("calling operation:", name)
             log.msg("passed:")
             log.msg_r(call_args)
 
@@ -214,7 +212,6 @@ local voperation_mt = {
                 end
             end
 
-            log.msg("constructing ...")
             local vop2 = vips.vips_cache_operation_build(vop)
             if vop2 == nil then
                 error("unable to call " .. name .. "\n" .. vobject.get_error())
@@ -222,8 +219,6 @@ local voperation_mt = {
             vop2:new()
             vop = vop2
             vop2 = nil
-
-            log.msg("getting output ...")
 
             local result = {}
             local vob = vop:vobject()

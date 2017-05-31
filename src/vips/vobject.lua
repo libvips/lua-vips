@@ -110,11 +110,8 @@ local vobject_mt = {
         end,
 
         new = function(self)
-            log.msg("vobject.new")
-            log.msg("  ptr =", self)
             ffi.gc(self, 
                 function(x) 
-                    log.msg("unreffing", x)
                     vips.g_object_unref(x)
                 end
             )

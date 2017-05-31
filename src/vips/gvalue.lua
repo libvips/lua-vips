@@ -76,9 +76,6 @@ end
 local gvalue = {}
 local gvalue_mt = {
     __gc = function(gv)
-        log.msg("freeing gvalue ", gv)
-        log.msg("  type name =", ffi.string(vips.g_type_name(gv.type)))
-
         vips.g_value_unset(gv)
     end,
 
@@ -110,17 +107,13 @@ local gvalue_mt = {
         new = function()
             -- with no init, this will initialize with 0, which is what we need
             -- for a blank GValue
-            local gv = ffi.new(gvalue.gv_typeof)
-            log.msg("allocating gvalue", gv)
-            return gv
+            return ffi.new(gvalue.gv_typeof)
         end,
 
         -- this won't be unset() automatically! you need to
         -- g_value_unset() yourself after calling
         newp = function()
-            local pgv = ffi.new(gvalue.pgv_typeof)
-            log.msg("allocating one-element array of gvalue", pgv)
-            return pgv
+            return ffi.new(gvalue.pgv_typeof)
         end,
 
         type_name = function(gtype)
@@ -128,16 +121,10 @@ local gvalue_mt = {
         end,
 
         init = function(gv, gtype)
-            log.msg("starting init")
-            log.msg("  gv =", gv)
-            log.msg("  type name =", gvalue.type_name(gtype))
             vips.g_value_init(gv, gtype)
         end,
 
         set = function(gv, value)
-            log.msg("set() value =")
-            log.msg_r(value)
-
             local gtype = gv.type
             local fundamental = vips.g_type_fundamental(gtype)
 
@@ -303,9 +290,6 @@ local gvalue_mt = {
             else
                  error("unsupported gtype for get " .. gvalue.type_name(gtype))
             end
-
-            log.msg("get() result =")
-            log.msg_r(result)
 
             return result
         end,
