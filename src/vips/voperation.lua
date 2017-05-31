@@ -44,6 +44,33 @@ local OUTPUT = 32
 local DEPRECATED = 64
 local MODIFY = 128
 
+local function map(fn, array)
+    local new_array = {}
+
+    for i, v in ipairs(array) do
+        new_array[i] = fn(v)
+    end
+
+    return new_array
+end
+
+-- find in order, and recurse
+local function find_order(fn, array)
+    for i = 1, #array do
+        if fn(array[i]) then
+            return array[i]
+        elseif type(array[i]) == "table" then
+            local result = find_order(fn, array[i])
+
+            if result then 
+                return result
+            end
+        end
+    end
+
+    return nil
+end
+
 local voperation = {}
 local voperation_mt = {
     __index = {
@@ -64,12 +91,20 @@ local voperation_mt = {
 
         set = function(self, name, match_image, value)
             -- if the object wants an image and we have a constant, imageize it
+            --
+            -- if the object wants an image array, imageize any constants in the
+            -- array
             if match_image then
                 local gtype = self:vobject():get_typeof(name)
 
-                if gtype == gvalue.image_type and 
-                    not Image.is_Image(value) then
+                if gtype == gvalue.image_type then 
                     value = match_image:imageize(value)
+                elseif gtype == gvalue.array_image_type then
+                    value = map(
+                        function(x)
+                            return match_image:imageize(x)
+                        end, 
+                        value)
                 end
             end
 
@@ -141,15 +176,18 @@ local voperation_mt = {
             end
 
             -- the first image argument is the thing we expand constants to
-            -- match
-            local match_image
-            for i = 1, #call_args do
-                if type(call_args[i]) == "table" and
-                    call_args[i]["is_table"] ~= nil then
-                    match_image = call_args[i]
-                    break
-                end
-            end
+            -- match ... look inside tables for images, since we may be passing
+            -- an array of image as a single param
+            local match_image = find_order(
+                function(x)
+                    if Image.is_Image(x) then
+                        return x
+                    else
+                        return nil
+                    end
+                end,
+                call_args
+            )
 
             local n = 0
             for i = 1, #arguments do

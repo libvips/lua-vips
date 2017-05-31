@@ -91,17 +91,19 @@ end
 
 -- class methods
 
+function Image.is_Image(thing)
+    return type(thing) == "table" and getmetatable(thing) == Image.mt
+end
+
 function Image.imageize(self, value)
     -- careful! self can be nil if value is a 2D array
-    if is_2D(value) then
+    if Image.is_Image(value) then
+        return value
+    elseif is_2D(value) then
         return Image.new_from_array(value)
     else
         return self:new_from_image(value)
     end
-end
-
-function Image.is_Image(thing)
-    return type(thing) == "table" and getmetatable(thing) == Image.mt
 end
 
 -- constructors

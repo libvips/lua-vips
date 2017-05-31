@@ -42,5 +42,29 @@ describe("test convenience functions", function()
 
     end)
 
+    it("can join constants to images bandwise", function ()
+        local im2 = im:bandjoin(255)
+
+        assert.are.equal(im2:width(), 4)
+        assert.are.equal(im2:height(), 1)
+        assert.are.equal(im2:bands(), 2)
+        assert.are.equal(im2:extract_band(0):avg(), 2.5)
+        assert.are.equal(im2:extract_band(1):avg(), 255)
+
+    end)
+
+    it("can join images and constants bandwise", function ()
+        local im2 = im:bandjoin({im + 1, 255, im + 2})
+
+        assert.are.equal(im2:width(), 4)
+        assert.are.equal(im2:height(), 1)
+        assert.are.equal(im2:bands(), 4)
+        assert.are.equal(im2:extract_band(0):avg(), 2.5)
+        assert.are.equal(im2:extract_band(1):avg(), 3.5)
+        assert.are.equal(im2:extract_band(2):avg(), 255)
+        assert.are.equal(im2:extract_band(3):avg(), 4.5)
+
+    end)
+
 end)
 
