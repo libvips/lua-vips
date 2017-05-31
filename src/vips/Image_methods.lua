@@ -671,11 +671,12 @@ Image.mt.__index = {
 }
 
 Image.mt.mt = {
-    -- this is for undefined instance methods, like image:linear
-    __index = function(table, name)
+    -- this is for undefined instance methods, like image:linear ... table will
+    -- be Image.mt
+    __index = function(table, index)
         return 
             function(...)
-                return voperation.call(name, unpack{...})
+                return voperation.call(index, unpack{...})
             end
     end
 }

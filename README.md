@@ -3,7 +3,8 @@
 A Lua binding for the libvips image processing library. This binding uses ffi
 and needs luajit 2.0 or later. 
 
-This binding works, but is not yet finished. See the issues. 
+This binding works and has a test-suite, but is not yet documented. See the
+issues.
 
 # Example
 
@@ -11,12 +12,41 @@ This binding works, but is not yet finished. See the issues.
 vips = require "vips"
 
 image = vips.Image.text("Hello <i>World!</i>", {dpi = 300})
+
+-- call a method
 image = image:invert()
+
+-- make a three band image with ..
+image = image .. image .. image
+
+-- add a constant
+image = image + 12
+-- add a different value to each band
+image = image + {1, 2, 3}
+-- add two images
+image = image + image
+
+-- split bands up again
+b1, b2, b3 = image:bandsplit()
+
+-- read a pixel from coordinate (10, 20)
+r, g, b = image(10, 20)
+
+-- make all pixels less than 128 bright blue
+image = image:less(128):ifthenelse({0, 0, 255}, image)
+
 image:write_to_file("x.png")
 
+-- fast thumbnail generator
 image = vips.Image.thumbnail("somefile.jpg", 128)
 image:write_to_file("tiny.jpg")
 ```
+
+# How it works
+
+libvips has quite a bit of introspection machinery built in. This Lua binding
+opens the vips library with ffi and uses the introspection facilities to build
+a complete binding at runtime. 
 
 # Development
 

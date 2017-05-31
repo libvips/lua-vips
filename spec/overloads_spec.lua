@@ -298,4 +298,41 @@ describe("test overload", function()
         end
     )
 
+    describe("band overloads", function()
+        local array = {1, 2, 3, 4}
+        local im = vips.Image.new_from_array(array)
+        local im2 = im:bandjoin({im + 1, im + 2})
+
+        it("can bandjoin with '..'", function ()
+            local b = im .. im2
+
+            assert.are.equal(b:width(), 4)
+            assert.are.equal(b:height(), 1)
+            assert.are.equal(b:bands(), 4)
+            assert.are.equal(b:extract_band(0):avg(), 2.5)
+        end)
+
+        it("can count bands with '#'", function ()
+            local n = #im2
+
+            assert.are.equal(n, 3)
+        end)
+
+    end)
+
+    describe("call overload", function()
+        local array = {1, 2, 3, 4}
+        local im = vips.Image.new_from_array(array)
+        local im2 = im:bandjoin({im + 1, im + 2})
+
+        it("can extract a pixel with '()'", function ()
+            local a, b, c = im2(1, 0)
+
+            assert.are.equal(a, 2)
+            assert.are.equal(b, 3)
+            assert.are.equal(c, 4)
+        end)
+
+    end)
+
 end)
