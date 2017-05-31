@@ -480,7 +480,7 @@ Image.mt.__index = {
         local result 
 
         result = {}
-        for i in 0, self:bands() do
+        for i = 0, self:bands() - 1 do
             result[i + 1] = self:extract_band(i)
         end
 

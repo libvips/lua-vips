@@ -66,5 +66,48 @@ describe("test convenience functions", function()
 
     end)
 
+    it("can join images and array constants bandwise", function ()
+        local im2 = im:bandjoin({im + 1, {255, 128}})
+
+        assert.are.equal(im2:width(), 4)
+        assert.are.equal(im2:height(), 1)
+        assert.are.equal(im2:bands(), 4)
+        assert.are.equal(im2:extract_band(0):avg(), 2.5)
+        assert.are.equal(im2:extract_band(1):avg(), 3.5)
+        assert.are.equal(im2:extract_band(2):avg(), 255)
+        assert.are.equal(im2:extract_band(3):avg(), 128)
+
+    end)
+
+    it("can call bandrank", function ()
+        local im2 = im:bandrank(im + 1, {index = 0})
+
+        assert.are.equal(im2:width(), 4)
+        assert.are.equal(im2:height(), 1)
+        assert.are.equal(im2:bands(), 1)
+        assert.are.equal(im2:extract_band(0):avg(), 2.5)
+
+    end)
+
+    it("can call bandsplit", function ()
+        local bands = im:bandjoin({im + 1, {255, 128}}):bandsplit()
+
+        assert.are.equal(#bands, 4)
+        assert.are.equal(bands[1]:width(), 4)
+        assert.are.equal(bands[1]:height(), 1)
+        assert.are.equal(bands[1]:bands(), 1)
+
+    end)
+
+    it("can call ifthenelse with an image and two constants", function ()
+        local result = im:more(2):ifthenelse(1, 2)
+
+        assert.are.equal(result:width(), 4)
+        assert.are.equal(result:height(), 1)
+        assert.are.equal(result:bands(), 1)
+        assert.are.equal(result:avg(), 6 / 4)
+
+    end)
+
 end)
 
