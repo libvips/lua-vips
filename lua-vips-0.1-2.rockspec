@@ -1,7 +1,7 @@
 package = "lua-vips"
-version = "0.1-1"
+version = "0.1-2"
 source = {
-   url = "https://github.com/jcupitt/lua-vips"
+   url = "git://github.com/jcupitt/lua-vips.git"
 }
 description = {
    summary = "A fast image processing library with low memory needs.",
@@ -9,8 +9,6 @@ description = {
       This luajit rock implements a binding for the libvips image 
       processing library. It is usually faster and needs less memory than 
       similar libraries. 
-
-      This binding works, but is not yet finished. 
    ]],
    homepage = "https://github.com/jcupitt/lua-vips",
    license = "MIT" 
