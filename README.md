@@ -7,10 +7,25 @@ libvips is a fast image processing library with low memory needs. See:
 
 http://jcupitt.github.io/libvips
 
+For a benchmark, see:
+
+https://github.com/jcupitt/lua-vips-bench
+
 This binding works and has a fairly complete test-suite which it passes with no 
-errors or leaks, but is not yet documented. See the issues.
+errors or leaks. 
+
+See the libvips API documentation for more information --- lua-vips binds the
+whole of libvips, so you can use anything in there:
+
+http://jcupitt.github.io/libvips/API/current/
 
 # Example
+
+Install with
+	
+	luarocks install lua-vips
+
+Then:
 
 ```lua
 vips = require "vips"
@@ -20,7 +35,7 @@ image = vips.Image.text("Hello <i>World!</i>", {dpi = 300})
 -- call a method
 image = image:invert()
 
--- make a three band image with ..
+-- use the `..` operator to join images bandwise
 image = image .. image .. image
 
 -- add a constant
@@ -38,6 +53,9 @@ r, g, b = image(10, 20)
 
 -- make all pixels less than 128 bright blue
 image = image:less(128):ifthenelse({0, 0, 255}, image)
+
+-- go to Yxy colourspace
+image = image:colourspace("yxy")
 
 image:write_to_file("x.png")
 
@@ -58,10 +76,6 @@ the `hough_circle` operator.
 
 This means this binding is small and very simple to maintain. It will expand
 automatically as features are added to libvips. 
-
-You can also use the standard libvips docs directly, see:
-
-http://jcupitt.github.io/libvips/API/current/
 
 # Development
 
@@ -95,13 +109,17 @@ Then to run the test suite:
 	(cd spec; for i in *_spec.lua; do luajit $i; done)
 
 You can't do `busted .`, unfortunately, since busted `fork()`s between files
-and this breaks luajit ffi (I think).
+and this breaks luajit GC with ffi (I think).
 
 ### Test
 
 Run the example script with:
 
 	luajit example/hello-world.lua
+
+### Update rock
+	
+	luarocks upload lua-vips-0.1-1.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 
