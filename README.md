@@ -112,7 +112,7 @@ libjpeg.
 You can call specific file format loaders directly, for example:
 
 ```lua
-lyocal image = vips.Image.jpegload("somefile.jpg", {shrink = 4})
+local image = vips.Image.jpegload("somefile.jpg", {shrink = 4})
 ```
 
 See the API docs for information on all the loaders:
