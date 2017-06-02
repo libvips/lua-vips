@@ -27,6 +27,9 @@ ffi.cdef[[
 
     void vips_image_set (VipsImage* image, const char* name, GValue* value);
 
+    char* vips_filename_get_filename (const char* vips_filename);
+    char* vips_filename_get_options (const char* vips_filename);
+
 ]]
 
 -- either a single number, or a table of numbers
@@ -119,22 +122,25 @@ function Image.new(vimage)
     return image
 end
 
-function Image.new_from_file(filename, ...)
+function Image.new_from_file(vips_filename, ...)
+    local filename = vips.vips_filename_get_filename(vips_filename)
+    local options = vips.vips_filename_get_options(vips_filename)
     local name = vips.vips_foreign_find_load(filename)
     if name == nil then
         error(vobject.get_error())
     end
 
-    return voperation.call(ffi.string(name), filename, unpack{...})
+    return voperation.call(ffi.string(name), ffi.string(options), 
+        ffi.string(filename), unpack{...})
 end
 
-function Image.new_from_buffer(data, format_string, ...)
+function Image.new_from_buffer(data, options, ...)
     local name = vips.vips_foreign_find_load_buffer(data, #data)
     if name == nil then
         error(vobject.get_error())
     end
 
-    return voperation.call(ffi.string(name), data, unpack{...})
+    return voperation.call(ffi.string(name), options or "", data, unpack{...})
 end
 
 function Image.new_from_array(array, scale, offset)
@@ -181,7 +187,7 @@ end
 -- this is for undefined class methods, like Image.text
 function Image.__index(table, name)
     return function(...)
-        return voperation.call(name, unpack{...})
+        return voperation.call(name, "", unpack{...})
     end
 end
 
@@ -331,22 +337,27 @@ Image.mt.__index = {
 
     -- writers
 
-    write_to_file = function(self, filename, ...)
+    write_to_file = function(self, vips_filename, ...)
+        local filename = vips.vips_filename_get_filename(vips_filename)
+        local options = vips.vips_filename_get_options(vips_filename)
         local name = vips.vips_foreign_find_save(filename)
         if name == nil then
             error(vobject.get_error())
         end
 
-        return voperation.call(ffi.string(name), self, filename, unpack{...})
+        return voperation.call(ffi.string(name), ffi.string(options), 
+            self, filename, unpack{...})
     end,
 
     write_to_buffer = function(self, format_string, ...)
+        local options = vips.vips_filename_get_options(format_string)
         local name = vips.vips_foreign_find_save_buffer(format_string)
         if name == nil then
             error(vobject.get_error())
         end
 
-        return voperation.call(ffi.string(name), self, unpack{...})
+        return voperation.call(ffi.string(name), ffi.string(options), 
+            self, unpack{...})
     end,
 
     -- get/set metadata
@@ -448,9 +459,9 @@ Image.mt.__index = {
         end
 
         if all_constant then
-            return voperation.call("bandjoin_const", self, other)
+            return voperation.call("bandjoin_const", "", self, other)
         else
-            return voperation.call("bandjoin", {self, unpack(other)})
+            return voperation.call("bandjoin", "", {self, unpack(other)})
         end
     end,
 
@@ -459,7 +470,7 @@ Image.mt.__index = {
             other = {other}
         end
 
-        return voperation.call("bandrank", {self, unpack(other)})
+        return voperation.call("bandrank", "", {self, unpack(other)})
     end,
 
     -- convenience functions
@@ -499,8 +510,8 @@ Image.mt.__index = {
             else_value = match_image:imageize(else_value)
         end
 
-        return voperation.call("ifthenelse", self, 
-            then_value, else_value, options)
+        return voperation.call("ifthenelse", "", 
+            self, then_value, else_value, options)
     end,
 
     -- enum expansions
@@ -676,7 +687,7 @@ Image.mt.mt = {
     __index = function(table, index)
         return 
             function(...)
-                return voperation.call(index, unpack{...})
+                return voperation.call(index, "", unpack{...})
             end
     end
 }

@@ -33,6 +33,8 @@ ffi.cdef[[
     VipsOperation* vips_cache_operation_build (VipsOperation* operation);
     void vips_object_unref_outputs (VipsOperation *operation);
 
+    int vips_object_set_from_string (VipsObject* object, const char* options);
+
 ]]
 
 local REQUIRED = 1
@@ -129,7 +131,9 @@ local voperation_mt = {
             return args
         end,
 
-        call = function(name, ...)
+        -- string_options is any optional args coded as a string, perhaps
+        -- "[strip,tile=true]"
+        call = function(name, string_options, ...)
             local call_args = {...}
 
             local vop = vips.vips_operation_new(name)
@@ -186,6 +190,13 @@ local voperation_mt = {
                 end,
                 call_args
             )
+
+            -- set any string options before any args so they can't be
+            -- overridden
+            if vips.vips_object_set_from_string(vop:vobject(), 
+                string_options) ~= 0 then
+                error("unable to call " .. name .. "\n" ..  vobject.get_error())
+            end
 
             local n = 0
             for i = 1, #arguments do

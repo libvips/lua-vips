@@ -109,6 +109,14 @@ Some options are specific to some file types, for example, `shrink`, meaning
 shrink by an integer factor during load, only applies to images loaded via
 libjpeg.
 
+You can embed options in filenames using the standar libvips syntax. For
+example, these are equivalent:
+
+```lua
+local image = vips.Image.new_from_file("somefile.jpg", {shrink = 2})
+local image = vips.Image.new_from_file("somefile.jpg[shrink=2]")
+```
+
 You can call specific file format loaders directly, for example:
 
 ```lua
@@ -146,11 +154,18 @@ optional arguments:
 			default: false
 ```
 
-### `vips.Image.new_from_buffer(string [, options])`
+### `vips.Image.new_from_buffer(string [, string_options, options])`
 
 The string argument should contain an image file in some container format, such
-as JPEG. You can supply options, just as with `new_from_file`. Use (for
-example) `vips.Image.jpegload_buffer` to call a loader directly.
+as JPEG. You can supply options, just as with `new_from_file`. These are
+equivalent:
+
+```lua
+local image = vips.Image.new_from_buffer(string, "", {shrink = 2})
+local image = vips.Image.new_from_buffer(string, "shrink=2")
+```
+
+Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
 ### `vips.Image.new_from_image(image, pixel)`
 
@@ -206,6 +221,40 @@ See:
 [http://jcupitt.github.io/libvips/API/current/libvips-create.html](http://jcupitt.github.io/libvips/API/current/libvips-create.html)
 
 ## Get and set image metadata
+
+You can read and write aribitrary image metadata. 
+
+### `vips.Image.get_typeof(image, field_name)`
+
+This returns the GType for a field, or 0 if the field does not exist.
+`vips.gvalue` has a set of GTypes you can check against. 
+
+### `vips.Image.get(image, field_name)`
+
+This reads any named piece of metadata from the image, for example:
+
+```lua
+local version = image:get("exif-ifd2-ExifVersion")
+```
+
+The item is converted to some Lua type in the obvious way. There are convenient
+shortcuts for many of the standard fields, so these are equivalent:
+
+```lua
+local width = image:get("width")
+local width = image:width()
+```
+
+If the field does not exist, `lua-vips` will throw an error. Use `get_typeof`
+to check for the existence of a field.
+
+### `vips.Image.set_type(image, gtype, field_name, value)`
+
+This creates a new metadata item of the specified type, name and value. 
+
+### `vips.Image.set(image, field_name, value)`
+
+This changes the value of an existing field, but will not change its type.
 
 ## Call any libvips operation
 
@@ -382,6 +431,14 @@ directly if you wish, perhaps:
 ```lua
 local str = image:jpegsave_buffer({Q = 90})
 ```
+
+## Error handling
+
+Most `lua-vips` methods will call `error()` if they detect an error. Use
+`pcall()` to call a method and catch an error. 
+
+Use `get_typeof` to test for a field of a certain name mwithout throwing an
+error.
 
 # Development
 

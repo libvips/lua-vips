@@ -15,10 +15,8 @@ local function almost_equal(state, arguments)
     return math.abs(arguments[1] - arguments[2]) < threshold
 end
 
-say:set("assertion.almost_equal.positive", 
-    "Expected %s to almost equal %s")
-say:set("assertion.almost_equal.negative", 
-    "Expected %s to not almost equal %s")
+say:set("assertion.almost_equal.positive", "Expected %s to almost equal %s")
+say:set("assertion.almost_equal.negative", "Expected %s to not almost equal %s")
 assert:register("assertion", "almost_equal", almost_equal, 
     "assertion.almost_equal.positive", 
     "assertion.almost_equal.negative")
@@ -83,6 +81,15 @@ describe("test image creation", function()
             assert.are.almost_equal(im:avg(), 113.979)
         end)
 
+        it("can subsample a jpeg from a file, shrink in filename", function()
+            local im = vips.Image.new_from_file(
+                "images/Gugg_coloured.jpg[shrink=2]")
+
+            assert.are.equal(im:width(), 486)
+            assert.are.equal(im:height(), 648)
+            assert.are.almost_equal(im:avg(), 113.979)
+        end)
+
     end)
 
     describe("test image from buffer", function()
@@ -110,6 +117,36 @@ describe("test image creation", function()
             local buf = f:read("*all")
             f:close()
             local im2 = vips.Image.new_from_buffer(buf)
+
+            assert.are.equal(im:width(), im2:width())
+            assert.are.equal(im:height(), im2:height())
+            assert.are.equal(im:format(), im2:format())
+            assert.are.equal(im:xres(), im2:xres())
+            assert.are.equal(im:yres(), im2:yres())
+        end)
+
+        it("can load a jpeg from a buffer, options in a table", function()
+            local im = vips.Image.new_from_file("images/Gugg_coloured.jpg", 
+                {shrink = 2})
+            local f = io.open("images/Gugg_coloured.jpg", "rb")
+            local buf = f:read("*all")
+            f:close()
+            local im2 = vips.Image.new_from_buffer(buf, "", {shrink = 2})
+
+            assert.are.equal(im:width(), im2:width())
+            assert.are.equal(im:height(), im2:height())
+            assert.are.equal(im:format(), im2:format())
+            assert.are.equal(im:xres(), im2:xres())
+            assert.are.equal(im:yres(), im2:yres())
+        end)
+
+        it("can load a jpeg from a buffer, options in a table", function()
+            local im = vips.Image.new_from_file("images/Gugg_coloured.jpg",
+                {shrink = 2})
+            local f = io.open("images/Gugg_coloured.jpg", "rb")
+            local buf = f:read("*all")
+            f:close()
+            local im2 = vips.Image.new_from_buffer(buf, "shrink=2")
 
             assert.are.equal(im:width(), im2:width())
             assert.are.equal(im:height(), im2:height())
