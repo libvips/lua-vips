@@ -24,8 +24,8 @@ ffi.cdef[[
         const char* name);
     int vips_image_get (const VipsImage* image, 
         const char* name, GValue* value_copy);
-
     void vips_image_set (VipsImage* image, const char* name, GValue* value);
+    int vips_image_remove (VipsImage* image, const char* name);
 
     char* vips_filename_get_filename (const char* vips_filename);
     char* vips_filename_get_options (const char* vips_filename);
@@ -391,6 +391,10 @@ Image.mt.__index = {
     set = function(self, name, value)
         local gtype = self:get_typeof(name)
         self:set_type(gtype, name, value)
+    end,
+
+    remove = function(self, name)
+        return vips.vips_image_remove(self, name) ~= 0
     end,
 
     -- standard header fields

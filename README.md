@@ -256,6 +256,11 @@ This creates a new metadata item of the specified type, name and value.
 
 This changes the value of an existing field, but will not change its type.
 
+### `vips.Image.remove(image, field_name)
+
+This will remove a piece of metadata. It returns `true` if an item was
+successfully removed, `false` otherwise. 
+
 ## Call any libvips operation
 
 You can call any libvips operation as a member function, for example
