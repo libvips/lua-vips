@@ -316,11 +316,7 @@ function Image.mt.__len(self)
     return self:bands()
 end
 
--- instance methods
-
--- this __index handles defined instance methods, like image:bandsplit
-Image.mt.__index = {
-
+local instance_methods = {
     -- utility methods
 
     vobject = function(self)
@@ -695,17 +691,17 @@ Image.mt.__index = {
     end
 }
 
-Image.mt.mt = {
-    -- this is for undefined instance methods, like image:linear ... table will
-    -- be Image.mt
-    __index = function(table, index)
+function Image.mt.__index(table, index)
+    if type(index) == "number" then
+        return table:extract_band(index)
+    elseif instance_methods[index] then
+        return instance_methods[index]
+    else
         return 
             function(...)
                 return voperation.call(index, "", unpack{...})
             end
     end
-}
-
-setmetatable(Image.mt.__index, Image.mt.mt)
+end
 
 return Image
