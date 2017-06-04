@@ -1,4 +1,4 @@
-# lua-vips 
+# `lua-vips` 
 
 A Lua binding for the libvips image processing library. This binding uses ffi
 and needs luajit 2.0 or later. 
@@ -11,10 +11,15 @@ For a benchmark, see:
 
 [https://github.com/jcupitt/lua-vips-bench](https://github.com/jcupitt/lua-vips-bench)
 
-See the libvips API documentation for more information --- lua-vips binds the
+See the libvips API documentation for more information --- `lua-vips` binds the
 whole of libvips, so you can use anything in there:
 
 [http://jcupitt.github.io/libvips/API/current/](http://jcupitt.github.io/libvips/API/current/)
+
+This is a handy list of all the libvips operations with a summary of what they
+do:
+
+[http://jcupitt.github.io/libvips/API/current/func-list.html](http://jcupitt.github.io/libvips/API/current/func-list.html)
 
 Notes below introduce the general features of this binding.
 
@@ -66,12 +71,12 @@ image:write_to_file("tiny.jpg")
 # How it works
 
 libvips has quite a bit of introspection machinery built in. This Lua binding
-opens the vips library with ffi and uses these introspection facilities to build
-a complete binding at runtime. 
+opens the vips library with ffi and uses these introspection facilities to
+search for operators and to discover what arguments they take and return. 
 
-It uses `__index` to call into libvips, so `image:hough_circle()`, for example,
-will perform a Hough transform, even though this binding knows nothing about
-the `hough_circle` operator. 
+It uses an `__index` method on the image metatable to call into libvips,
+so `image:hough_circle()`, for example, will perform a Hough transform,
+even though this binding knows nothing about the `hough_circle` operator.
 
 This means this binding is small and simple to maintain. It will expand
 automatically as features are added to libvips. 
@@ -90,7 +95,7 @@ vips = require "vips"
 You can make images from files or from memory buffers (Lua strings), or you can
 use one of the libvips create operators to make an image for you. 
 
-### `vips.Image.new_from_file(filename [, options])`
+### `image = vips.Image.new_from_file(filename [, options])`
 
 Opens the file and returns an image. You can pass a set of options in a final
 table argument, for example:
@@ -103,7 +108,7 @@ Some options are specific to some file types, for example, `shrink`, meaning
 shrink by an integer factor during load, only applies to images loaded via
 libjpeg.
 
-You can embed options in filenames using the standar libvips syntax. For
+You can embed options in filenames using the standard libvips syntax. For
 example, these are equivalent:
 
 ```lua
@@ -148,7 +153,7 @@ optional arguments:
 			default: false
 ```
 
-### `vips.Image.new_from_buffer(string [, string_options, options])`
+### `image = vips.Image.new_from_buffer(string [, string_options, options])`
 
 The string argument should contain an image file in some container format, such
 as JPEG. You can supply options, just as with `new_from_file`. These are
@@ -161,7 +166,7 @@ local image = vips.Image.new_from_buffer(string, "shrink=2")
 
 Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
-### `vips.Image.new_from_image(image, pixel)`
+### `image = vips.Image.new_from_image(image, pixel)`
 
 Makes a new image with the size, format, and resoluion of `image`, but with
 each pixel having the value `pixel`. For example:
@@ -181,7 +186,7 @@ local new_image = image:new_from_image({1, 2, 3})
 Will make a new three-band image, where all the red pixels have the value 1,
 greens are 2 and blues are 3.
 
-### `vips.Image.new_from_array(array [, scale, offset])`
+### `image = vips.Image.new_from_array(array [, scale, offset])`
 
 Makes a new image from a Lua array (or table). For example:
 
@@ -201,14 +206,14 @@ local mask = vips.Image.new_from_array(
 local image = image:conv(mask, {precision = "integer"})
 ```
 
-### `vips.Image.copy_memory(self)`
+### `image = vips.Image.copy_memory(self)`
 
 The image is rendered to a large memory buffer, and a new image is returned
 which represents the memory area. 
 
 This is handy for breaking a pipeline.
 
-### `vips.Image.black(width, height)`
+### `image = vips.Image.black(width, height)`
 
 Makes a new one band, 8 bit, black image. You can call any of the libvips image
 creation operators in this way, for example:
@@ -225,12 +230,12 @@ See:
 
 You can read and write aribitrary image metadata. 
 
-### `vips.Image.get_typeof(image, field_name)`
+### `number = vips.Image.get_typeof(image, field_name)`
 
 This returns the GType for a field, or 0 if the field does not exist.
 `vips.gvalue` has a set of GTypes you can check against. 
 
-### `vips.Image.get(image, field_name)`
+### `mixed = vips.Image.get(image, field_name)`
 
 This reads any named piece of metadata from the image, for example:
 
@@ -257,7 +262,7 @@ This creates a new metadata item of the specified type, name and value.
 
 This changes the value of an existing field, but will not change its type.
 
-### `vips.Image.remove(image, field_name)`
+### `boolean = vips.Image.remove(image, field_name)`
 
 This will remove a piece of metadata. It returns `true` if an item was
 successfully removed, `false` otherwise. 
@@ -361,7 +366,7 @@ to only work with LuaJIT 2.1.
 
 A set of convenience functions are also defined.
 
-### `image:bandsplit()`
+### `array<image> = image:bandsplit()`
 
 This splits a many-band image into an array of one band images.
 
@@ -375,7 +380,7 @@ to call --- you must write:
 image = vips.Image.bandjoin({image, image})
 ```
 
-to join an image to itself. Instead, lua-vips defines `bandjoin` as a member
+to join an image to itself. Instead, `lua-vips` defines `bandjoin` as a member
 function, so you write:
 
 ```lua
@@ -392,14 +397,14 @@ to join three RGB bands.
 
 The `bandrank` operator works in the same way. 
 
-### `condition_image:ifthenelse(then_image, else_image [, options])`
+### `image = condition_image:ifthenelse(then_image, else_image [, options])`
 
 This uses the condition image to pick pixels between then and else. Unlike all
 other operators, if you use a constant for `then_image` or `else_image`, they
 first match to each other, and only match to the condition image if both then
 and else are constants. 
 
-### `image:sin()`
+### `image = image:sin()`
 
 Many vips arithmetic operators are implemented by larger operators which take
 an enum to set their action. For example, sine is implemented by the `math`
@@ -432,7 +437,7 @@ types. You can call savers directly if you wish, for example:
 image:jpegsave("x.jpg", {Q = 90})
 ```
 
-### `image:write_to_buffer(suffix [, options])`
+### `string = image:write_to_buffer(suffix [, options])`
 
 The suffix is used to pick the saver that is used to generate the result, so
 `".jpg"` will make a JPEG-formatted string. Again, you can call the savers
