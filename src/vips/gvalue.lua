@@ -156,18 +156,30 @@ local gvalue_mt = {
             elseif gtype == gvalue.image_type then
                 vips.g_value_set_object(gv, value.vimage)
             elseif gtype == gvalue.array_int_type then
+                if type(value) == "number" then
+                    value = {value}
+                end
+
                 local n = #value
                 local a = ffi.new(gvalue.pint_typeof, n, value)
 
                 vips.vips_value_set_array_int(gv, a, n)
 
             elseif gtype == gvalue.array_double_type then
+                if type(value) == "number" then
+                    value = {value}
+                end
+
                 local n = #value
                 local a = ffi.new(gvalue.pdouble_typeof, n, value)
 
                 vips.vips_value_set_array_double(gv, a, n)
 
             elseif gtype == gvalue.array_image_type then
+                if Image.is_Image(value) then
+                    value = {value}
+                end
+
                 local n = #value
 
                 vips.vips_value_set_array_image(gv, n)

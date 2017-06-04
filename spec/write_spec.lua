@@ -87,3 +87,31 @@ describe("test image from buffer", function()
     end)
 
 end)
+
+describe("MODIFY args", function()
+    vips = require("vips")
+    -- vips.log.enable(true)
+
+    it("can draw a circle on an image", function()
+        local im = vips.Image.black(101, 101)
+        local im2 = im:draw_circle(255, 50, 50, 50, {fill = true})
+
+        assert.are.equal(im2:width(), 101)
+        assert.are.equal(im2:height(), 101)
+        assert.are.almost_equal(im2:avg(), 255 * 3.1415927 / 4, 0.2)
+
+    end)
+
+    it("each draw op makes a new image", function()
+        local im = vips.Image.black(101, 101)
+        local im2 = im:draw_circle(255, 50, 50, 50, {fill = true})
+        local im3 = im2:draw_circle(0, 50, 50, 40, {fill = true})
+
+        assert.are.equal(im2:width(), 101)
+        assert.are.equal(im2:height(), 101)
+        assert.are.almost_equal(im2:avg(), 255 * 3.1415927 / 4, 0.2)
+        assert.is.True(im3:avg() < im2:avg())
+
+    end)
+
+end)

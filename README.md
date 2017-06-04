@@ -263,7 +263,7 @@ This creates a new metadata item of the specified type, name and value.
 
 This changes the value of an existing field, but will not change its type.
 
-### `vips.Image.remove(image, field_name)
+### `vips.Image.remove(image, field_name)`
 
 This will remove a piece of metadata. It returns `true` if an item was
 successfully removed, `false` otherwise. 
@@ -296,7 +296,11 @@ The rules are:
 4. For enums, you can supply a number or a string. The string is an enum member
    nickname (the part after the final underscore).
 
-5. Operation results are returned as an unpacked array in the order: all
+5. `MODIFY` arguments, for example the image you pass to `draw_circle`, are
+   copied to memory before being set, and the new image is returned as one of
+   the results. 
+
+6. Operation results are returned as an unpacked array in the order: all
    required output args, then all optional output args, then all deprecated
    output args.
 

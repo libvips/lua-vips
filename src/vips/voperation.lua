@@ -91,7 +91,7 @@ local voperation_mt = {
             return vobject.new(self)
         end,
 
-        set = function(self, name, match_image, value)
+        set = function(self, name, flags, match_image, value)
             -- if the object wants an image and we have a constant, imageize it
             --
             -- if the object wants an image array, imageize any constants in the
@@ -108,6 +108,13 @@ local voperation_mt = {
                         end, 
                         value)
                 end
+            end
+
+            -- MODIFY args need to be copied before they are set
+            if band(flags, MODIFY) ~= 0 then
+                log.msg("copying MODIFY arg", name)
+                -- make sure we have a unique copy
+                value = value:copy():copy_memory()
             end
 
             return self:vobject():set(name, value)
@@ -206,7 +213,8 @@ local voperation_mt = {
                     band(flags, REQUIRED) ~= 0 and 
                     band(flags, DEPRECATED) == 0 then
                     n = n + 1
-                    if not vop:set(arguments[i].name, 
+
+                    if not vop:set(arguments[i].name, flags,
                         match_image, call_args[n]) then
                         error("unable to call " .. name .. "\n" .. 
                             vobject.get_error())
@@ -215,8 +223,13 @@ local voperation_mt = {
             end
 
             if last_arg then
+                local args_by_name = {}
+                for i = 1, #arguments do
+                    args_by_name[arguments[i].name] = arguments[i].flags
+                end
+
                 for k, v in pairs(last_arg) do
-                    if not vop:set(k, match_image, v) then
+                    if not vop:set(k, args_by_name[k], match_image, v) then
                         error("unable to call " .. name .. "\n" .. 
                             vobject.get_error())
                     end
@@ -240,6 +253,14 @@ local voperation_mt = {
                 if band(flags, OUTPUT) ~= 0 and 
                     band(flags, REQUIRED) ~= 0 and 
                     band(flags, DEPRECATED) == 0 then
+                    result[n] = vob:get(arguments[i].name)
+                    n = n + 1
+                end
+
+                -- MODIFY input args are returned .. this will get the copy we
+                -- made above
+                if band(flags, INPUT) ~= 0 and 
+                    band(flags, MODIFY) ~= 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
