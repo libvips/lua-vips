@@ -207,6 +207,13 @@ local mask = vips.Image.new_from_array(
 local image = image:conv(mask, {precision = "integer"})
 ```
 
+### `vips.Image.copy_memory(self)`
+
+The image is rendered to a large memory buffer, and a new image is returned
+which represents the memory area. 
+
+This is handy for breaking a pipeline.
+
 ### `vips.Image.black(width, height)`
 
 Makes a new one band, 8 bit, black image. You can call any of the libvips image

@@ -20,6 +20,8 @@ ffi.cdef[[
     VipsImage* vips_image_new_matrix_from_array (int width, int height,
             const double* array, int size);
 
+    VipsImage* vips_image_copy_memory (VipsImage* image);
+
     unsigned long int vips_image_get_typeof (const VipsImage* image, 
         const char* name);
     int vips_image_get (const VipsImage* image, 
@@ -333,6 +335,14 @@ Image.mt.__index = {
 
     new_from_image = function(self, value)
         return Image.new_from_image(self, value)
+    end,
+
+    copy_memory = function(self)
+        local vimage = vips.vips_image_copy_memory(self.vimage)
+        if vimage == nil then
+            error(vobject.get_error())
+        end
+        return Image.new(vimage)
     end,
 
     -- writers
