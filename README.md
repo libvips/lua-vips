@@ -1,13 +1,13 @@
-# `lua-vips` 
+# lua-vips
 
 This is a Lua binding for the [libvips image processing
 library](http://jcupitt.github.io/libvips).  libvips
 is a [fast image processing library with low memory
 needs](https://github.com/jcupitt/lua-vips-bench).
-`lua-vips` exposes [every operation in
+This binding exposes [every operation in
 libvips](http://jcupitt.github.io/libvips/API/current/func-list.html).
 
-This binding uses ffi and needs luajit 2.0 or later.
+`lua-vips` uses ffi and needs luajit 2.0 or later.
 
 # Example
 
@@ -56,22 +56,23 @@ image:write_to_file("tiny.jpg")
 
 # How it works
 
-libvips has quite a bit of introspection machinery built in. This binding
-uses an `__index` method on the image metatable to search libvips for an
-operation of that name. It can discover what arguments the operation takes
-and what results the operation returns.
+libvips has quite a bit of introspection machinery built in. 
 
-This means you can use `image:hough_circle()`, for example, to perform
-a Hough transform, even though this binding knows nothing about the
-`hough_circle` operator.
+When you call `image:hough_circle{scale = 4}`, the `__index` method on the
+`lua-vips` image class opens libvips with ffi and searches for an operation
+called `hough_circle`. It discovers what arguments the operation takes,
+and transforms the Lua objects you supplied into the form that libvips needs.
+It executes the operator, then pulls out all the results and returns them as a
+Lua array. 
 
-This binding is small and simple to maintain. It will expand automatically
-as features are added to libvips.
+This means that, although `lua-vips` has access to almost 300 operators,
+it's relatively small and should be simple to maintain.
 
 # Features
 
-This section runs through the main features of the binding. To load the binding
-use:
+This section runs through the main features of the binding. 
+
+To load the binding use:
 
 ```lua
 vips = require "vips"
