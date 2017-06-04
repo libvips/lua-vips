@@ -1,27 +1,13 @@
 # `lua-vips` 
 
-A Lua binding for the libvips image processing library. This binding uses ffi
-and needs luajit 2.0 or later. 
+This is a Lua binding for the [libvips image processing
+library](http://jcupitt.github.io/libvips).  libvips
+is a [fast image processing library with low memory
+needs](https://github.com/jcupitt/lua-vips-bench).
+`lua-vips` exposes [every operation in
+libvips](http://jcupitt.github.io/libvips/API/current/func-list.html).
 
-libvips is a fast image processing library with low memory needs. See:
-
-[http://jcupitt.github.io/libvips](http://jcupitt.github.io/libvips)
-
-For a benchmark, see:
-
-[https://github.com/jcupitt/lua-vips-bench](https://github.com/jcupitt/lua-vips-bench)
-
-See the libvips API documentation for more information --- `lua-vips` binds the
-whole of libvips, so you can use anything in there:
-
-[http://jcupitt.github.io/libvips/API/current/](http://jcupitt.github.io/libvips/API/current/)
-
-This is a handy list of all the libvips operations with a summary of what they
-do:
-
-[http://jcupitt.github.io/libvips/API/current/func-list.html](http://jcupitt.github.io/libvips/API/current/func-list.html)
-
-Notes below introduce the general features of this binding.
+This binding uses ffi and needs luajit 2.0 or later.
 
 # Example
 
@@ -70,16 +56,17 @@ image:write_to_file("tiny.jpg")
 
 # How it works
 
-libvips has quite a bit of introspection machinery built in. This Lua binding
-opens the vips library with ffi and uses these introspection facilities to
-search for operators and to discover what arguments they take and return. 
+libvips has quite a bit of introspection machinery built in. This binding
+uses an `__index` method on the image metatable to search libvips for an
+operation of that name. It can discover what arguments the operation takes
+and what results the operation returns.
 
-It uses an `__index` method on the image metatable to call into libvips,
-so `image:hough_circle()`, for example, will perform a Hough transform,
-even though this binding knows nothing about the `hough_circle` operator.
+This means you can use `image:hough_circle()`, for example, to perform
+a Hough transform, even though this binding knows nothing about the
+`hough_circle` operator.
 
-This means this binding is small and simple to maintain. It will expand
-automatically as features are added to libvips. 
+This binding is small and simple to maintain. It will expand automatically
+as features are added to libvips.
 
 # Features
 
