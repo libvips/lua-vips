@@ -11,9 +11,6 @@ For a benchmark, see:
 
 [https://github.com/jcupitt/lua-vips-bench](https://github.com/jcupitt/lua-vips-bench)
 
-This binding works and has a fairly complete test-suite which it passes with no 
-errors or leaks. 
-
 See the libvips API documentation for more information --- lua-vips binds the
 whole of libvips, so you can use anything in there:
 
@@ -23,11 +20,11 @@ Notes below introduce the general features of this binding.
 
 # Example
 
-Install with
+Install the libvips shared library, then install this rock with:
 	
 	luarocks install lua-vips
 
-Then:
+Example:
 
 ```lua
 vips = require "vips"
@@ -65,9 +62,6 @@ image:write_to_file("x.png")
 image = vips.Image.thumbnail("somefile.jpg", 128)
 image:write_to_file("tiny.jpg")
 ```
-
-If it doesn't work, check that you have the libvips shared library on your
-system, and that luajit can find it. 
 
 # How it works
 
