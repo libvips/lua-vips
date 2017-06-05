@@ -3,11 +3,14 @@
 This is a Lua binding for the [libvips image processing
 library](http://jcupitt.github.io/libvips).  libvips
 is a [fast image processing library with low memory
-needs](https://github.com/jcupitt/lua-vips-bench).
-This binding exposes [every operation in
-libvips](http://jcupitt.github.io/libvips/API/current/func-list.html).
+needs](https://github.com/jcupitt/lua-vips-bench).  `lua-vips` uses ffi
+and needs luajit 2.0 or later.
 
-`lua-vips` uses ffi and needs luajit 2.0 or later.
+The libvips documentation includes a handy
+searchable table of [every operation in
+libvips](http://jcupitt.github.io/libvips/API/current/func-list.html). This is
+a good place to check if it supports some feature you need. Read on to see how
+to call libvips operations. 
 
 # Example
 
@@ -65,8 +68,9 @@ and transforms the Lua objects you supplied into the form that libvips needs.
 It executes the operator, then pulls out all the results and returns them as a
 Lua array. 
 
-This means that, although `lua-vips` has access to almost 300 operators,
-it's relatively small and should be simple to maintain.
+This means that, although `lua-vips` supports almost 300 operators,
+the binding itself is small, should be simple to maintain, and should always be
+up to date.
 
 # Features
 
@@ -110,12 +114,11 @@ You can call specific file format loaders directly, for example:
 local image = vips.Image.jpegload("somefile.jpg", {shrink = 4})
 ```
 
-See the API docs for information on all the loaders:
-
-[http://jcupitt.github.io/libvips/API/current/VipsForeignSave.html](http://jcupitt.github.io/libvips/API/current/VipsForeignSave.html)
-
+The [loader section in the API
+docs](http://jcupitt.github.io/libvips/API/current/VipsForeignSave.html) lists
+all loaders and their options. 
 A simple way to see the arguments for a loader is to try running it from the
-command-line. Try:
+command-line. For example:
 
 ```bash
 $ vips jpegload
@@ -348,7 +351,7 @@ the RGB values for the pixel at coordinate (10, 10).
 `#` is overloaded to get the number of bands in an image, although this seems
 to only work with LuaJIT 2.1.
 
-`[]` ought to mean `extract_band`, but it's not working.
+`[]` is overloaded to mean `extract_band`. libvips bands number from zero.
 
 ## Convenience functions
 
@@ -440,7 +443,7 @@ local str = image:jpegsave_buffer({Q = 90})
 Most `lua-vips` methods will call `error()` if they detect an error. Use
 `pcall()` to call a method and catch an error. 
 
-Use `get_typeof` to test for a field of a certain name mwithout throwing an
+Use `get_typeof` to test for a field of a certain name without throwing an
 error.
 
 # Development
