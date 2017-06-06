@@ -14,7 +14,8 @@ to call libvips operations.
 
 # Example
 
-Install the libvips shared library, then install this rock with:
+[Install the libvips shared
+library](https://jcupitt.github.io/libvips/install.html), then install this rock with:
 	
 	luarocks install lua-vips
 
@@ -23,6 +24,11 @@ Example:
 ```lua
 vips = require "vips"
 
+-- fast thumbnail generator
+image = vips.Image.thumbnail("somefile.jpg", 128)
+image:write_to_file("tiny.jpg")
+
+-- make a new image with some text rendered on it
 image = vips.Image.text("Hello <i>World!</i>", {dpi = 300})
 
 -- call a method
@@ -50,27 +56,70 @@ image = image:less(128):ifthenelse({0, 0, 255}, image)
 -- go to Yxy colourspace
 image = image:colourspace("yxy")
 
-image:write_to_file("x.png")
-
--- fast thumbnail generator
-image = vips.Image.thumbnail("somefile.jpg", 128)
-image:write_to_file("tiny.jpg")
+-- pass options to a save operation
+image:write_to_file("x.png", {compression = 9})
 ```
 
 # How it works
 
 libvips has quite a bit of introspection machinery built in. 
 
-When you call `image:hough_circle{scale = 4}`, the `__index` method on the
-`lua-vips` image class opens libvips with ffi and searches for an operation
-called `hough_circle`. It discovers what arguments the operation takes,
-and transforms the Lua objects you supplied into the form that libvips needs.
-It executes the operator, then pulls out all the results and returns them as a
-Lua array. 
+When you call something like `image:hough_circle{scale = 4}`, the `__index`
+method on the `lua-vips` image class opens libvips with ffi and searches
+for an operation called `hough_circle`. It discovers what arguments the
+operation takes, checks you supplied the correct arguments, and transforms
+them into the form that libvips needs. It executes the operator, then
+pulls out all the results and returns them as a Lua array.
 
 This means that, although `lua-vips` supports almost 300 operators,
 the binding itself is small, should be simple to maintain, and should always be
 up to date.
+
+# Getting more help
+
+The libvips website has a handy table of [all the libvips
+operators](http://jcupitt.github.io/libvips/API/current/func-list.html). Each
+one links to the main API docs so you can see what you need to pass to it.
+
+A simple way to see the arguments for an operation is to try running it from the
+command-line. For example:
+
+```bash
+$ vips embed
+embed an image in a larger image
+usage:
+   embed in out x y width height
+where:
+   in           - Input image, input VipsImage
+   out          - Output image, output VipsImage
+   x            - Left edge of input in output, input gint
+			default: 0
+			min: -1000000000, max: 1000000000
+   y            - Top edge of input in output, input gint
+			default: 0
+			min: -1000000000, max: 1000000000
+   width        - Image width in pixels, input gint
+			default: 1
+			min: 1, max: 1000000000
+   height       - Image height in pixels, input gint
+			default: 1
+			min: 1, max: 1000000000
+optional arguments:
+   extend       - How to generate the extra pixels, input VipsExtend
+			default: black
+			allowed: black, copy, repeat, mirror, white, background
+   background   - Color for background pixels, input VipsArrayDouble
+operation flags: sequential 
+```
+
+So you can call `embed` like this:
+
+```lua
+local image = image:embed(10, 10, image:width() + 200, image:height() + 200,
+    {extend = "mirror"})
+```
+
+To add a 100 pixel mirror edge around an image.
 
 # Features
 
@@ -117,32 +166,6 @@ local image = vips.Image.jpegload("somefile.jpg", {shrink = 4})
 The [loader section in the API
 docs](http://jcupitt.github.io/libvips/API/current/VipsForeignSave.html) lists
 all loaders and their options. 
-A simple way to see the arguments for a loader is to try running it from the
-command-line. For example:
-
-```bash
-$ vips jpegload
-load jpeg from file
-usage:
-   jpegload filename out
-where:
-   filename     - Filename to load from, input gchararray
-   out          - Output image, output VipsImage
-optional arguments:
-   flags        - Flags for this file, output VipsForeignFlags
-   disc         - Open to disc, input gboolean
-			default: true
-   access       - Required access pattern for this file, input VipsAccess
-			default: random
-			allowed: random, sequential, sequential-unbuffered
-   shrink       - Shrink factor on load, input gint
-			default: 1
-			min: 1, max: 16
-   fail         - Fail on first error, input gboolean
-			default: false
-   autorotate   - Rotate image using exif orientation, input gboolean
-			default: false
-```
 
 ### `image = vips.Image.new_from_buffer(string [, string_options, options])`
 
@@ -279,7 +302,7 @@ The rules are:
    and the final argument you supply is a table, 
    that extra table is used to set any optional input arguments. 
 
-3. If you supply a constant (a number, of a table of numbers) and libvips 
+3. If you supply a constant (a number, or a table of numbers) and libvips 
    wants an image, your constant is automatically turned into an image using
    the first input image you supplied as a guide. 
 
@@ -300,8 +323,9 @@ You can write (for example):
 max_value = image:max()
 ```
 
-To get the maximum value from an image. If you look at the `max` operator, it
-can actually return a lot more than this. You can write:
+To get the maximum value from an image. If you look at [the `max`
+operator](http://jcupitt.github.io/libvips/API/current/libvips-arithmetic.html#vips-max),
+it can actually return a lot more than this. You can write:
 
 ```lua
 max_value, x, y = image:max()
@@ -313,7 +337,7 @@ To get the position of the maximum, or:
 max_value, x, y, maxes = image:max({size = 10})
 ```
 
-and maxes will be an array of the top 10 maximum values in order. 
+and `maxes` will be an array of the top 10 maximum values in order. 
 
 ## Operator overloads
 
@@ -344,7 +368,7 @@ image = vips.Image.new_from_file("k2.jpg")
 r, g, b = image(10, 10)
 ```
 
-the RGB values for the pixel at coordinate (10, 10).
+and `r`, `g`, `b` will be the RGB values for the pixel at coordinate (10, 10).
 
 `..` is overloaded to mean `bandjoin`. 
 
