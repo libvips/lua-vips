@@ -512,7 +512,7 @@ Run the example script with:
 
 ### Update rock
 	
-	luarocks upload lua-vips-0.1-1.rockspec --api-key=xxxxxxxxxxxxxx
+	luarocks upload lua-vips-1.0-1.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 
