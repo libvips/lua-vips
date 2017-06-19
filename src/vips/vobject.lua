@@ -6,8 +6,15 @@ local ffi = require "ffi"
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 
-local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
-local gobject = ffi.load(ffi.os == "Windows" and "libgobject-2.0-0.dll" or "gobject")
+local vips
+local gobject
+if ffi.os == "Windows" then
+    vips = ffi.load("libvips-42.dll")
+    gobject = ffi.load("libgobject-2.0-0.dll")
+else
+    vips = ffi.load("vips")
+    gobject = vips
+end
 
 ffi.cdef[[
     typedef struct _GObject {
@@ -38,8 +45,8 @@ ffi.cdef[[
 
         const char* name;     
         unsigned int flags;
-        uint64_t value_type;
-        uint64_t owner_type;
+        GType value_type;
+        GType owner_type;
 
         // rest opaque
     } GParamSpec;

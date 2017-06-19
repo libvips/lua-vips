@@ -8,14 +8,34 @@ local log = require "vips/log"
 -- we need to be able to wrap and unwrap Image tables
 local Image = require "vips/Image"
 
-local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
-local gobject = ffi.load(ffi.os == "Windows" and "libgobject-2.0-0.dll" or "gobject")
-local glib = ffi.load(ffi.os == "Windows" and "libglib-2.0-0.dll" or "glib")
+local vips
+local gobject
+local glib
+if ffi.os == "Windows" then
+    vips = ffi.load("libvips-42.dll")
+    gobject = ffi.load("libgobject-2.0-0.dll")
+    glib = ffi.load("libglib-2.0-0.dll")
+else
+    vips = ffi.load("vips")
+    gobject = vips
+    glib = vips
+end
+
+-- 32-bit Windows 32-bit ints for gtype, it's 64-bit everywhere else
+if ffi.os == "Windows" and ffi.arch ~= "x64" then
+    ffi.cdef[[
+        typedef uint32_t GType;
+    ]]
+else
+    ffi.cdef[[
+        typedef uint64_t GType;
+    ]]
+end
 
 ffi.cdef[[
     typedef struct _GValue {
-        uint64_t type;
-        uint64_t data[2]; 
+        GType type;
+        GType data[2]; 
     } GValue;
 
     typedef struct _VipsImage VipsImage;
@@ -26,15 +46,15 @@ ffi.cdef[[
     void g_object_ref (void* object);
     void g_object_unref (void* object);
 
-    void g_value_init (GValue* value, uint64_t type);
+    void g_value_init (GValue* value, GType type);
     void g_value_unset (GValue* value);
-    const char* g_type_name (uint64_t type);
-    uint64_t g_type_from_name (const char* name);
-    uint64_t g_type_fundamental (uint64_t gtype);
+    const char* g_type_name (GType type);
+    GType g_type_from_name (const char* name);
+    GType g_type_fundamental (GType gtype);
 
     int vips_enum_from_nick (const char* domain, 
-        uint64_t gtype, const char* str);
-    const char *vips_enum_nick (uint64_t gtype, int value);
+        GType gtype, const char* str);
+    const char *vips_enum_nick (GType gtype, int value);
 
     void g_value_set_boolean (GValue* value, int v_boolean);
     void g_value_set_int (GValue* value, int i);
