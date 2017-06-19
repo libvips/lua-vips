@@ -550,6 +550,14 @@ Try LuaJIT:
 	> ffi.load("libvips-42.dll")
 	> ^D
 
+`cd` to `lua-vips/src`, then:
 
-
+	john ~/GIT/lua-vips/src (master) $
+	~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe
+	LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall. http://luajit.org/
+	JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
+	> vips = require "vips"
+	> x = vips.Image.new_from_file("z:\\data\\john\\pics\\k2.jpg")
+	> print(x:width())
+	1450
 

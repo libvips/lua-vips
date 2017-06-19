@@ -23,7 +23,7 @@ ffi.cdef[[
 
     VipsImage* vips_image_copy_memory (VipsImage* image);
 
-    unsigned long int vips_image_get_typeof (const VipsImage* image, 
+    uint64_t vips_image_get_typeof (const VipsImage* image, 
         const char* name);
     int vips_image_get (const VipsImage* image, 
         const char* name, GValue* value_copy);

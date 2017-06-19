@@ -38,8 +38,8 @@ ffi.cdef[[
 
         const char* name;     
         unsigned int flags;
-        unsigned long int value_type;
-        unsigned long int owner_type;
+        uint64_t value_type;
+        uint64_t owner_type;
 
         // rest opaque
     } GParamSpec;
@@ -72,7 +72,7 @@ ffi.cdef[[
         VipsObjectClass *object_class;
         VipsArgumentFlags flags;
         int priority;
-        unsigned long int offset;
+        uint64_t offset;
     } VipsArgumentClass;
 
     int vips_object_get_argument (VipsObject* object, 
@@ -124,8 +124,7 @@ local vobject_mt = {
                 pspec, argument_class, argument_instance)
 
             if result ~= 0 then
-                -- so 0 means does not exist
-                return 0
+                error(self:get_error())
             end
 
             return pspec[0].value_type
@@ -137,9 +136,6 @@ local vobject_mt = {
             log.msg("  name =", name)
 
             local type = self:get_typeof(name)
-            if not type then
-                error("field " .. name ..  " does not exist")
-            end
 
             local pgv = gvalue.newp()
             pgv[0]:init(self:get_typeof(name))
@@ -160,9 +156,6 @@ local vobject_mt = {
             log.msg("  value =", value)
 
             local gtype = self:get_typeof(name)
-            if gtype == 0 then
-                error("field " .. name ..  " does not exist")
-            end
 
             local gv = gvalue.new()
             gv:init(gtype)

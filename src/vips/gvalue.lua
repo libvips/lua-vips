@@ -14,7 +14,7 @@ local glib = ffi.load(ffi.os == "Windows" and "libglib-2.0-0.dll" or "glib")
 
 ffi.cdef[[
     typedef struct _GValue {
-        unsigned long int type;
+        uint64_t type;
         uint64_t data[2]; 
     } GValue;
 
@@ -26,15 +26,15 @@ ffi.cdef[[
     void g_object_ref (void* object);
     void g_object_unref (void* object);
 
-    void g_value_init (GValue* value, unsigned long int type);
+    void g_value_init (GValue* value, uint64_t type);
     void g_value_unset (GValue* value);
-    const char* g_type_name (unsigned long int type);
-    unsigned long int g_type_from_name (const char* name);
-    unsigned long int g_type_fundamental (unsigned long int gtype);
+    const char* g_type_name (uint64_t type);
+    uint64_t g_type_from_name (const char* name);
+    uint64_t g_type_fundamental (uint64_t gtype);
 
     int vips_enum_from_nick (const char* domain, 
-        unsigned long int gtype, const char* str);
-    const char *vips_enum_nick (unsigned long int gtype, int value);
+        uint64_t gtype, const char* str);
+    const char *vips_enum_nick (uint64_t gtype, int value);
 
     void g_value_set_boolean (GValue* value, int v_boolean);
     void g_value_set_int (GValue* value, int i);
