@@ -521,3 +521,35 @@ Run the example script with:
 	https://github.com/luarocks/luarocks/wiki/creating-a-rock
 	https://olivinelabs.com/busted/
 
+### Running under Wine (Windows emulation on Linux)
+
+I used the luapower all-in-one to get a 64-bit Windows LuaJIT build:
+
+	https://luapower.com/
+
+LuaJIT on Windows searches `PATH` to find DLLs. You can't set this directly
+from Linux, you have to change the registry. See:
+
+	https://www.winehq.org/docs/wineusr-guide/environment-variables
+
+Then add the `bin` area of the libvips Windows build to `PATH`.
+
+	z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+
+You must have no trailing backslash.
+
+Try LuaJIT:
+
+	$ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe 
+	LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall.
+	http://luajit.org/
+	JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
+	> print(os.getenv("PATH"))
+	C:\windows\system32;C:\windows;C:\windows\system32\wbem;z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+	> ffi = require "ffi"
+	> ffi.load("libvips-42.dll")
+	> ^D
+
+
+
+

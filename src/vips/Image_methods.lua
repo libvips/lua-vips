@@ -9,7 +9,8 @@ local voperation = require "vips/voperation"
 local vimage = require "vips/vimage"
 local Image = require "vips/Image"
 
-local vips = ffi.load("vips")
+local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
+local gobject = ffi.load(ffi.os == "Windows" and "libgobject-2.0-0.dll" or "gobject")
 
 ffi.cdef[[
     const char* vips_foreign_find_load (const char* name);
@@ -382,7 +383,7 @@ local instance_methods = {
 
         local result = pgv[0]:get()
 
-        vips.g_value_unset(pgv[0])
+        gobject.g_value_unset(pgv[0])
 
         return result
     end,

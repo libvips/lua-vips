@@ -8,7 +8,9 @@ local log = require "vips/log"
 -- we need to be able to wrap and unwrap Image tables
 local Image = require "vips/Image"
 
-local vips = ffi.load("vips")
+local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
+local gobject = ffi.load(ffi.os == "Windows" and "libgobject-2.0-0.dll" or "gobject")
+local glib = ffi.load(ffi.os == "Windows" and "libglib-2.0-0.dll" or "glib")
 
 ffi.cdef[[
     typedef struct _GValue {
@@ -76,7 +78,7 @@ end
 local gvalue = {}
 local gvalue_mt = {
     __gc = function(gv)
-        vips.g_value_unset(gv)
+        gobject.g_value_unset(gv)
     end,
 
     __index = {
@@ -91,18 +93,18 @@ local gvalue_mt = {
         pstr_typeof = ffi.typeof("char*[?]"),
 
         -- look up some common gtypes at init for speed
-        gbool_type = vips.g_type_from_name("gboolean"),
-        gint_type = vips.g_type_from_name("gint"),
-        gdouble_type = vips.g_type_from_name("gdouble"),
-        gstr_type = vips.g_type_from_name("gchararray"),
-        genum_type = vips.g_type_from_name("GEnum"),
-        gflags_type = vips.g_type_from_name("GFlags"),
-        image_type = vips.g_type_from_name("VipsImage"),
-        array_int_type = vips.g_type_from_name("VipsArrayInt"),
-        array_double_type = vips.g_type_from_name("VipsArrayDouble"),
-        array_image_type = vips.g_type_from_name("VipsArrayImage"),
-        refstr_type = vips.g_type_from_name("VipsRefString"),
-        blob_type = vips.g_type_from_name("VipsBlob"),
+        gbool_type = gobject.g_type_from_name("gboolean"),
+        gint_type = gobject.g_type_from_name("gint"),
+        gdouble_type = gobject.g_type_from_name("gdouble"),
+        gstr_type = gobject.g_type_from_name("gchararray"),
+        genum_type = gobject.g_type_from_name("GEnum"),
+        gflags_type = gobject.g_type_from_name("GFlags"),
+        image_type = gobject.g_type_from_name("VipsImage"),
+        array_int_type = gobject.g_type_from_name("VipsArrayInt"),
+        array_double_type = gobject.g_type_from_name("VipsArrayDouble"),
+        array_image_type = gobject.g_type_from_name("VipsArrayImage"),
+        refstr_type = gobject.g_type_from_name("VipsRefString"),
+        blob_type = gobject.g_type_from_name("VipsBlob"),
 
         new = function()
             -- with no init, this will initialize with 0, which is what we need
@@ -117,23 +119,23 @@ local gvalue_mt = {
         end,
 
         type_name = function(gtype)
-            return(ffi.string(vips.g_type_name(gtype)))
+            return(ffi.string(gobject.g_type_name(gtype)))
         end,
 
         init = function(gv, gtype)
-            vips.g_value_init(gv, gtype)
+            gobject.g_value_init(gv, gtype)
         end,
 
         set = function(gv, value)
             local gtype = gv.type
-            local fundamental = vips.g_type_fundamental(gtype)
+            local fundamental = gobject.g_type_fundamental(gtype)
 
             if gtype == gvalue.gbool_type then
-                vips.g_value_set_boolean(gv, value)
+                gobject.g_value_set_boolean(gv, value)
             elseif gtype == gvalue.gint_type then
-                vips.g_value_set_int(gv, value)
+                gobject.g_value_set_int(gv, value)
             elseif gtype == gvalue.gdouble_type then
-                vips.g_value_set_double(gv, value)
+                gobject.g_value_set_double(gv, value)
             elseif fundamental == gvalue.genum_type then
                 local enum_value 
                 if type(value) == "string" then
@@ -148,13 +150,13 @@ local gvalue_mt = {
                     enum_value = value
                 end
 
-                vips.g_value_set_enum(gv, enum_value)
+                gobject.g_value_set_enum(gv, enum_value)
             elseif fundamental == gvalue.gflags_type then
-                vips.g_value_set_flags(gv, value)
+                gobject.g_value_set_flags(gv, value)
             elseif gtype == gvalue.gstr_type or gtype == gvalue.refstr_type then
-                vips.g_value_set_string(gv, value)
+                gobject.g_value_set_string(gv, value)
             elseif gtype == gvalue.image_type then
-                vips.g_value_set_object(gv, value.vimage)
+                gobject.g_value_set_object(gv, value.vimage)
             elseif gtype == gvalue.array_int_type then
                 if type(value) == "number" then
                     value = {value}
@@ -196,11 +198,11 @@ local gvalue_mt = {
                 -- can own
                 local n = #value
 
-                local buf = vips.g_malloc(n)
+                local buf = glib.g_malloc(n)
                 ffi.copy(buf, value, n)
 
                 vips.vips_value_set_blob(gv, 
-                    function(p) vips.g_free(p) end, 
+                    function(p) glib.g_free(p) end, 
                     buf, n)
 
             else
@@ -210,18 +212,18 @@ local gvalue_mt = {
 
         get = function(gv)
             local gtype = gv.type
-            local fundamental = vips.g_type_fundamental(gtype)
+            local fundamental = gobject.g_type_fundamental(gtype)
 
             local result
 
             if gtype == gvalue.gbool_type then
-                result = vips.g_value_get_boolean(gv)
+                result = gobject.g_value_get_boolean(gv)
             elseif gtype == gvalue.gint_type then
-                result = vips.g_value_get_int(gv)
+                result = gobject.g_value_get_int(gv)
             elseif gtype == gvalue.gdouble_type then
-                result = vips.g_value_get_double(gv)
+                result = gobject.g_value_get_double(gv)
             elseif fundamental == gvalue.genum_type then
-                local enum_value = vips.g_value_get_enum(gv)
+                local enum_value = gobject.g_value_get_enum(gv)
 
                 local cstr = vips.vips_enum_nick(gtype, enum_value)
 
@@ -231,9 +233,9 @@ local gvalue_mt = {
 
                 result = ffi.string(cstr)
             elseif fundamental == gvalue.gflags_type then
-                result = vips.g_value_get_flags(gv)
+                result = gobject.g_value_get_flags(gv)
             elseif gtype == gvalue.gstr_type then
-                local cstr = vips.g_value_get_string(gv)
+                local cstr = gobject.g_value_get_string(gv)
 
                 if cstr ~= nil then
                     result = ffi.string(cstr)
@@ -249,13 +251,13 @@ local gvalue_mt = {
             elseif gtype == gvalue.image_type then
                 -- g_value_get_object() will not add a ref ... that is
                 -- held by the gvalue
-                local vo = vips.g_value_get_object(gv)
+                local vo = gobject.g_value_get_object(gv)
                 local vimage = ffi.cast(gvalue.image_typeof, vo)
 
                 -- we want a ref that will last with the life of the vimage: 
                 -- this ref is matched by the unref that's attached to finalize
                 -- by Image.new() 
-                vips.g_object_ref(vimage)
+                gobject.g_object_ref(vimage)
 
                 result = Image.new(vimage)
 

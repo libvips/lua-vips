@@ -6,7 +6,8 @@ local ffi = require "ffi"
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 
-local vips = ffi.load("vips")
+local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
+local gobject = ffi.load(ffi.os == "Windows" and "libgobject-2.0-0.dll" or "gobject")
 
 ffi.cdef[[
     typedef struct _GObject {
@@ -84,9 +85,6 @@ ffi.cdef[[
     void g_object_get_property (VipsObject* object, 
         const char* name, GValue* value);
 
-    const char* vips_error_buffer (void);
-    void vips_error_clear (void);
-
     void vips_object_print_all (void);
 
 ]]
@@ -112,7 +110,7 @@ local vobject_mt = {
         new = function(self)
             ffi.gc(self, 
                 function(x) 
-                    vips.g_object_unref(x)
+                    gobject.g_object_unref(x)
                 end
             )
             return self
@@ -147,10 +145,10 @@ local vobject_mt = {
             pgv[0]:init(self:get_typeof(name))
             -- this will add a ref for GObject properties, that ref will be
             -- unreffed when the gvalue is finalized
-            vips.g_object_get_property(self, name, pgv)
+            gobject.g_object_get_property(self, name, pgv)
 
             local result = pgv[0]:get()
-            vips.g_value_unset(pgv[0])
+            gobject.g_value_unset(pgv[0])
 
             return result
         end,
@@ -169,7 +167,7 @@ local vobject_mt = {
             local gv = gvalue.new()
             gv:init(gtype)
             gv:set(value)
-            vips.g_object_set_property(self, name, gv)
+            gobject.g_object_set_property(self, name, gv)
 
             return true
         end,

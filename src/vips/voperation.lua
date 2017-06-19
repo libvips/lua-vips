@@ -10,7 +10,7 @@ local gvalue = require "vips/gvalue"
 local vobject = require "vips/vobject"
 local Image = require "vips/Image"
 
-local vips = ffi.load("vips")
+local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
 ffi.cdef[[
     typedef struct _VipsOperation {
