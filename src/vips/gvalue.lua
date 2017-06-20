@@ -21,21 +21,22 @@ else
     glib = vips
 end
 
--- 32-bit Windows 32-bit ints for gtype, it's 64-bit everywhere else
-if ffi.os == "Windows" and ffi.arch ~= "x64" then
+-- GType is an int the size of a pointer ... I don't think we can just use
+-- size_t, sadly
+if ffi.arch == "x64" then
     ffi.cdef[[
-        typedef uint32_t GType;
+        typedef uint64_t GType;
     ]]
 else
     ffi.cdef[[
-        typedef uint64_t GType;
+        typedef uint32_t GType;
     ]]
 end
 
 ffi.cdef[[
     typedef struct _GValue {
-        GType type;
-        GType data[2]; 
+        GType gtype;
+        uint64_t data[2]; 
     } GValue;
 
     typedef struct _VipsImage VipsImage;
@@ -46,9 +47,9 @@ ffi.cdef[[
     void g_object_ref (void* object);
     void g_object_unref (void* object);
 
-    void g_value_init (GValue* value, GType type);
+    void g_value_init (GValue* value, GType gtype);
     void g_value_unset (GValue* value);
-    const char* g_type_name (GType type);
+    const char* g_type_name (GType gtype);
     GType g_type_from_name (const char* name);
     GType g_type_fundamental (GType gtype);
 
@@ -147,7 +148,7 @@ local gvalue_mt = {
         end,
 
         set = function(gv, value)
-            local gtype = gv.type
+            local gtype = gv.gtype
             local fundamental = gobject.g_type_fundamental(gtype)
 
             if gtype == gvalue.gbool_type then
@@ -231,7 +232,7 @@ local gvalue_mt = {
         end,
 
         get = function(gv)
-            local gtype = gv.type
+            local gtype = gv.gtype
             local fundamental = gobject.g_type_fundamental(gtype)
 
             local result

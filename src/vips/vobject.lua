@@ -142,10 +142,10 @@ local vobject_mt = {
             log.msg("  self =", self)
             log.msg("  name =", name)
 
-            local type = self:get_typeof(name)
+            local gtype = self:get_typeof(name)
 
             local pgv = gvalue.newp()
-            pgv[0]:init(self:get_typeof(name))
+            pgv[0]:init(gtype)
             -- this will add a ref for GObject properties, that ref will be
             -- unreffed when the gvalue is finalized
             gobject.g_object_get_property(self, name, pgv)
