@@ -194,7 +194,7 @@ call it as a member function. `pixel` can be a table to make a many-band image,
 for example:
 
 ```lua
-local new_image = image:new_from_image({1, 2, 3})
+local new_image = image:new_from_image{1, 2, 3}
 ```
 
 Will make a new three-band image, where all the red pixels have the value 1,
@@ -205,7 +205,7 @@ greens are 2 and blues are 3.
 Makes a new image from a Lua array (or table). For example:
 
 ```lua
-local image = vips.Image.new_from_array({1, 2, 3})
+local image = vips.Image.new_from_array{1, 2, 3}
 ```
 
 Makes a one-band image, three pixels across and one high. Use nested tables for
@@ -291,7 +291,7 @@ You can call any libvips operation as a member function, for example
 Can be called from Lua like this:
 
 ```lua
-local image2 = image:hough_circle({scale = 2, max_radius = 50})
+local image2 = image:hough_circle{scale = 2, max_radius = 50}
 ```
 
 The rules are:
@@ -334,7 +334,7 @@ max_value, x, y = image:max()
 To get the position of the maximum, or:
 
 ```lua
-max_value, x, y, maxes = image:max({size = 10})
+max_value, x, y, maxes = image:max{size = 10}
 ```
 
 and `maxes` will be an array of the top 10 maximum values in order. 
@@ -392,7 +392,7 @@ to call --- you must write:
 
 
 ```lua
-image = vips.Image.bandjoin({image, image})
+image = vips.Image.bandjoin{image, image}
 ```
 
 to join an image to itself. Instead, `lua-vips` defines `bandjoin` as a member
@@ -405,7 +405,7 @@ image = image:bandjoin(image)
 to join an image to itself, or perhaps:
 
 ```lua
-image = R:bandjoin({G, B})
+image = R:bandjoin{G, B}
 ```
 
 to join three RGB bands. 
@@ -459,7 +459,7 @@ The suffix is used to pick the saver that is used to generate the result, so
 directly if you wish, perhaps:
 
 ```lua
-local str = image:jpegsave_buffer({Q = 90})
+local str = image:jpegsave_buffer{Q = 90}
 ```
 
 ## Error handling
