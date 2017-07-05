@@ -18,8 +18,8 @@ end
 
 ffi.cdef[[
     typedef struct _GObject {
-        int g_type_instance;
-        unsigned ref_count;
+        void *g_type_instance;
+        unsigned int ref_count;
         void *qdata;
     } GObject;
 
