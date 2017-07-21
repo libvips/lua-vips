@@ -158,6 +158,7 @@ describe("test image creation", function()
     end)
 
     describe("test vips creators", function()
+
         it("can call vips_black()", function()
             local im = vips.Image.black(1, 1)
 
@@ -167,6 +168,15 @@ describe("test image creation", function()
             assert.are.equal(im:avg(), 0)
 
         end)
+
+        it("can call operations with - in option names", function()
+            local im = vips.Image.perlin(100, 100, {cell_size = 10})
+
+            assert.are.equal(im:width(), 100)
+            assert.are.equal(im:height(), 100)
+            assert.are.equal(im:bands(), 1)
+        end)
+
     end)
 
     describe("test image from image", function()

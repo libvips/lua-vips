@@ -125,8 +125,14 @@ local voperation_mt = {
             local args = {}
             local cb = ffi.cast(voperation.argumentmap_typeof,
                 function(self, pspec, argument_class, argument_instance, a, b)
+                    local name = ffi.string(pspec.name)
+
+                    -- libvips uses "-" to separate parts of arg names, but we
+                    -- need "_" for lua
+                    name = string.gsub(name, "-", "_")
+
                     table.insert(args, 
-                        {name = ffi.string(pspec.name), 
+                        {name = name, 
                          flags = tonumber(argument_class.flags)
                         }
                     )
