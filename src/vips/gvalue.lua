@@ -211,7 +211,7 @@ local gvalue_mt = {
                 for i = 0, n - 1 do
                     a[i] = value[i + 1].vimage
                     -- the gvalue needs a set of refs to own
-                    vips.g_object_ref(a[i])
+                    gobject.g_object_ref(a[i])
                 end
 
             elseif gtype == gvalue.blob_type then

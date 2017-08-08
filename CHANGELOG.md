@@ -2,6 +2,10 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-3 - 2017-08-08
+
+- more Windows fixes 
+
 # 1.1-2 - 2017-07-21
 
 - fix "-" characters in arg names
