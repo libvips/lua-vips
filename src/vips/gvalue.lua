@@ -221,11 +221,7 @@ local gvalue_mt = {
 
                 local buf = glib.g_malloc(n)
                 ffi.copy(buf, value, n)
-
-                vips.vips_value_set_blob(gv, 
-                    function(p) glib.g_free(p) end, 
-                    buf, n)
-
+                vips.vips_value_set_blob(gv, glib.g_free, buf, n)
             else
                  error("unsupported gtype for set " .. gvalue.type_name(gtype))
             end
