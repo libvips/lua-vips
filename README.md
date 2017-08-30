@@ -69,7 +69,7 @@ method on the `lua-vips` image class opens libvips with ffi and searches
 for an operation called `hough_circle`. It discovers what arguments the
 operation takes, checks you supplied the correct arguments, and transforms
 them into the form that libvips needs. It executes the operator, then
-pulls out all the results and returns them as a Lua array.
+pulls out all the results and returns them as a Lua table.
 
 This means that, although `lua-vips` supports almost 300 operators,
 the binding itself is small, should be simple to maintain, and should always be
@@ -115,7 +115,7 @@ operation flags: sequential
 So you can call `embed` like this:
 
 ```lua
-local image = image:embed(10, 10, image:width() + 200, image:height() + 200,
+local image = image:embed(100, 100, image:width() + 200, image:height() + 200,
     {extend = "mirror"})
 ```
 
@@ -182,7 +182,7 @@ Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
 ### `image = vips.Image.new_from_image(image, pixel)`
 
-Makes a new image with the size, format, and resoluion of `image`, but with
+Makes a new image with the size, format, and resolution of `image`, but with
 each pixel having the value `pixel`. For example:
 
 ```lua
@@ -200,9 +200,9 @@ local new_image = image:new_from_image{1, 2, 3}
 Will make a new three-band image, where all the red pixels have the value 1,
 greens are 2 and blues are 3.
 
-### `image = vips.Image.new_from_array(array [, scale, offset])`
+### `image = vips.Image.new_from_array(array [, scale [, offset]])`
 
-Makes a new image from a Lua array (or table). For example:
+Makes a new image from a Lua table. For example:
 
 ```lua
 local image = vips.Image.new_from_array{1, 2, 3}
@@ -408,7 +408,12 @@ to join an image to itself, or perhaps:
 image = R:bandjoin{G, B}
 ```
 
-to join three RGB bands. 
+to join three RGB bands. Constants work too, so you can write:
+
+```lua
+image = image:bandjoin(255)
+image = R:bandjoin{128, 23}
+```
 
 The `bandrank` operator works in the same way. 
 

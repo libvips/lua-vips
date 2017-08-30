@@ -2,6 +2,10 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-4 - 2017-08-30
+
+- small doc fixes
+
 # 1.1-3 - 2017-08-08
 
 - more Windows fixes 
