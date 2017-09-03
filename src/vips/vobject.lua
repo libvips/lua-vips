@@ -123,6 +123,7 @@ local vobject_mt = {
             return self
         end,
 
+        -- return 0 for not found and leave the error in the error log
         get_typeof = function(self, name)
             local pspec = vobject.pspec_typeof()
             local argument_class = vobject.argument_class_typeof()
@@ -131,7 +132,7 @@ local vobject_mt = {
                 pspec, argument_class, argument_instance)
 
             if result ~= 0 then
-                error(self:get_error())
+                return 0
             end
 
             return pspec[0].value_type
@@ -143,6 +144,9 @@ local vobject_mt = {
             log.msg("  name =", name)
 
             local gtype = self:get_typeof(name)
+            if gtype == 0 then
+                error(self:get_error())
+            end
 
             local pgv = gvalue.newp()
             pgv[0]:init(gtype)
@@ -163,6 +167,9 @@ local vobject_mt = {
             log.msg("  value =", value)
 
             local gtype = self:get_typeof(name)
+            if gtype == 0 then
+                error(self:get_error())
+            end
 
             local gv = gvalue.new()
             gv:init(gtype)

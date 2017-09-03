@@ -44,4 +44,10 @@ describe("metadata", function()
         assert.are.same(im3:get("banana"), im2:get("banana"))
     end)
 
+    it("can get property enums as strings", function()
+        local im2 = im:copy()
+
+        assert.are.same(im2:format(), "double")
+    end)
+
 end)

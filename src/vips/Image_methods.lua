@@ -40,7 +40,18 @@ ffi.cdef[[
     char* vips_filename_get_filename (const char* vips_filename);
     char* vips_filename_get_options (const char* vips_filename);
 
+    int vips_version (int flag);
+
 ]]
+
+-- test for libvips version is better than x.y .. we use this to turn on various
+-- workarounds for older libvips
+local function at_least_libvips(x, y)
+    local major = vips.vips_version(0)
+    local minor = vips.vips_version(1)
+
+    return major > x or (major == x and minor >= y)
+end
 
 -- either a single number, or a table of numbers
 local function is_pixel(value)
@@ -377,10 +388,36 @@ local instance_methods = {
     -- get/set metadata
 
     get_typeof = function(self, name)
+        -- on libvips 8.4 and earlier, we need to fetch the type via
+        -- our superclass get_typeof(), since vips_image_get_typeof() returned 
+        -- enum properties as ints
+        if not at_least_libvips(8, 5) then
+            local gtype = self:vobject():get_typeof(name)
+            if gtype ~= 0 then
+                return gtype
+            end
+
+            -- we must clear the error buffer after vobject typeof fails
+            self:vobject():get_error()
+        end
+
         return vips.vips_image_get_typeof(self.vimage, name)
     end,
 
     get = function(self, name)
+        -- on libvips 8.4 and earlier, we need to fetch gobject properties via
+        -- our superclass get(), since vips_image_get() returned enum properties
+        -- as ints
+        if not at_least_libvips(8, 5) then
+            local gtype = self:vobject():get_typeof(name)
+            if gtype ~= 0 then
+                return self:vobject():get(name)
+            end
+
+            -- we must clear the error buffer after vobject typeof fails
+            self:vobject():get_error()
+        end
+
         local pgv = gvalue.newp()
 
         local result = vips.vips_image_get(self.vimage, name, pgv)
