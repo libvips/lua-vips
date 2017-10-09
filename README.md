@@ -415,7 +415,7 @@ image = image:bandjoin(255)
 image = R:bandjoin{128, 23}
 ```
 
-The `bandrank` operator works in the same way. 
+The `bandrank` and `composite` operators works in the same way. 
 
 ### `image = condition_image:ifthenelse(then_image, else_image [, options])`
 
@@ -517,7 +517,7 @@ Run the example script with:
 
 ### Update rock
 	
-	luarocks upload lua-vips-1.1-4.rockspec --api-key=xxxxxxxxxxxxxx
+	luarocks upload lua-vips-1.1-5.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 

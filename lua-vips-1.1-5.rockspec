@@ -1,5 +1,5 @@
 package = "lua-vips"
-version = "1.1-4"
+version = "1.1-5"
 
 source = {
    url = "git://github.com/jcupitt/lua-vips.git"
@@ -24,6 +24,8 @@ build = {
    type = "builtin",
    modules = {
        vips = "src/vips.lua",
+       ["vips.verror"] = "src/vips/verror.lua",
+       ["vips.version"] = "src/vips/version.lua",
        ["vips.log"] = "src/vips/log.lua",
        ["vips.gvalue"] = "src/vips/gvalue.lua",
        ["vips.vobject"] = "src/vips/vobject.lua",

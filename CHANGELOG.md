@@ -2,6 +2,13 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-5 - 2017-10-09
+
+- add verror: handle libvips error buffer
+- add version: handle libvips version numbers
+- add `gvalue.to_enum`: wrap up enum encoding
+- add `composite`
+
 # 1.1-4 - 2017-08-30
 
 - small doc fixes

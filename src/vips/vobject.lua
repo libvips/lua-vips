@@ -3,6 +3,7 @@
 
 local ffi = require "ffi"
 
+local verror = require "vips/verror"
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 
@@ -145,7 +146,7 @@ local vobject_mt = {
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error(self:get_error())
+                error(verror.get())
             end
 
             local pgv = gvalue.newp()
@@ -168,7 +169,7 @@ local vobject_mt = {
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error(self:get_error())
+                error(verror.get())
             end
 
             local gv = gvalue.new()
@@ -177,13 +178,6 @@ local vobject_mt = {
             gobject.g_object_set_property(self, name, gv)
 
             return true
-        end,
-
-        get_error = function ()
-            local errstr = ffi.string(vips.vips_error_buffer())
-            vips.vips_error_clear()
-
-            return errstr
         end,
 
     }

@@ -5,6 +5,7 @@ local ffi = require "ffi"
 local bit = require "bit"
 local band = bit.band
 
+local verror = require "vips/verror"
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 local vobject = require "vips/vobject"
@@ -151,7 +152,7 @@ local voperation_mt = {
 
             local vop = vips.vips_operation_new(name)
             if vop == nil then
-                error("no such operation\n" .. vobject.get_error())
+                error("no such operation\n" .. verror.get())
             end
             vop:new()
 
@@ -208,7 +209,7 @@ local voperation_mt = {
             -- overridden
             if vips.vips_object_set_from_string(vop:vobject(), 
                 string_options) ~= 0 then
-                error("unable to call " .. name .. "\n" ..  vobject.get_error())
+                error("unable to call " .. name .. "\n" ..  verror.get())
             end
 
             local n = 0
@@ -222,8 +223,7 @@ local voperation_mt = {
 
                     if not vop:set(arguments[i].name, flags,
                         match_image, call_args[n]) then
-                        error("unable to call " .. name .. "\n" .. 
-                            vobject.get_error())
+                        error("unable to call " .. name .. "\n" .. verror.get())
                     end
                 end
             end
@@ -237,14 +237,14 @@ local voperation_mt = {
                 for k, v in pairs(last_arg) do
                     if not vop:set(k, args_by_name[k], match_image, v) then
                         error("unable to call " .. name .. "\n" .. 
-                            vobject.get_error())
+                            verror.get())
                     end
                 end
             end
 
             local vop2 = vips.vips_cache_operation_build(vop)
             if vop2 == nil then
-                error("unable to call " .. name .. "\n" .. vobject.get_error())
+                error("unable to call " .. name .. "\n" .. verror.get())
             end
             vop2:new()
             vop = vop2

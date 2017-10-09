@@ -90,6 +90,23 @@ describe("test convenience functions", function()
 
     end)
 
+    if vips.version.at_least(8, 6) then
+        it("can call composite", function ()
+            local base = im + {10, 11, 12}
+            local overlay = (base + 10):bandjoin(128)
+            local comp = base:composite(overlay, "over")
+            local pixel = comp:getpoint(0, 0)
+
+            assert.are.equal(comp:width(), 4)
+            assert.are.equal(comp:height(), 1)
+            assert.are.equal(comp:bands(), 4)
+            assert.is_true(math.abs(pixel[1] - 16) < 0.1)
+            assert.is_true(math.abs(pixel[2] - 17) < 0.1)
+            assert.is_true(math.abs(pixel[3] - 18) < 0.1)
+            assert.are.equal(pixel[4], 255)
+        end)
+    end
+
     it("can call bandrank", function ()
         local im2 = im:bandrank(im + 1, {index = 0})
 

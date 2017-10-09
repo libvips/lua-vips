@@ -2,6 +2,8 @@
 
 local ffi = require "ffi"
 
+local verror = require "vips/verror"
+local version = require "vips/version"
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 local vobject = require "vips/vobject"
@@ -40,18 +42,7 @@ ffi.cdef[[
     char* vips_filename_get_filename (const char* vips_filename);
     char* vips_filename_get_options (const char* vips_filename);
 
-    int vips_version (int flag);
-
 ]]
-
--- test for libvips version is better than x.y .. we use this to turn on various
--- workarounds for older libvips
-local function at_least_libvips(x, y)
-    local major = vips.vips_version(0)
-    local minor = vips.vips_version(1)
-
-    return major > x or (major == x and minor >= y)
-end
 
 -- either a single number, or a table of numbers
 local function is_pixel(value)
@@ -148,7 +139,7 @@ function Image.new_from_file(vips_filename, ...)
     local options = vips.vips_filename_get_options(vips_filename)
     local name = vips.vips_foreign_find_load(filename)
     if name == nil then
-        error(vobject.get_error())
+        error(verror.get())
     end
 
     return voperation.call(ffi.string(name), ffi.string(options), 
@@ -158,7 +149,7 @@ end
 function Image.new_from_buffer(data, options, ...)
     local name = vips.vips_foreign_find_load_buffer(data, #data)
     if name == nil then
-        error(vobject.get_error())
+        error(verror.get())
     end
 
     return voperation.call(ffi.string(name), options or "", data, unpack{...})
@@ -355,7 +346,7 @@ local instance_methods = {
     copy_memory = function(self)
         local vimage = vips.vips_image_copy_memory(self.vimage)
         if vimage == nil then
-            error(vobject.get_error())
+            error(verror.get())
         end
         return Image.new(vimage)
     end,
@@ -367,7 +358,7 @@ local instance_methods = {
         local options = vips.vips_filename_get_options(vips_filename)
         local name = vips.vips_foreign_find_save(filename)
         if name == nil then
-            error(vobject.get_error())
+            error(verror.get())
         end
 
         return voperation.call(ffi.string(name), ffi.string(options), 
@@ -378,7 +369,7 @@ local instance_methods = {
         local options = vips.vips_filename_get_options(format_string)
         local name = vips.vips_foreign_find_save_buffer(format_string)
         if name == nil then
-            error(vobject.get_error())
+            error(verror.get())
         end
 
         return voperation.call(ffi.string(name), ffi.string(options), 
@@ -391,14 +382,14 @@ local instance_methods = {
         -- on libvips 8.4 and earlier, we need to fetch the type via
         -- our superclass get_typeof(), since vips_image_get_typeof() returned 
         -- enum properties as ints
-        if not at_least_libvips(8, 5) then
+        if not version.at_least(8, 5) then
             local gtype = self:vobject():get_typeof(name)
             if gtype ~= 0 then
                 return gtype
             end
 
             -- we must clear the error buffer after vobject typeof fails
-            self:vobject():get_error()
+            verror.get()
         end
 
         return vips.vips_image_get_typeof(self.vimage, name)
@@ -408,14 +399,14 @@ local instance_methods = {
         -- on libvips 8.4 and earlier, we need to fetch gobject properties via
         -- our superclass get(), since vips_image_get() returned enum properties
         -- as ints
-        if not at_least_libvips(8, 5) then
+        if not version.at_least(8, 5) then
             local gtype = self:vobject():get_typeof(name)
             if gtype ~= 0 then
                 return self:vobject():get(name)
             end
 
             -- we must clear the error buffer after vobject typeof fails
-            self:vobject():get_error()
+            verror.get()
         end
 
         local pgv = gvalue.newp()
@@ -526,6 +517,25 @@ local instance_methods = {
         end
 
         return voperation.call("bandrank", "", {self, unpack(other)})
+    end,
+
+    composite = function(self, other, mode, options)
+        -- allow a single untable arg as well
+        if type(other) == "number" or Image.is_Image(other) then
+            other = {other}
+        end
+        if type(mode) ~= "table" then
+            mode = {mode}
+        end
+
+        -- need to map str -> int by hand, since the mode arg is actually 
+        -- arrayint
+        for i = 1, #mode do
+            mode[i] = gvalue.to_enum(gvalue.blend_mode_type, mode[i])
+        end
+
+        return voperation.call("composite", "", 
+            {self, unpack(other)}, mode, options)
     end,
 
     -- convenience functions

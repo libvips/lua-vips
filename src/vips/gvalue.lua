@@ -5,7 +5,8 @@ local ffi = require "ffi"
 
 local log = require "vips/log"
 
--- we need to be able to wrap and unwrap Image tables
+local verror = require "vips/verror"
+local version = require "vips/version"
 local Image = require "vips/Image"
 
 local vips
@@ -53,6 +54,8 @@ ffi.cdef[[
     GType g_type_from_name (const char* name);
     GType g_type_fundamental (GType gtype);
 
+    GType vips_blend_mode_get_type (void);
+
     int vips_enum_from_nick (const char* domain, 
         GType gtype, const char* str);
     const char *vips_enum_nick (GType gtype, int value);
@@ -88,6 +91,10 @@ ffi.cdef[[
     void vips_object_print_all (void);
 
 ]]
+
+if version.at_least(8, 6) then
+    vips.vips_blend_mode_get_type()
+end
 
 local function print_all(msg)
     collectgarbage()
@@ -126,11 +133,30 @@ local gvalue_mt = {
         array_image_type = gobject.g_type_from_name("VipsArrayImage"),
         refstr_type = gobject.g_type_from_name("VipsRefString"),
         blob_type = gobject.g_type_from_name("VipsBlob"),
+        blend_mode_type = version.at_least(8, 6) and 
+            gobject.g_type_from_name("VipsBlendMode") or 0,
 
         new = function()
             -- with no init, this will initialize with 0, which is what we need
             -- for a blank GValue
             return ffi.new(gvalue.gv_typeof)
+        end,
+
+        to_enum = function(gtype, value)
+            -- turn a string into an int, ready to be passed into libvips
+            local enum_value
+
+            if type(value) == "string" then
+                enum_value = vips.vips_enum_from_nick("lua-vips", gtype, value)
+
+                if enum_value < 0 then
+                    error("no such enum " .. value .. "\n" .. verror.get())
+                end
+            else
+                enum_value = value
+            end
+
+            return enum_value
         end,
 
         -- this won't be unset() automatically! you need to
@@ -158,20 +184,7 @@ local gvalue_mt = {
             elseif gtype == gvalue.gdouble_type then
                 gobject.g_value_set_double(gv, value)
             elseif fundamental == gvalue.genum_type then
-                local enum_value 
-                if type(value) == "string" then
-                    enum_value = 
-                        vips.vips_enum_from_nick("lua-vips", gtype, value)
-
-                    if enum_value < 0 then
-                        error("no such enum " .. value .. "\n" .. 
-                            object.get_error())
-                    end
-                else
-                    enum_value = value
-                end
-
-                gobject.g_value_set_enum(gv, enum_value)
+                gobject.g_value_set_enum(gv, gvalue.to_enum(gtype, value))
             elseif fundamental == gvalue.gflags_type then
                 gobject.g_value_set_flags(gv, value)
             elseif gtype == gvalue.gstr_type or gtype == gvalue.refstr_type then
