@@ -180,6 +180,30 @@ local image = vips.Image.new_from_buffer(string, "shrink=2")
 
 Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
+### `image = vips.Image.new_from_memory(ptr, width, height, bands, format)`
+
+This wraps a libvips image around a FFI memory area. The memory area should be
+formatted as a C-style array. Images are always band-interleaved, so an RGB
+image three pixels across and two pixels down, for example, is laid out as:
+
+```
+RGBRGBRGB
+RGBRGBRGB
+```
+
+Example:
+
+```lua
+local width = 64
+local height = 32
+local data = ffi.new("unsigned char[?]", width * height)
+local im = vips.Image.new_from_memory(data, width, height, 1, "uchar")
+```
+
+The returned image is holding a pointer to the memory area, but luajit won't
+always know this. You should keep a reference to `data` alive for as long as you
+are using any downstream images, or you'll get a crash.
+
 ### `image = vips.Image.new_from_image(image, pixel)`
 
 Makes a new image with the size, format, and resolution of `image`, but with

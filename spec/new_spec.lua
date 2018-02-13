@@ -3,6 +3,7 @@
 require 'busted.runner'()
 
 say = require("say")
+ffi = require("ffi")
 
 local function almost_equal(state, arguments)
     local has_key = false
@@ -153,6 +154,32 @@ describe("test image creation", function()
             assert.are.equal(im:format(), im2:format())
             assert.are.equal(im:xres(), im2:xres())
             assert.are.equal(im:yres(), im2:yres())
+        end)
+
+    end)
+
+    describe("test image from memory", function()
+
+        it("can make an image from a memory area", function()
+            local width = 64
+            local height = 32
+            local size = width * height
+            local data = ffi.new("unsigned char[?]", size)
+
+            for y = 0, height - 1 do
+                for x = 0, width - 1 do
+                    data[x + y * width] = x + y
+                end
+            end
+
+            local im = vips.Image.new_from_memory(data, 
+                width, height, 1, "uchar")
+
+            assert.are.equal(im:width(), width)
+            assert.are.equal(im:height(), height)
+            assert.are.equal(im:bands(), 1)
+            assert.are.equal(im:format(), "uchar")
+            assert.are.equal(im:avg(), 47)
         end)
 
     end)

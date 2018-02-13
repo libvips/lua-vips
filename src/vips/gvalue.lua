@@ -55,6 +55,7 @@ ffi.cdef[[
     GType g_type_fundamental (GType gtype);
 
     GType vips_blend_mode_get_type (void);
+    GType vips_band_format_get_type (void);
 
     int vips_enum_from_nick (const char* domain, 
         GType gtype, const char* str);
@@ -95,6 +96,7 @@ ffi.cdef[[
 if version.at_least(8, 6) then
     vips.vips_blend_mode_get_type()
 end
+vips.vips_band_format_get_type()
 
 local function print_all(msg)
     collectgarbage()
@@ -133,6 +135,7 @@ local gvalue_mt = {
         array_image_type = gobject.g_type_from_name("VipsArrayImage"),
         refstr_type = gobject.g_type_from_name("VipsRefString"),
         blob_type = gobject.g_type_from_name("VipsBlob"),
+        band_format_type = gobject.g_type_from_name("VipsBandFormat"),
         blend_mode_type = version.at_least(8, 6) and 
             gobject.g_type_from_name("VipsBlendMode") or 0,
 

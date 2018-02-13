@@ -30,6 +30,9 @@ ffi.cdef[[
     VipsImage* vips_image_new_matrix_from_array (int width, int height,
             const double* array, int size);
 
+    VipsImage* vips_image_new_from_memory (const void *data, size_t size,
+            int width, int height, int bands, int format);
+
     VipsImage* vips_image_copy_memory (VipsImage* image);
 
     GType vips_image_get_typeof (const VipsImage* image, 
@@ -153,6 +156,24 @@ function Image.new_from_buffer(data, options, ...)
     end
 
     return voperation.call(ffi.string(name), options or "", data, unpack{...})
+end
+
+function Image.new_from_memory(data, width, height, bands, format)
+    local format_value = gvalue.to_enum(gvalue.band_format_type, format)
+
+    local vimage = vips.vips_image_new_from_memory(data, ffi.sizeof(data), 
+        width, height, bands, format_value)
+    if vimage == nil then
+        error(verror.get())
+    end
+
+    local image = Image.new(vimage)
+
+    -- libvips is using the memory we passed in: save a pointer to the memory
+    -- block to try to stop it being GCd
+    image._data = data
+
+    return image
 end
 
 function Image.new_from_array(array, scale, offset)

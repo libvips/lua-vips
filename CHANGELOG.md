@@ -8,6 +8,7 @@ All notable changes to `lua-vips` will be documented in this file.
 - add version: handle libvips version numbers
 - add `gvalue.to_enum`: wrap up enum encoding
 - add `composite`
+- add `new_from_memory`
 
 # 1.1-4 - 2017-08-30
 
