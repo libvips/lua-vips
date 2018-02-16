@@ -3,6 +3,7 @@
 require 'busted.runner'()
 
 say = require("say")
+ffi = require("ffi")
 
 local function almost_equal(state, arguments)
     local has_key = false
@@ -57,7 +58,7 @@ describe("test image write to file", function()
 
 end)
 
-describe("test image from buffer", function()
+describe("test image write to buffer", function()
     vips = require("vips")
     -- vips.log.enable(true)
 
@@ -84,6 +85,29 @@ describe("test image from buffer", function()
         local buf2 = im:write_to_buffer(".jpg", {Q = 100})
 
         assert.is.True(#buf2 > #buf)
+    end)
+
+end)
+
+describe("test image write to buffer", function()
+    vips = require("vips")
+    -- vips.log.enable(true)
+
+    it("can write an image to a memory area", function()
+        local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
+        local mem = im:write_to_memory()
+
+        assert.are.equal(im:width() * im:height() * 3, ffi.sizeof(mem))
+    end)
+
+    it("can read an image back from a memory area", function()
+        local im = vips.Image.new_from_file("images/Gugg_coloured.jpg")
+        local mem = im:write_to_memory()
+        assert.are.equal(im:width() * im:height() * 3, ffi.sizeof(mem))
+        local im2 = vips.Image.new_from_memory(mem, 
+            im:width(), im:height(), im:bands(), im:format())
+
+        assert.are.equal(im:avg(), im2:avg())
     end)
 
 end)

@@ -9,6 +9,7 @@ All notable changes to `lua-vips` will be documented in this file.
 - add `gvalue.to_enum`: wrap up enum encoding
 - add `composite`
 - add `new_from_memory`
+- add `write_to_memory`
 
 # 1.1-4 - 2017-08-30
 

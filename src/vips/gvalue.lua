@@ -121,6 +121,7 @@ local gvalue_mt = {
         pdouble_typeof = ffi.typeof("double[?]"),
         psize_typeof = ffi.typeof("size_t[?]"),
         pstr_typeof = ffi.typeof("char*[?]"),
+        mem_typeof = ffi.typeof("unsigned char[?]"),
 
         -- look up some common gtypes at init for speed
         gbool_type = gobject.g_type_from_name("gboolean"),

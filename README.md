@@ -491,6 +491,15 @@ directly if you wish, perhaps:
 local str = image:jpegsave_buffer{Q = 90}
 ```
 
+### `memory = image:write_to_memory()`
+
+A large ffi char array is allocated and the image is rendered to it. 
+
+```lua
+local mem = image:write_to_memory()
+print("written ", ffi.sizeof(mem), "bytes to", mem)
+```
+
 ## Error handling
 
 Most `lua-vips` methods will call `error()` if they detect an error. Use

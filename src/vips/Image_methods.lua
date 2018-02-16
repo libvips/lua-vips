@@ -13,12 +13,15 @@ local Image = require "vips/Image"
 
 local vips
 local gobject
+local glib
 if ffi.os == "Windows" then
     vips = ffi.load("libvips-42.dll")
     gobject = ffi.load("libgobject-2.0-0.dll")
+    glib = ffi.load("libglib-2.0-0.dll")
 else
     vips = ffi.load("vips")
     gobject = vips
+    glib = vips
 end
 
 ffi.cdef[[
@@ -32,6 +35,8 @@ ffi.cdef[[
 
     VipsImage* vips_image_new_from_memory (const void *data, size_t size,
             int width, int height, int bands, int format);
+    unsigned char* vips_image_write_to_memory (VipsImage* image, 
+            size_t* size_out);
 
     VipsImage* vips_image_copy_memory (VipsImage* image);
 
@@ -160,8 +165,9 @@ end
 
 function Image.new_from_memory(data, width, height, bands, format)
     local format_value = gvalue.to_enum(gvalue.band_format_type, format)
+    local size = ffi.sizeof(data)
 
-    local vimage = vips.vips_image_new_from_memory(data, ffi.sizeof(data), 
+    local vimage = vips.vips_image_new_from_memory(data, size,
         width, height, bands, format_value)
     if vimage == nil then
         error(verror.get())
@@ -395,6 +401,18 @@ local instance_methods = {
 
         return voperation.call(ffi.string(name), ffi.string(options), 
             self, unpack{...})
+    end,
+
+    write_to_memory = function(self)
+        local psize = ffi.new(gvalue.psize_typeof, 1)
+        local vips_memory = vips.vips_image_write_to_memory(self.vimage, psize)
+        local size = psize[0]
+        -- can we avoid the copy somehow?
+        local lua_memory = ffi.new(gvalue.mem_typeof, size)
+        ffi.copy(lua_memory, vips_memory, size)
+        glib.g_free(vips_memory)
+
+        return lua_memory
     end,
 
     -- get/set metadata
