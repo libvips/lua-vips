@@ -407,7 +407,7 @@ local instance_methods = {
         local psize = ffi.new(gvalue.psize_typeof, 1)
         local vips_memory = vips.vips_image_write_to_memory(self.vimage, psize)
         local size = psize[0]
-        -- can we avoid the copy somehow?
+        -- FIXME can we avoid the copy somehow?
         local lua_memory = ffi.new(gvalue.mem_typeof, size)
         ffi.copy(lua_memory, vips_memory, size)
         glib.g_free(vips_memory)

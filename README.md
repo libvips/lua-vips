@@ -200,7 +200,7 @@ local data = ffi.new("unsigned char[?]", width * height)
 local im = vips.Image.new_from_memory(data, width, height, 1, "uchar")
 ```
 
-The returned image is holding a pointer to the memory area, but luajit won't
+The returned image is using a pointer to the `data` area, but luajit won't
 always know this. You should keep a reference to `data` alive for as long as you
 are using any downstream images, or you'll get a crash.
 
