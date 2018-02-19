@@ -51,7 +51,15 @@ b1, b2, b3 = image:bandsplit()
 r, g, b = image(10, 20)
 
 -- make all pixels less than 128 bright blue
-image = image:less(128):ifthenelse({0, 0, 255}, image)
+--    :less(128) makes an 8-bit image where each band is 255 (true) if that 
+--        value is less than 128, and 0 (false) if it's >= 128 ... you can use
+---       images or {1,2,3} constants as well as simple values
+--    :bandand() joins all image bands together with bitwise AND, so you get a
+--        one-band image which is true where all bands are true
+--    condition:ifthenelse(then, else) takes a condition image and uses true or
+--        false values to pick pixels from the then or else images ... then and
+--        else can be constants or images
+image = image:less(128):bandand():ifthenelse({0, 0, 255}, image)
 
 -- go to Yxy colourspace
 image = image:colourspace("yxy")
@@ -133,7 +141,8 @@ vips = require "vips"
 
 ## Make images
 
-You can make images from files or from memory buffers (Lua strings), or you can
+You can make images from files or from buffers (Lua strings), you can wrap a
+vips image around an ffi array, or you can
 use one of the libvips create operators to make an image for you. 
 
 ### `image = vips.Image.new_from_file(filename [, options])`
@@ -182,7 +191,7 @@ Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
 ### `image = vips.Image.new_from_memory(ptr, width, height, bands, format)`
 
-This wraps a libvips image around a FFI memory area. The memory area should be
+This wraps a libvips image around a FFI memory array. The memory array should be
 formatted as a C-style array. Images are always band-interleaved, so an RGB
 image three pixels across and two pixels down, for example, is laid out as:
 
@@ -233,8 +242,8 @@ local image = vips.Image.new_from_array{1, 2, 3}
 ```
 
 Makes a one-band image, three pixels across and one high. Use nested tables for
-2D images. You can set a scale and offset with two extra number parameters,
-which is handy for integer convolution masks.
+2D images. You can set a scale and offset with two extra number parameters --
+handy for integer convolution masks.
 
 ```lua
 local mask = vips.Image.new_from_array(
@@ -375,14 +384,14 @@ image = (image * 2 + 13) % 4
 and the appropriate vips operations will be called. You can mix images, number
 constants, and array constants freely.
 
-The relational operators are not overloaded, unfortunately, Lua does not
+The relational operators are not overloaded, unfortunately; Lua does not
 permit this. You must write something like:
 
 ```lua
 image = image:less(128):ifthenelse(128, image)
 ```
 
-to set all pixels less than 128 to 128.
+to set all values less than 128 to 128.
 
 `__call` (ie. `()`) is overloaded to call the libvips `getpoint` operator. 
 You can write:
@@ -468,7 +477,7 @@ There are about 40 of these.
 
 ## Write
 
-You can write images to files or to formatted strings. 
+You can write images to files, to ffi arrays, or to formatted strings. 
 
 ### `image:write_to_file(filename [, options])`
 
