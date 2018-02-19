@@ -10,6 +10,7 @@ All notable changes to `lua-vips` will be documented in this file.
 - add `composite`
 - add `new_from_memory`
 - add `write_to_memory`
+- remove `[]` and `#` overloads -- too confusing, and they broke debuggers
 
 # 1.1-4 - 2017-08-30
 

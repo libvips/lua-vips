@@ -349,10 +349,6 @@ function Image.mt.__concat(self, other)
     return self:bandjoin(other)
 end
 
-function Image.mt.__len(self)
-    return self:bands()
-end
-
 local instance_methods = {
     -- utility methods
 
@@ -786,9 +782,7 @@ local instance_methods = {
 }
 
 function Image.mt.__index(table, index)
-    if type(index) == "number" then
-        return table:extract_band(index)
-    elseif instance_methods[index] then
+    if instance_methods[index] then
         return instance_methods[index]
     else
         return 

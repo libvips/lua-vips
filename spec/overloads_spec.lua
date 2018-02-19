@@ -312,22 +312,6 @@ describe("test overload", function()
             assert.are.equal(b:extract_band(0):avg(), 2.5)
         end)
 
-        it("can extract bands with '[]'", function ()
-            local b = im2[0]
-
-            assert.are.equal(b:width(), 4)
-            assert.are.equal(b:height(), 1)
-            assert.are.equal(b:bands(), 1)
-            assert.are.equal(b:avg(), 2.5)
-        end)
-
-        -- works fine with 2.1, fails with 2.0, mysterious!
-        pending("can count bands with '#' ... needs luajit 2.1", function ()
-            local n = #im2
-
-            assert.are.equal(n, 3)
-        end)
-
     end)
 
     describe("call overload", function()

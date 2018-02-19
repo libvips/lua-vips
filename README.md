@@ -396,10 +396,9 @@ and `r`, `g`, `b` will be the RGB values for the pixel at coordinate (10, 10).
 
 `..` is overloaded to mean `bandjoin`. 
 
-`#` is overloaded to get the number of bands in an image, although this seems
-to only work with LuaJIT 2.1.
-
-`[]` is overloaded to mean `extract_band`. libvips bands number from zero.
+Use `im:bands()` to get the number of bands and `im:extract_band(N)` to extract a
+band (note bands number from zero). lua-vips does not overload `#` and `[]` for
+this, since mixing numbering from zero and one causes confusion. 
 
 ## Convenience functions
 
