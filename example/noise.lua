@@ -46,4 +46,5 @@ lut = gradient(dark_brown, white)
 -- rescale to 0 - 255 and colour with our lut
 stripe = ((stripe + 1) * 128):maplut(lut)
 
+print("writing x.png ...")
 stripe:write_to_file("x.png")

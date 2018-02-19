@@ -3,25 +3,25 @@ local vips = require "vips"
 -- uncomment for very chatty output
 -- vips.log.enable(true)
 
-local main = vips.Image.new_from_file("images/Gugg_coloured.jpg")
-local sub = vips.Image.new_from_file("images/watermark.png")
-local x, y, width, height = 100, 100, sub:width(), sub:height()
+local main_filename = "images/Gugg_coloured.jpg"
+local watermark_filename = "images/PNG_transparency_demonstration_1.png"
+
+local main = vips.Image.new_from_file(main_filename)
+local watermark = vips.Image.new_from_file(watermark_filename)
+local left, top, width, height = 100, 100, watermark:width(), watermark:height()
 
 -- extract related area from main image
-local extract = main:crop(x, y, width, height)
+local base = main:crop(left, top, width, height)
 
--- get rgb channels from watermark image
-local rgb = sub:extract_band(0, {n = 3}) 
+-- composite the two areas using the PDF "over" mode
+local composite = base:composite(watermark, "over")
 
--- get alpha channel from watermark image
-local mask = sub:extract_band(3) 
-
--- use ifthenelse to combine extracted image with sub respecting the 
--- alpha channel
-local composite = mask:ifthenelse(rgb, extract, {blend = true})
+-- the result will have an alpha, and our base image does not .. we must flatten
+-- out the alpha before we can insert it back into a plain RGB JPG image
+composite = composite:flatten()
 
 -- insert composite back in to main image on related area
-local combined = main:insert(composite, x, y)
+local combined = main:insert(composite, left, top)
 
 print("writing x.jpg ...")
 combined:write_to_file("x.jpg")
