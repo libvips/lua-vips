@@ -516,6 +516,28 @@ Most `lua-vips` methods will call `error()` if they detect an error. Use
 Use `get_typeof` to test for a field of a certain name without throwing an
 error.
 
+## The libvips operation cache
+
+libvips keeps a cache of recent operations, such as load, save, shrink, and
+so on. If you repeat an operation, you'll get the cached result back. 
+
+It keeps track of the number of open files, allocated memory and cached
+operations, and will trim the cache if more than 100 files are open at once,
+more than 100mb of memory has been allocated, or more than 1,000 operations
+are being held.
+
+Normally this cache is useful and harmless, but for some applications you may 
+want to change these values.
+
+```lua
+-- set number of cached operations
+vips.set_max(100)
+-- set maximum cache memory use
+vips.set_max_mem(10 * 1024 * 1024)
+-- set maximum number of open files
+vips.set_max_files(10)
+```
+
 # Development
 
 ### Setup for ubuntu 17.04

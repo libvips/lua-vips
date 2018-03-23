@@ -2,6 +2,10 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-6 - 2018-03-23
+
+- add operation cache control
+
 # 1.1-5 - 2017-10-09
 
 - add verror: handle libvips error buffer
