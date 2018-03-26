@@ -11,17 +11,17 @@ local voperation = require "vips/voperation"
 local vimage = require "vips/vimage"
 local Image = require "vips/Image"
 
-local vips
-local gobject
-local glib
+local vips_lib
+local gobject_lib
+local glib_lib
 if ffi.os == "Windows" then
-    vips = ffi.load("libvips-42.dll")
-    gobject = ffi.load("libgobject-2.0-0.dll")
-    glib = ffi.load("libglib-2.0-0.dll")
+    vips_lib = ffi.load("libvips-42.dll")
+    gobject_lib = ffi.load("libgobject-2.0-0.dll")
+    glib_lib = ffi.load("libglib-2.0-0.dll")
 else
-    vips = ffi.load("vips")
-    gobject = vips
-    glib = vips
+    vips_lib = ffi.load("vips")
+    gobject_lib = vips_lib
+    glib_lib = vips_lib
 end
 
 ffi.cdef[[
@@ -143,9 +143,9 @@ function Image.new(vimage)
 end
 
 function Image.new_from_file(vips_filename, ...)
-    local filename = vips.vips_filename_get_filename(vips_filename)
-    local options = vips.vips_filename_get_options(vips_filename)
-    local name = vips.vips_foreign_find_load(filename)
+    local filename = vips_lib.vips_filename_get_filename(vips_filename)
+    local options = vips_lib.vips_filename_get_options(vips_filename)
+    local name = vips_lib.vips_foreign_find_load(filename)
     if name == nil then
         error(verror.get())
     end
@@ -155,7 +155,7 @@ function Image.new_from_file(vips_filename, ...)
 end
 
 function Image.new_from_buffer(data, options, ...)
-    local name = vips.vips_foreign_find_load_buffer(data, #data)
+    local name = vips_lib.vips_foreign_find_load_buffer(data, #data)
     if name == nil then
         error(verror.get())
     end
@@ -167,7 +167,7 @@ function Image.new_from_memory(data, width, height, bands, format)
     local format_value = gvalue.to_enum(gvalue.band_format_type, format)
     local size = ffi.sizeof(data)
 
-    local vimage = vips.vips_image_new_from_memory(data, size,
+    local vimage = vips_lib.vips_image_new_from_memory(data, size,
         width, height, bands, format_value)
     if vimage == nil then
         error(verror.get())
@@ -199,7 +199,8 @@ function Image.new_from_array(array, scale, offset)
             a[x + y * width] = array[y + 1][x + 1]
         end
     end
-    local vimage = vips.vips_image_new_matrix_from_array(width, height, a, n)
+    local vimage = vips_lib.vips_image_new_matrix_from_array(width, 
+        height, a, n)
     local image = Image.new(vimage)
 
     image:set_type(gvalue.gdouble_type, "scale", scale or 1)
@@ -367,7 +368,7 @@ local instance_methods = {
     end,
 
     copy_memory = function(self)
-        local vimage = vips.vips_image_copy_memory(self.vimage)
+        local vimage = vips_lib.vips_image_copy_memory(self.vimage)
         if vimage == nil then
             error(verror.get())
         end
@@ -377,9 +378,9 @@ local instance_methods = {
     -- writers
 
     write_to_file = function(self, vips_filename, ...)
-        local filename = vips.vips_filename_get_filename(vips_filename)
-        local options = vips.vips_filename_get_options(vips_filename)
-        local name = vips.vips_foreign_find_save(filename)
+        local filename = vips_lib.vips_filename_get_filename(vips_filename)
+        local options = vips_lib.vips_filename_get_options(vips_filename)
+        local name = vips_lib.vips_foreign_find_save(filename)
         if name == nil then
             error(verror.get())
         end
@@ -389,8 +390,8 @@ local instance_methods = {
     end,
 
     write_to_buffer = function(self, format_string, ...)
-        local options = vips.vips_filename_get_options(format_string)
-        local name = vips.vips_foreign_find_save_buffer(format_string)
+        local options = vips_lib.vips_filename_get_options(format_string)
+        local name = vips_lib.vips_foreign_find_save_buffer(format_string)
         if name == nil then
             error(verror.get())
         end
@@ -401,12 +402,13 @@ local instance_methods = {
 
     write_to_memory = function(self)
         local psize = ffi.new(gvalue.psize_typeof, 1)
-        local vips_memory = vips.vips_image_write_to_memory(self.vimage, psize)
+        local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, 
+            psize)
         local size = psize[0]
         -- FIXME can we avoid the copy somehow?
         local lua_memory = ffi.new(gvalue.mem_typeof, size)
         ffi.copy(lua_memory, vips_memory, size)
-        glib.g_free(vips_memory)
+        glib_lib.g_free(vips_memory)
 
         return lua_memory
     end,
@@ -427,7 +429,7 @@ local instance_methods = {
             verror.get()
         end
 
-        return vips.vips_image_get_typeof(self.vimage, name)
+        return vips_lib.vips_image_get_typeof(self.vimage, name)
     end,
 
     get = function(self, name)
@@ -446,14 +448,14 @@ local instance_methods = {
 
         local pgv = gvalue.newp()
 
-        local result = vips.vips_image_get(self.vimage, name, pgv)
+        local result = vips_lib.vips_image_get(self.vimage, name, pgv)
         if result ~= 0 then
             error("unable to get " .. name)
         end
 
         local result = pgv[0]:get()
 
-        gobject.g_value_unset(pgv[0])
+        gobject_lib.g_value_unset(pgv[0])
 
         return result
     end,
@@ -462,7 +464,7 @@ local instance_methods = {
         local gv = gvalue.new()
         gv:init(gtype)
         gv:set(value)
-        vips.vips_image_set(self.vimage, name, gv)
+        vips_lib.vips_image_set(self.vimage, name, gv)
     end,
 
     set = function(self, name, value)
@@ -471,7 +473,7 @@ local instance_methods = {
     end,
 
     remove = function(self, name)
-        return vips.vips_image_remove(self, name) ~= 0
+        return vips_lib.vips_image_remove(self, name) ~= 0
     end,
 
     -- standard header fields

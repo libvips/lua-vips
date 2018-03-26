@@ -34,33 +34,33 @@ local vips = {
     vimage = require "vips/vimage",
     Image = require "vips/Image",
 
-    cache_set_max = function(max)
-        vips_lib.vips_cache_set_max(max)
-    end,
-
-    cache_get_max = function ()
-        return vips_lib.vips_cache_get_max()
-    end,
-
-    cache_set_max_files = function(max)
-        vips_lib.vips_cache_set_max_files(max)
-    end,
-
-    cache_get_max_files = function ()
-        return vips_lib.vips_cache_get_max_files()
-    end,
-
-    cache_set_max_mem = function(max)
-        vips_lib.vips_cache_set_max_mem(max)
-    end,
-
-    cache_get_max_mem = function ()
-        return vips_lib.vips_cache_get_max_mem()
-    end,
-
 }
 
 require "vips/Image_methods"
+
+function vips.cache_set_max(max)
+    vips_lib.vips_cache_set_max(max)
+end
+
+function vips.cache_get_max()
+    return vips_lib.vips_cache_get_max()
+end
+
+function vips.cache_set_max_files(max)
+    vips_lib.vips_cache_set_max_files(max)
+end
+
+function vips.cache_get_max_files()
+    return vips_lib.vips_cache_get_max_files()
+end
+
+function vips.cache_set_max_mem(max)
+    vips_lib.vips_cache_set_max_mem(max)
+end
+
+function vips.cache_get_max_mem()
+    return vips_lib.vips_cache_get_max_mem()
+end
 
 -- for compat with 1.1-6, when these were misnamed
 vips.set_max = vips.cache_set_max

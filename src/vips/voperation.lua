@@ -11,7 +11,7 @@ local gvalue = require "vips/gvalue"
 local vobject = require "vips/vobject"
 local Image = require "vips/Image"
 
-local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
+local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
 ffi.cdef[[
     typedef struct _VipsOperation {
@@ -139,7 +139,7 @@ local voperation_mt = {
                     )
                 end
             )
-            vips.vips_argument_map(self, cb, nil, nil )
+            vips_lib.vips_argument_map(self, cb, nil, nil )
             cb:free()
 
             return args
@@ -150,7 +150,7 @@ local voperation_mt = {
         call = function(name, string_options, ...)
             local call_args = {...}
 
-            local vop = vips.vips_operation_new(name)
+            local vop = vips_lib.vips_operation_new(name)
             if vop == nil then
                 error("no such operation\n" .. verror.get())
             end
@@ -207,7 +207,7 @@ local voperation_mt = {
 
             -- set any string options before any args so they can't be
             -- overridden
-            if vips.vips_object_set_from_string(vop:vobject(), 
+            if vips_lib.vips_object_set_from_string(vop:vobject(), 
                 string_options) ~= 0 then
                 error("unable to call " .. name .. "\n" ..  verror.get())
             end
@@ -242,7 +242,7 @@ local voperation_mt = {
                 end
             end
 
-            local vop2 = vips.vips_cache_operation_build(vop)
+            local vop2 = vips_lib.vips_cache_operation_build(vop)
             if vop2 == nil then
                 error("unable to call " .. name .. "\n" .. verror.get())
             end
@@ -293,7 +293,7 @@ local voperation_mt = {
                 end
             end
 
-            vips.vips_object_unref_outputs(vop)
+            vips_lib.vips_object_unref_outputs(vop)
             vop = nil
 
             return unpack(result)

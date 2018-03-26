@@ -2,7 +2,7 @@
 
 local ffi = require "ffi" 
 
-local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
+local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
 ffi.cdef[[
     const char* vips_error_buffer (void);
@@ -16,7 +16,7 @@ verror = {
     -- get and clear the error buffer 
     get = function()
         local errstr = ffi.string(vips.vips_error_buffer())
-        vips.vips_error_clear()
+        vips_lib.vips_error_clear()
 
         return errstr
     end,

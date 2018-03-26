@@ -7,14 +7,14 @@ local verror = require "vips/verror"
 local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 
-local vips
-local gobject
+local vips_lib
+local gobject_lib
 if ffi.os == "Windows" then
-    vips = ffi.load("libvips-42.dll")
-    gobject = ffi.load("libgobject-2.0-0.dll")
+    vips_lib = ffi.load("libvips-42.dll")
+    gobject_lib = ffi.load("libgobject-2.0-0.dll")
 else
-    vips = ffi.load("vips")
-    gobject = vips
+    vips_lib = ffi.load("vips")
+    gobject_lib = vips_lib
 end
 
 ffi.cdef[[
@@ -111,14 +111,14 @@ local vobject_mt = {
         print_all = function(msg)
             collectgarbage()
             print(msg)
-            vips.vips_object_print_all()
+            vips_lib.vips_object_print_all()
             print()
         end,
 
         new = function(self)
             ffi.gc(self, 
                 function(x) 
-                    gobject.g_object_unref(x)
+                    gobject_lib.g_object_unref(x)
                 end
             )
             return self
@@ -129,7 +129,7 @@ local vobject_mt = {
             local pspec = vobject.pspec_typeof()
             local argument_class = vobject.argument_class_typeof()
             local argument_instance = vobject.argument_instance_typeof()
-            local result = vips.vips_object_get_argument(self, name,
+            local result = vips_lib.vips_object_get_argument(self, name,
                 pspec, argument_class, argument_instance)
 
             if result ~= 0 then
@@ -153,10 +153,10 @@ local vobject_mt = {
             pgv[0]:init(gtype)
             -- this will add a ref for GObject properties, that ref will be
             -- unreffed when the gvalue is finalized
-            gobject.g_object_get_property(self, name, pgv)
+            gobject_lib.g_object_get_property(self, name, pgv)
 
             local result = pgv[0]:get()
-            gobject.g_value_unset(pgv[0])
+            gobject_lib.g_value_unset(pgv[0])
 
             return result
         end,
@@ -175,7 +175,7 @@ local vobject_mt = {
             local gv = gvalue.new()
             gv:init(gtype)
             gv:set(value)
-            gobject.g_object_set_property(self, name, gv)
+            gobject_lib.g_object_set_property(self, name, gv)
 
             return true
         end,

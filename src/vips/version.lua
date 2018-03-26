@@ -2,7 +2,7 @@
 
 local ffi = require "ffi" 
 
-local vips = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
+local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
 ffi.cdef[[
     int vips_version (int flag);
@@ -12,9 +12,9 @@ ffi.cdef[[
 local version = {}
 
 version = {
-    major = vips.vips_version(0),
-    minor = vips.vips_version(1),
-    micro = vips.vips_version(2),
+    major = vips_lib.vips_version(0),
+    minor = vips_lib.vips_version(1),
+    micro = vips_lib.vips_version(2),
 
     -- test for libvips version is better than x.y .. we use this to turn on 
     -- various workarounds for older libvips
