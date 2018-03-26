@@ -2,6 +2,10 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-7 - 2018-03-23
+
+- renamed cache control funcs, the names were missing the `cache_` prefix
+
 # 1.1-6 - 2018-03-23
 
 - add operation cache control

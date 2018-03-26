@@ -531,11 +531,11 @@ want to change these values.
 
 ```lua
 -- set number of cached operations
-vips.set_max(100)
+vips.cache_set_max(100)
 -- set maximum cache memory use
-vips.set_max_mem(10 * 1024 * 1024)
+vips.cache_set_max_mem(10 * 1024 * 1024)
 -- set maximum number of open files
-vips.set_max_files(10)
+vips.cache_set_max_files(10)
 ```
 
 # Development

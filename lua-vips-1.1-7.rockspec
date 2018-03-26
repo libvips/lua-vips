@@ -1,5 +1,5 @@
 package = "lua-vips"
-version = "1.1-6"
+version = "1.1-7"
 
 source = {
    url = "git://github.com/jcupitt/lua-vips.git"
