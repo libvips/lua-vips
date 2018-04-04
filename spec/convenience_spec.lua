@@ -42,7 +42,7 @@ describe("test convenience functions", function()
     end)
 
     it("can join images bandwise", function ()
-        local im2 = im:bandjoin({im + 1, im + 2})
+        local im2 = im:bandjoin{im + 1, im + 2}
 
         assert.are.equal(im2:width(), 4)
         assert.are.equal(im2:height(), 1)
@@ -65,7 +65,7 @@ describe("test convenience functions", function()
     end)
 
     it("can join images and constants bandwise", function ()
-        local im2 = im:bandjoin({im + 1, 255, im + 2})
+        local im2 = im:bandjoin{im + 1, 255, im + 2}
 
         assert.are.equal(im2:width(), 4)
         assert.are.equal(im2:height(), 1)
@@ -78,7 +78,7 @@ describe("test convenience functions", function()
     end)
 
     it("can join images and array constants bandwise", function ()
-        local im2 = im:bandjoin({im + 1, {255, 128}})
+        local im2 = im:bandjoin{im + 1, {255, 128}}
 
         assert.are.equal(im2:width(), 4)
         assert.are.equal(im2:height(), 1)
@@ -92,7 +92,7 @@ describe("test convenience functions", function()
 
     if vips.version.at_least(8, 6) then
         it("can call composite", function ()
-            local base = im + {10, 11, 12}
+            local base = (im + {10, 11, 12}):copy{interpretation = "srgb"}
             local overlay = (base + 10):bandjoin(128)
             local comp = base:composite(overlay, "over")
             local pixel = comp:getpoint(0, 0)
@@ -118,7 +118,7 @@ describe("test convenience functions", function()
     end)
 
     it("can call bandsplit", function ()
-        local bands = im:bandjoin({im + 1, {255, 128}}):bandsplit()
+        local bands = im:bandjoin{im + 1, {255, 128}}:bandsplit()
 
         assert.are.equal(#bands, 4)
         assert.are.equal(bands[1]:width(), 4)
