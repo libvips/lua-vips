@@ -473,7 +473,7 @@ local instance_methods = {
     end,
 
     remove = function(self, name)
-        return vips_lib.vips_image_remove(self, name) ~= 0
+        return vips_lib.vips_image_remove(self.vimage, name) ~= 0
     end,
 
     -- standard header fields
