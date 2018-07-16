@@ -21,6 +21,14 @@ describe("metadata", function()
         assert.are.equal(im2:get("banana"), 12)
     end)
 
+    it("can remove metadata", function()
+        local im2 = im:copy()
+
+        im2:set_type(vips.gvalue.gint_type, "banana", 12)
+        im2:remove("banana")
+        assert.are.equal(im2:get_typeof("banana"), 0)
+    end)
+
     it("can set/get double", function()
         local im2 = im:copy()
 

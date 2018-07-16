@@ -6,6 +6,7 @@ All notable changes to `lua-vips` will be documented in this file.
 
 - cleanups and some reorganisation
 - renamed cache control funcs, the names were missing the `cache_` prefix
+- fix `image:remove()` [kleisauke]
 
 # 1.1-6 - 2018-03-23
 

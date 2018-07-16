@@ -6,11 +6,11 @@ is a [fast image processing library with low memory
 needs](https://github.com/jcupitt/lua-vips-bench).  `lua-vips` uses ffi
 and needs luajit 2.0 or later.
 
-The libvips documentation includes a handy
-searchable table of [every operation in
-libvips](http://jcupitt.github.io/libvips/API/current/func-list.html). This is
-a good place to check if it supports some feature you need. Read on to see how
-to call libvips operations. 
+The libvips documentation includes a
+handy searchable table of [every operation in
+libvips](http://jcupitt.github.io/libvips/API/current/func-list.html). This
+is a good place to check if it supports some feature you need. Read on to
+see how to call libvips operations.
 
 # Example
 
@@ -141,9 +141,9 @@ vips = require "vips"
 
 ## Make images
 
-You can make images from files or from buffers (Lua strings), you can wrap a
-vips image around an ffi array, or you can
-use one of the libvips create operators to make an image for you. 
+You can make images from files or from buffers (Lua strings), you can wrap
+a vips image around an ffi array, or you can use one of the libvips create
+operators to make an image for you.
 
 ### `image = vips.Image.new_from_file(filename [, options])`
 
@@ -580,7 +580,7 @@ Run the example script with:
 
 ### Update rock
 	
-	luarocks upload lua-vips-1.1-5.rockspec --api-key=xxxxxxxxxxxxxx
+	luarocks upload lua-vips-1.1-7.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 
