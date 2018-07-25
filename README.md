@@ -22,10 +22,10 @@ library](https://jcupitt.github.io/libvips/install.html), then install this rock
 Example:
 
 ```lua
-vips = require "vips"
+local vips = require "vips"
 
 -- fast thumbnail generator
-image = vips.Image.thumbnail("somefile.jpg", 128)
+local image = vips.Image.thumbnail("somefile.jpg", 128)
 image:write_to_file("tiny.jpg")
 
 -- make a new image with some text rendered on it
@@ -40,7 +40,7 @@ image = image .. image .. image
 -- add a constant
 image = image + 12
 -- add a different value to each band
-image = image + {1, 2, 3}
+image = image + { 1, 2, 3 }
 -- add two images
 image = image + image
 
@@ -59,20 +59,20 @@ r, g, b = image(10, 20)
 --    condition:ifthenelse(then, else) takes a condition image and uses true or
 --        false values to pick pixels from the then or else images ... then and
 --        else can be constants or images
-image = image:less(128):bandand():ifthenelse({0, 0, 255}, image)
+image = image:less(128):bandand():ifthenelse({ 0, 0, 255 }, image)
 
 -- go to Yxy colourspace
 image = image:colourspace("yxy")
 
 -- pass options to a save operation
-image:write_to_file("x.png", {compression = 9})
+image:write_to_file("x.png", { compression = 9 })
 ```
 
 # How it works
 
 libvips has quite a bit of introspection machinery built in. 
 
-When you call something like `image:hough_circle{scale = 4}`, the `__index`
+When you call something like `image:hough_circle{ scale = 4 }`, the `__index`
 method on the `lua-vips` image class opens libvips with ffi and searches
 for an operation called `hough_circle`. It discovers what arguments the
 operation takes, checks you supplied the correct arguments, and transforms
@@ -89,8 +89,8 @@ The libvips website has a handy table of [all the libvips
 operators](http://jcupitt.github.io/libvips/API/current/func-list.html). Each
 one links to the main API docs so you can see what you need to pass to it.
 
-A simple way to see the arguments for an operation is to try running it from the
-command-line. For example:
+A simple way to see the arguments for an operation is to try running it
+from the command-line. For example:
 
 ```bash
 $ vips embed
@@ -124,7 +124,7 @@ So you can call `embed` like this:
 
 ```lua
 local image = image:embed(100, 100, image:width() + 200, image:height() + 200,
-    {extend = "mirror"})
+    { extend = "mirror" })
 ```
 
 To add a 100 pixel mirror edge around an image.
@@ -136,7 +136,7 @@ This section runs through the main features of the binding.
 To load the binding use:
 
 ```lua
-vips = require "vips"
+local vips = require "vips"
 ```
 
 ## Make images
@@ -151,7 +151,8 @@ Opens the file and returns an image. You can pass a set of options in a final
 table argument, for example:
 
 ```lua
-local image = vips.Image.new_from_file("somefile.jpg", {access = "sequential"})
+local image = vips.Image.new_from_file("somefile.jpg", 
+   { access = "sequential" })
 ```
 
 Some options are specific to some file types, for example, `shrink`, meaning
@@ -162,14 +163,14 @@ You can embed options in filenames using the standard libvips syntax. For
 example, these are equivalent:
 
 ```lua
-local image = vips.Image.new_from_file("somefile.jpg", {shrink = 2})
+local image = vips.Image.new_from_file("somefile.jpg", { shrink = 2 })
 local image = vips.Image.new_from_file("somefile.jpg[shrink=2]")
 ```
 
 You can call specific file format loaders directly, for example:
 
 ```lua
-local image = vips.Image.jpegload("somefile.jpg", {shrink = 4})
+local image = vips.Image.jpegload("somefile.jpg", { shrink = 4 })
 ```
 
 The [loader section in the API
@@ -183,7 +184,7 @@ as JPEG. You can supply options, just as with `new_from_file`. These are
 equivalent:
 
 ```lua
-local image = vips.Image.new_from_buffer(string, "", {shrink = 2})
+local image = vips.Image.new_from_buffer(string, "", { shrink = 2 })
 local image = vips.Image.new_from_buffer(string, "shrink=2")
 ```
 
@@ -227,7 +228,7 @@ call it as a member function. `pixel` can be a table to make a many-band image,
 for example:
 
 ```lua
-local new_image = image:new_from_image{1, 2, 3}
+local new_image = image:new_from_image{ 1, 2, 3 }
 ```
 
 Will make a new three-band image, where all the red pixels have the value 1,
@@ -238,7 +239,7 @@ greens are 2 and blues are 3.
 Makes a new image from a Lua table. For example:
 
 ```lua
-local image = vips.Image.new_from_array{1, 2, 3}
+local image = vips.Image.new_from_array{ 1, 2, 3 }
 ```
 
 Makes a one-band image, three pixels across and one high. Use nested tables for
@@ -250,7 +251,7 @@ local mask = vips.Image.new_from_array(
     {{-1,  -1, -1}, 
      {-1,  16, -1}, 
      {-1,  -1, -1}}, 8)
-local image = image:conv(mask, {precision = "integer"})
+local image = image:conv(mask, { precision = "integer" })
 ```
 
 ### `image = vips.Image.copy_memory(self)`
@@ -266,7 +267,7 @@ Makes a new one band, 8 bit, black image. You can call any of the libvips image
 creation operators in this way, for example:
 
 ```lua
-local noise = vips.Image.perlin(256, 256, {cell_size = 128})
+local noise = vips.Image.perlin(256, 256, { cell_size = 128 })
 ```
 
 See:
@@ -324,7 +325,7 @@ You can call any libvips operation as a member function, for example
 Can be called from Lua like this:
 
 ```lua
-local image2 = image:hough_circle{scale = 2, max_radius = 50}
+local image2 = image:hough_circle{ scale = 2, max_radius = 50 }
 ```
 
 The rules are:
@@ -367,7 +368,7 @@ max_value, x, y = image:max()
 To get the position of the maximum, or:
 
 ```lua
-max_value, x, y, maxes = image:max{size = 10}
+max_value, x, y, maxes = image:max{ size = 10 }
 ```
 
 and `maxes` will be an array of the top 10 maximum values in order. 
@@ -424,7 +425,7 @@ to call --- you must write:
 
 
 ```lua
-image = vips.Image.bandjoin{image, image}
+image = vips.Image.bandjoin{ image, image }
 ```
 
 to join an image to itself. Instead, `lua-vips` defines `bandjoin` as a member
@@ -437,14 +438,14 @@ image = image:bandjoin(image)
 to join an image to itself, or perhaps:
 
 ```lua
-image = R:bandjoin{G, B}
+image = R:bandjoin{ G, B }
 ```
 
 to join three RGB bands. Constants work too, so you can write:
 
 ```lua
 image = image:bandjoin(255)
-image = R:bandjoin{128, 23}
+image = R:bandjoin{ 128, 23 }
 ```
 
 The `bandrank` and `composite` operators works in the same way. 
@@ -486,7 +487,7 @@ The filename suffix is used to pick the save operator. Just as with
 types. You can call savers directly if you wish, for example:
 
 ```lua
-image:jpegsave("x.jpg", {Q = 90})
+image:jpegsave("x.jpg", { Q = 90 })
 ```
 
 ### `string = image:write_to_buffer(suffix [, options])`
@@ -496,7 +497,7 @@ The suffix is used to pick the saver that is used to generate the result, so
 directly if you wish, perhaps:
 
 ```lua
-local str = image:jpegsave_buffer{Q = 90}
+local str = image:jpegsave_buffer{ Q = 90 }
 ```
 
 ### `memory = image:write_to_memory()`
