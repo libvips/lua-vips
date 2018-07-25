@@ -137,7 +137,12 @@ function Image.new(vimage)
 end
 
 function Image.find_load(filename)
-    return vips_lib.vips_foreign_find_load(filename)
+    local name = vips_lib.vips_foreign_find_load(filename)
+    if name == nil then
+        return nil
+    else
+        return ffi.string(name)
+    end
 end
 
 function Image.new_from_file(vips_filename, ...)
@@ -148,12 +153,17 @@ function Image.new_from_file(vips_filename, ...)
         error(verror.get())
     end
 
-    return voperation.call(ffi.string(name), ffi.string(options),
+    return voperation.call(name, ffi.string(options),
         ffi.string(filename), unpack { ... })
 end
 
 function Image.find_load_buffer(data)
-    return vips_lib.vips_foreign_find_load_buffer(data, #data)
+    local name = vips_lib.vips_foreign_find_load_buffer(data, #data)
+    if name == nil then
+        return nil
+    else
+        return ffi.string(name)
+    end
 end
 
 function Image.new_from_buffer(data, options, ...)
@@ -162,7 +172,7 @@ function Image.new_from_buffer(data, options, ...)
         error(verror.get())
     end
 
-    return voperation.call(ffi.string(name), options or "", data, unpack { ... })
+    return voperation.call(name, options or "", data, unpack { ... })
 end
 
 function Image.new_from_memory(data, width, height, bands, format)

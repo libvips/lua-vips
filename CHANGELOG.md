@@ -2,6 +2,13 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-8 - 2018-07-25
+
+- cleanups and some reorganisation [kleisauke]
+- fix regressions from 1.1-7 [kleisauke]
+- add `find_load` [kleisauke]
+- add `find_load_buffer` [kleisauke]
+
 # 1.1-7 - 2018-03-23
 
 - cleanups and some reorganisation
