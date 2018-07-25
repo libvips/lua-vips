@@ -1,10 +1,11 @@
+local vips = require "vips"
+
 -- test cache control
-
-require 'busted.runner'()
-
 describe("cache control", function()
-    vips = require("vips")
-    --vips.log.enable(true)
+
+    setup(function()
+        -- vips.log.enable(true)
+    end)
 
     it("can set number of operations to cache", function()
         local max = vips.get_max()
@@ -29,5 +30,4 @@ describe("cache control", function()
         assert.are.equal(vips.get_max_mem(), 10)
         vips.set_max_mem(max)
     end)
-
 end)

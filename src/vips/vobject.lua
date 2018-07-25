@@ -17,7 +17,7 @@ else
     gobject_lib = vips_lib
 end
 
-ffi.cdef[[
+ffi.cdef [[
     typedef struct _GObject {
         void *g_type_instance;
         unsigned int ref_count;
@@ -44,7 +44,7 @@ ffi.cdef[[
     typedef struct _GParamSpec {
         void* g_type_instance;
 
-        const char* name;     
+        const char* name;
         unsigned int flags;
         GType value_type;
         GType owner_type;
@@ -83,14 +83,14 @@ ffi.cdef[[
         uint64_t offset;
     } VipsArgumentClass;
 
-    int vips_object_get_argument (VipsObject* object, 
-        const char *name, GParamSpec** pspec, 
+    int vips_object_get_argument (VipsObject* object,
+        const char *name, GParamSpec** pspec,
         VipsArgumentClass** argument_class,
         VipsArgumentInstance** argument_instance);
 
-    void g_object_set_property (VipsObject* object, 
+    void g_object_set_property (VipsObject* object,
         const char *name, GValue* value);
-    void g_object_get_property (VipsObject* object, 
+    void g_object_get_property (VipsObject* object,
         const char* name, GValue* value);
 
     void vips_object_print_all (void);
@@ -107,7 +107,6 @@ local vobject_mt = {
         pspec_typeof = ffi.typeof("GParamSpec*[1]"),
         argument_class_typeof = ffi.typeof("VipsArgumentClass*[1]"),
         argument_instance_typeof = ffi.typeof("VipsArgumentInstance*[1]"),
-
         print_all = function(msg)
             collectgarbage()
             print(msg)
@@ -116,11 +115,9 @@ local vobject_mt = {
         end,
 
         new = function(self)
-            ffi.gc(self, 
-                function(x) 
-                    gobject_lib.g_object_unref(x)
-                end
-            )
+            ffi.gc(self, function(x)
+                gobject_lib.g_object_unref(x)
+            end)
             return self
         end,
 
@@ -178,11 +175,9 @@ local vobject_mt = {
             gobject_lib.g_object_set_property(self, name, gv)
 
             return true
-        end,
-
+        end
     }
 }
 
 vobject = ffi.metatype("VipsObject", vobject_mt)
 return vobject
-

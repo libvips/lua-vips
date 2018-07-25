@@ -1,14 +1,15 @@
+local vips = require "vips"
+
 -- test metadata read/write
-
-require 'busted.runner'()
-
 describe("metadata", function()
-    vips = require("vips")
-    --vips.log.enable(true)
-
-    local array = {1, 2, 3, 4}
-    local im = vips.Image.new_from_array(array)
+    local array, im
     local tmp_vips_filename = "/tmp/x.v"
+
+    setup(function()
+        array = { 1, 2, 3, 4 }
+        im = vips.Image.new_from_array(array)
+        -- vips.log.enable(true)
+    end)
 
     teardown(function()
         os.remove(tmp_vips_filename)
@@ -57,5 +58,4 @@ describe("metadata", function()
 
         assert.are.same(im2:format(), "double")
     end)
-
 end)

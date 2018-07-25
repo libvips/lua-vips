@@ -4,11 +4,9 @@ local ffi = require "ffi"
 
 local verror = require "vips/verror"
 local version = require "vips/version"
-local log = require "vips/log"
 local gvalue = require "vips/gvalue"
 local vobject = require "vips/vobject"
 local voperation = require "vips/voperation"
-local vimage = require "vips/vimage"
 local Image = require "vips/Image"
 
 local vips_lib
@@ -24,7 +22,7 @@ else
     glib_lib = vips_lib
 end
 
-ffi.cdef[[
+ffi.cdef [[
     const char* vips_foreign_find_load (const char* name);
     const char* vips_foreign_find_load_buffer (const void* data, size_t size);
     const char* vips_foreign_find_save (const char* name);
@@ -35,14 +33,14 @@ ffi.cdef[[
 
     VipsImage* vips_image_new_from_memory (const void *data, size_t size,
             int width, int height, int bands, int format);
-    unsigned char* vips_image_write_to_memory (VipsImage* image, 
+    unsigned char* vips_image_write_to_memory (VipsImage* image,
             size_t* size_out);
 
     VipsImage* vips_image_copy_memory (VipsImage* image);
 
-    GType vips_image_get_typeof (const VipsImage* image, 
+    GType vips_image_get_typeof (const VipsImage* image,
         const char* name);
-    int vips_image_get (const VipsImage* image, 
+    int vips_image_get (const VipsImage* image,
         const char* name, GValue* value_copy);
     void vips_image_set (VipsImage* image, const char* name, GValue* value);
     int vips_image_remove (VipsImage* image, const char* name);
@@ -52,11 +50,7 @@ ffi.cdef[[
 
 ]]
 
--- either a single number, or a table of numbers
-local function is_pixel(value)
-    return type(value) == "number" or
-        (type(value) == "table" and not Image.is_Image(value))
-end
+require "vips/vimage"
 
 -- test for rectangular array of something
 local function is_2D(table)
@@ -99,12 +93,12 @@ end
 -- either a single number, or a table of numbers
 local function is_pixel(value)
     return type(value) == "number" or
-        (type(value) == "table" and not Image.is_Image(value))
+            (type(value) == "table" and not Image.is_Image(value))
 end
 
 local function call_enum(image, other, base, operation)
     if type(other) == "number" then
-        return image[base .. "_const"](image, operation, {other})
+        return image[base .. "_const"](image, operation, { other })
     elseif is_pixel(other) then
         return image[base .. "_const"](image, operation, other)
     else
@@ -142,25 +136,33 @@ function Image.new(vimage)
     return image
 end
 
+function Image.find_load(filename)
+    return vips_lib.vips_foreign_find_load(filename)
+end
+
 function Image.new_from_file(vips_filename, ...)
     local filename = vips_lib.vips_filename_get_filename(vips_filename)
     local options = vips_lib.vips_filename_get_options(vips_filename)
-    local name = vips_lib.vips_foreign_find_load(filename)
+    local name = Image.find_load(filename)
     if name == nil then
         error(verror.get())
     end
 
-    return voperation.call(ffi.string(name), ffi.string(options), 
-        ffi.string(filename), unpack{...})
+    return voperation.call(ffi.string(name), ffi.string(options),
+        ffi.string(filename), unpack { ... })
+end
+
+function Image.find_load_buffer(data)
+    return vips_lib.vips_foreign_find_load_buffer(data, #data)
 end
 
 function Image.new_from_buffer(data, options, ...)
-    local name = vips_lib.vips_foreign_find_load_buffer(data, #data)
+    local name = Image.find_load_buffer(data)
     if name == nil then
         error(verror.get())
     end
 
-    return voperation.call(ffi.string(name), options or "", data, unpack{...})
+    return voperation.call(ffi.string(name), options or "", data, unpack { ... })
 end
 
 function Image.new_from_memory(data, width, height, bands, format)
@@ -187,7 +189,7 @@ function Image.new_from_array(array, scale, offset)
     local height
 
     if not is_2D(array) then
-        array = {array}
+        array = { array }
     end
     width = #array[1]
     height = #array
@@ -199,7 +201,7 @@ function Image.new_from_array(array, scale, offset)
             a[x + y * width] = array[y + 1][x + 1]
         end
     end
-    local vimage = vips_lib.vips_image_new_matrix_from_array(width, 
+    local vimage = vips_lib.vips_image_new_matrix_from_array(width,
         height, a, n)
     local image = Image.new(vimage)
 
@@ -212,11 +214,11 @@ end
 function Image.new_from_image(base_image, value)
     local pixel = (Image.black(1, 1) + value):cast(base_image:format())
     local image = pixel:embed(0, 0, base_image:width(), base_image:height(),
-        {extend = "copy"})
-    image = image:copy{
+        { extend = "copy" })
+    image = image:copy {
         interpretation = base_image:interpretation(),
         xres = base_image:xres(),
-        yres =  base_image:yres(),
+        yres = base_image:yres(),
         xoffset = base_image:xoffset(),
         yoffset = base_image:yoffset()
     }
@@ -225,9 +227,9 @@ function Image.new_from_image(base_image, value)
 end
 
 -- this is for undefined class methods, like Image.text
-function Image.__index(table, name)
+function Image.__index(_, name)
     return function(...)
-        return voperation.call(name, "", unpack{...})
+        return voperation.call(name, "", unpack { ... })
     end
 end
 
@@ -237,9 +239,9 @@ function Image.mt.__add(a, b)
     a, b = swap_Image_left(a, b)
 
     if type(b) == "number" then
-        return a:linear({1}, {b})
+        return a:linear({ 1 }, { b })
     elseif is_pixel(b) then
-        return a:linear({1}, b)
+        return a:linear({ 1 }, b)
     else
         return a:add(b)
     end
@@ -248,19 +250,19 @@ end
 function Image.mt.__sub(a, b)
     if Image.is_Image(a) then
         if type(b) == "number" then
-            return a:linear({1}, {-b})
+            return a:linear({ 1 }, { -b })
         elseif is_pixel(b) then
-            return a:linear({1}, map(function(x) return -x end, b))
+            return a:linear({ 1 }, map(function(x) return -x end, b))
         else
             return a:subtract(b)
         end
     else
         -- therefore a is a constant and b is an image
         if type(a) == "number" then
-            return (b * -1):linear({1}, {a})
+            return (b * -1):linear({ 1 }, { a })
         else
             -- assume a is a pixel
-            return (b * -1):linear({1}, a)
+            return (b * -1):linear({ 1 }, a)
         end
     end
 end
@@ -269,9 +271,9 @@ function Image.mt.__mul(a, b)
     a, b = swap_Image_left(a, b)
 
     if type(b) == "number" then
-        return a:linear({b}, {0})
+        return a:linear({ b }, { 0 })
     elseif is_pixel(b) then
-        return a:linear(b, {0})
+        return a:linear(b, { 0 })
     else
         return a:multiply(b)
     end
@@ -280,19 +282,19 @@ end
 function Image.mt.__div(a, b)
     if Image.is_Image(a) then
         if type(b) == "number" then
-            return a:linear({1 / b}, {0})
+            return a:linear({ 1 / b }, { 0 })
         elseif is_pixel(b) then
-            return a:linear(map(function(x) return x ^ -1 end, b), {0})
+            return a:linear(map(function(x) return x ^ -1 end, b), { 0 })
         else
             return a:divide(b)
         end
     else
         -- therefore a is a constant and b is an image
         if type(a) == "number" then
-            return (b ^ -1):linear({a}, {0})
+            return (b ^ -1):linear({ a }, { 0 })
         else
             -- assume a is a pixel
-            return (b ^ -1):linear(a, {0})
+            return (b ^ -1):linear(a, { 0 })
         end
     end
 end
@@ -303,7 +305,7 @@ function Image.mt.__mod(a, b)
     end
 
     if type(b) == "number" then
-        return a:remainder_const({b})
+        return a:remainder_const({ b })
     elseif is_pixel(b) then
         return a:remainder_const(b)
     else
@@ -321,7 +323,6 @@ function Image.mt.__pow(a, b)
     else
         return b:wop(a)
     end
-
 end
 
 -- unfortunately, lua does not let you return non-bools from <, >, <=, >=, ==,
@@ -329,10 +330,10 @@ end
 
 function Image.mt.__tostring(self)
     local result = (self:filename() or "(nil)") .. ": " ..
-        self:width() .. "x" .. self:height() .. " " .. 
-        self:format() .. ", " ..
-        self:bands() .. " bands, " ..
-        self:interpretation()
+            self:width() .. "x" .. self:height() .. " " ..
+            self:format() .. ", " ..
+            self:bands() .. " bands, " ..
+            self:interpretation()
 
     if self:get_typeof("vips-loader") ~= 0 then
         result = result .. ", " .. self:get("vips-loader")
@@ -385,8 +386,8 @@ local instance_methods = {
             error(verror.get())
         end
 
-        return voperation.call(ffi.string(name), ffi.string(options), 
-            self, filename, unpack{...})
+        return voperation.call(ffi.string(name), ffi.string(options),
+            self, filename, unpack { ... })
     end,
 
     write_to_buffer = function(self, format_string, ...)
@@ -396,13 +397,13 @@ local instance_methods = {
             error(verror.get())
         end
 
-        return voperation.call(ffi.string(name), ffi.string(options), 
-            self, unpack{...})
+        return voperation.call(ffi.string(name), ffi.string(options),
+            self, unpack { ... })
     end,
 
     write_to_memory = function(self)
         local psize = ffi.new(gvalue.psize_typeof, 1)
-        local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, 
+        local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage,
             psize)
         local size = psize[0]
         -- FIXME can we avoid the copy somehow?
@@ -417,7 +418,7 @@ local instance_methods = {
 
     get_typeof = function(self, name)
         -- on libvips 8.4 and earlier, we need to fetch the type via
-        -- our superclass get_typeof(), since vips_image_get_typeof() returned 
+        -- our superclass get_typeof(), since vips_image_get_typeof() returned
         -- enum properties as ints
         if not version.at_least(8, 5) then
             local gtype = self:vobject():get_typeof(name)
@@ -453,7 +454,7 @@ local instance_methods = {
             error("unable to get " .. name)
         end
 
-        local result = pgv[0]:get()
+        result = pgv[0]:get()
 
         gobject_lib.g_value_unset(pgv[0])
 
@@ -529,7 +530,7 @@ local instance_methods = {
     bandjoin = function(self, other, options)
         -- allow a single untable arg as well
         if type(other) == "number" or Image.is_Image(other) then
-            other = {other}
+            other = { other }
         end
 
         -- if other is all constants, we can use bandjoin_const
@@ -542,43 +543,43 @@ local instance_methods = {
         end
 
         if all_constant then
-            return voperation.call("bandjoin_const", "", self, other)
+            return voperation.call("bandjoin_const", "", self, other, options)
         else
-            return voperation.call("bandjoin", "", {self, unpack(other)})
+            return voperation.call("bandjoin", "", { self, unpack(other) }, options)
         end
     end,
 
     bandrank = function(self, other, options)
         if type(other) ~= "table" then
-            other = {other}
+            other = { other }
         end
 
-        return voperation.call("bandrank", "", {self, unpack(other)})
+        return voperation.call("bandrank", "", { self, unpack(other) }, options)
     end,
 
     composite = function(self, other, mode, options)
         -- allow a single untable arg as well
         if type(other) == "number" or Image.is_Image(other) then
-            other = {other}
+            other = { other }
         end
         if type(mode) ~= "table" then
-            mode = {mode}
+            mode = { mode }
         end
 
-        -- need to map str -> int by hand, since the mode arg is actually 
+        -- need to map str -> int by hand, since the mode arg is actually
         -- arrayint
         for i = 1, #mode do
             mode[i] = gvalue.to_enum(gvalue.blend_mode_type, mode[i])
         end
 
-        return voperation.call("composite", "", 
-            {self, unpack(other)}, mode, options)
+        return voperation.call("composite", "",
+            { self, unpack(other) }, mode, options)
     end,
 
     -- convenience functions
 
     bandsplit = function(self)
-        local result 
+        local result
 
         result = {}
         for i = 0, self:bands() - 1 do
@@ -591,13 +592,13 @@ local instance_methods = {
     -- special behaviour wrappers
 
     ifthenelse = function(self, then_value, else_value, options)
-        -- We need different imageize rules for this. We need then_value 
-        -- and else_value to match each other first, and only if they 
+        -- We need different imageize rules for this. We need then_value
+        -- and else_value to match each other first, and only if they
         -- are both constants do we match to self.
 
         local match_image
 
-        for i, v in pairs({then_value, else_value, self}) do
+        for _, v in pairs({ then_value, else_value, self }) do
             if Image.is_Image(v) then
                 match_image = v
                 break
@@ -612,7 +613,7 @@ local instance_methods = {
             else_value = match_image:imageize(else_value)
         end
 
-        return voperation.call("ifthenelse", "", 
+        return voperation.call("ifthenelse", "",
             self, then_value, else_value, options)
     end,
 
@@ -783,14 +784,13 @@ local instance_methods = {
     end
 }
 
-function Image.mt.__index(table, index)
+function Image.mt.__index(_, index)
     if instance_methods[index] then
         return instance_methods[index]
     else
-        return 
-            function(...)
-                return voperation.call(index, "", unpack{...})
-            end
+        return function(...)
+            return voperation.call(index, "", unpack { ... })
+        end
     end
 end
 

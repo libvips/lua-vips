@@ -10,11 +10,11 @@ log = {
 
     msg = function(...)
         if logging_on then
-            print(unpack{...})
+            print(unpack { ... })
         end
     end,
 
-    prettyprint_table = function(p, t)
+    prettyprint_table = function(p, table)
         local p_r_cache = {}
         local function sub_p_r(t, indent)
             if (p_r_cache[tostring(t)]) then
@@ -24,18 +24,18 @@ log = {
                 if type(t) == "table" then
                     for pos, val in pairs(t) do
                         if type(val) == "table" then
-                            p(indent .. 
-                                "[" .. pos .. "] => " ..  tostring(t) .. " {")
-                            sub_p_r(val, indent .. 
-                                string.rep(" ", string.len(pos) + 8))
-                            p(indent .. 
-                                string.rep(" ", string.len(pos) + 6) .. "}")
+                            p(indent ..
+                                    "[" .. pos .. "] => " .. tostring(t) .. " {")
+                            sub_p_r(val, indent ..
+                                    string.rep(" ", string.len(pos) + 8))
+                            p(indent ..
+                                    string.rep(" ", string.len(pos) + 6) .. "}")
                         elseif type(val) == "string" then
-                            p(indent .. "[".. pos .. '] => "' .. 
-                                val .. '"')
+                            p(indent .. "[" .. pos .. '] => "' ..
+                                    val .. '"')
                         else
-                            p(indent .. "[" .. pos .. "] => " .. 
-                                tostring(val))
+                            p(indent .. "[" .. pos .. "] => " ..
+                                    tostring(val))
                         end
                     end
                 else
@@ -43,12 +43,13 @@ log = {
                 end
             end
         end
-        if type(t) == "table" then
-            p(tostring(t) .. " {")
-            sub_p_r(t, "  ")
+
+        if type(table) == "table" then
+            p(tostring(table) .. " {")
+            sub_p_r(table, "  ")
             p("}")
         else
-            sub_p_r(t, "  ")
+            sub_p_r(table, "  ")
         end
         p()
     end,
@@ -59,9 +60,7 @@ log = {
 
     print_r = function(t)
         log.prettyprint_table(print, t)
-    end,
-
+    end
 }
 
 return log
-

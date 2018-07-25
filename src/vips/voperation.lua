@@ -13,7 +13,7 @@ local Image = require "vips/Image"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
-ffi.cdef[[
+ffi.cdef [[
     typedef struct _VipsOperation {
         VipsObject parent_instance;
 
@@ -22,10 +22,10 @@ ffi.cdef[[
 
     VipsOperation* vips_operation_new (const char* name);
 
-    typedef void *(*VipsArgumentMapFn) (VipsOperation* object, 
+    typedef void *(*VipsArgumentMapFn) (VipsOperation* object,
         GParamSpec* pspec,
         VipsArgumentClass* argument_class,
-        VipsArgumentInstance* argument_instance, 
+        VipsArgumentInstance* argument_instance,
         void* a, void* b);
 
     void* vips_argument_map (VipsOperation* object,
@@ -39,9 +39,9 @@ ffi.cdef[[
 ]]
 
 local REQUIRED = 1
-local CONSTRUCT = 2
-local SET_ONCE = 4
-local SET_ALWAYS = 8
+local CONSTRUCT = 2 -- luacheck: ignore
+local SET_ONCE = 4 -- luacheck: ignore
+local SET_ALWAYS = 8 -- luacheck: ignore
 local INPUT = 16
 local OUTPUT = 32
 local DEPRECATED = 64
@@ -65,7 +65,7 @@ local function find_order(fn, array)
         elseif type(array[i]) == "table" then
             local result = find_order(fn, array[i])
 
-            if result then 
+            if result then
                 return result
             end
         end
@@ -100,14 +100,12 @@ local voperation_mt = {
             if match_image then
                 local gtype = self:vobject():get_typeof(name)
 
-                if gtype == gvalue.image_type then 
+                if gtype == gvalue.image_type then
                     value = match_image:imageize(value)
                 elseif gtype == gvalue.array_image_type then
-                    value = map(
-                        function(x)
-                            return match_image:imageize(x)
-                        end, 
-                        value)
+                    value = map(function(x)
+                        return match_image:imageize(x)
+                    end, value)
                 end
             end
 
@@ -125,21 +123,19 @@ local voperation_mt = {
         getargs = function(self)
             local args = {}
             local cb = ffi.cast(voperation.argumentmap_typeof,
-                function(self, pspec, argument_class, argument_instance, a, b)
+                function(_, pspec, argument_class, _, _, _)
                     local name = ffi.string(pspec.name)
 
                     -- libvips uses "-" to separate parts of arg names, but we
                     -- need "_" for lua
                     name = string.gsub(name, "-", "_")
 
-                    table.insert(args, 
-                        {name = name, 
-                         flags = tonumber(argument_class.flags)
-                        }
-                    )
-                end
-            )
-            vips_lib.vips_argument_map(self, cb, nil, nil )
+                    table.insert(args, {
+                        name = name,
+                        flags = tonumber(argument_class.flags)
+                    })
+                end)
+            vips_lib.vips_argument_map(self, cb, nil, nil)
             cb:free()
 
             return args
@@ -148,7 +144,7 @@ local voperation_mt = {
         -- string_options is any optional args coded as a string, perhaps
         -- "[strip,tile=true]"
         call = function(name, string_options, ...)
-            local call_args = {...}
+            local call_args = { ... }
 
             local vop = vips_lib.vips_operation_new(name)
             if vop == nil then
@@ -167,9 +163,9 @@ local voperation_mt = {
             for i = 1, #arguments do
                 local flags = arguments[i].flags
 
-                if band(flags, INPUT) ~= 0 and 
-                    band(flags, REQUIRED) ~= 0 and 
-                    band(flags, DEPRECATED) == 0 then
+                if band(flags, INPUT) ~= 0 and
+                        band(flags, REQUIRED) ~= 0 and
+                        band(flags, DEPRECATED) == 0 then
                     n_required = n_required + 1
                 end
             end
@@ -177,48 +173,45 @@ local voperation_mt = {
             -- so we should have been passed n_required, or n_required + 1 if
             -- there's a table of options at the end
             local last_arg
-            if #call_args == n_required then 
+            if #call_args == n_required then
                 last_arg = nil
             elseif #call_args == n_required + 1 then
                 last_arg = call_args[#call_args]
                 if type(last_arg) ~= "table" then
                     error("unable to call " .. name .. ": " .. #call_args ..
-                        " arguments given, " .. n_required .. 
-                        ", but final argument is not a table")
+                            " arguments given, " .. n_required ..
+                            ", but final argument is not a table")
                 end
             else
                 error("unable to call " .. name .. ": " .. #call_args ..
-                    " arguments given, but " .. n_required ..  " required")
+                        " arguments given, but " .. n_required .. " required")
             end
 
             -- the first image argument is the thing we expand constants to
             -- match ... look inside tables for images, since we may be passing
             -- an array of image as a single param
-            local match_image = find_order(
-                function(x)
-                    if Image.is_Image(x) then
-                        return x
-                    else
-                        return nil
-                    end
-                end,
-                call_args
-            )
+            local match_image = find_order(function(x)
+                if Image.is_Image(x) then
+                    return x
+                else
+                    return nil
+                end
+            end, call_args)
 
             -- set any string options before any args so they can't be
             -- overridden
-            if vips_lib.vips_object_set_from_string(vop:vobject(), 
+            if vips_lib.vips_object_set_from_string(vop:vobject(),
                 string_options) ~= 0 then
-                error("unable to call " .. name .. "\n" ..  verror.get())
+                error("unable to call " .. name .. "\n" .. verror.get())
             end
 
             local n = 0
             for i = 1, #arguments do
                 local flags = arguments[i].flags
 
-                if band(flags, INPUT) ~= 0 and 
-                    band(flags, REQUIRED) ~= 0 and 
-                    band(flags, DEPRECATED) == 0 then
+                if band(flags, INPUT) ~= 0 and
+                        band(flags, REQUIRED) ~= 0 and
+                        band(flags, DEPRECATED) == 0 then
                     n = n + 1
 
                     if not vop:set(arguments[i].name, flags,
@@ -236,8 +229,8 @@ local voperation_mt = {
 
                 for k, v in pairs(last_arg) do
                     if not vop:set(k, args_by_name[k], match_image, v) then
-                        error("unable to call " .. name .. "\n" .. 
-                            verror.get())
+                        error("unable to call " .. name .. "\n" ..
+                                verror.get())
                     end
                 end
             end
@@ -248,7 +241,6 @@ local voperation_mt = {
             end
             vop2:new()
             vop = vop2
-            vop2 = nil
 
             local result = {}
             local vob = vop:vobject()
@@ -256,17 +248,17 @@ local voperation_mt = {
             for i = 1, #arguments do
                 local flags = arguments[i].flags
 
-                if band(flags, OUTPUT) ~= 0 and 
-                    band(flags, REQUIRED) ~= 0 and 
-                    band(flags, DEPRECATED) == 0 then
+                if band(flags, OUTPUT) ~= 0 and
+                        band(flags, REQUIRED) ~= 0 and
+                        band(flags, DEPRECATED) == 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
 
                 -- MODIFY input args are returned .. this will get the copy we
                 -- made above
-                if band(flags, INPUT) ~= 0 and 
-                    band(flags, MODIFY) ~= 0 then
+                if band(flags, INPUT) ~= 0 and
+                        band(flags, MODIFY) ~= 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
@@ -275,9 +267,9 @@ local voperation_mt = {
             for i = 1, #arguments do
                 local flags = arguments[i].flags
 
-                if band(flags, OUTPUT) ~= 0 and 
-                    band(flags, REQUIRED) == 0 and 
-                    band(flags, DEPRECATED) == 0 then
+                if band(flags, OUTPUT) ~= 0 and
+                        band(flags, REQUIRED) == 0 and
+                        band(flags, DEPRECATED) == 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
@@ -286,22 +278,19 @@ local voperation_mt = {
             for i = 1, #arguments do
                 local flags = arguments[i].flags
 
-                if band(flags, OUTPUT) ~= 0 and 
-                    band(flags, DEPRECATED) ~= 0 then
+                if band(flags, OUTPUT) ~= 0 and
+                        band(flags, DEPRECATED) ~= 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end
             end
 
             vips_lib.vips_object_unref_outputs(vop)
-            vop = nil
 
             return unpack(result)
-        end,
-
+        end
     }
 }
 
 voperation = ffi.metatype("VipsOperation", voperation_mt)
 return voperation
-

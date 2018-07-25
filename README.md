@@ -567,10 +567,17 @@ You need:
 
 Then to run the test suite:
 
-	(cd spec; for i in *_spec.lua; do luajit $i; done)
+	busted . -o gtest -v
 
-You can't do `busted .`, unfortunately, since busted `fork()`s between files
-and this breaks luajit GC with ffi (I think).
+### Linting and static analysis
+
+You need:
+
+	luarocks --local install luacheck
+
+Then to run the linter:
+
+	 luacheck .
 
 ### Test
 
