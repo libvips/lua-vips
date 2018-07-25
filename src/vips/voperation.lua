@@ -196,8 +196,7 @@ local voperation_mt = {
                 else
                     return nil
                 end
-            end,
-                call_args)
+            end, call_args)
 
             -- set any string options before any args so they can't be
             -- overridden
