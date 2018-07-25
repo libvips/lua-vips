@@ -1,10 +1,10 @@
 -- top include for lua-vips
 
-local ffi = require "ffi" 
+local ffi = require "ffi"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
-ffi.cdef[[
+ffi.cdef [[
     int vips_init (const char* argv0);
 
     void vips_cache_set_max (int max);
@@ -33,7 +33,6 @@ local vips = {
     voperation = require "vips/voperation",
     vimage = require "vips/vimage",
     Image = require "vips/Image",
-
 }
 
 require "vips/Image_methods"
@@ -70,4 +69,4 @@ vips.get_max_files = vips.cache_get_max_files
 vips.set_max_mem = vips.cache_set_max_mem
 vips.get_max_mem = vips.cache_get_max_mem
 
-return vips 
+return vips

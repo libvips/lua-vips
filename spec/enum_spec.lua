@@ -1,13 +1,14 @@
+local vips = require "vips"
+
 -- test metadata read/write
-
-require 'busted.runner'()
-
 describe("enum expansions", function()
-    vips = require("vips")
-    --vips.log.enable(true)
+    local array, im
 
-    local array = {1, 2, 3, 4}
-    local im = vips.Image.new_from_array(array)
+    setup(function()
+        array = { 1, 2, 3, 4 }
+        im = vips.Image.new_from_array(array)
+        -- vips.log.enable(true)
+    end)
 
     -- there are loads of expansions, just test one of each type
 
@@ -18,7 +19,6 @@ describe("enum expansions", function()
         assert.are.equal(im2:height(), 1)
         assert.are.equal(im2:bands(), 1)
         assert.are.equal(im2:avg(), (1 + 4 + 9 + 16) / 4)
-
     end)
 
     it("can call pow() with an image arg", function()
@@ -28,7 +28,6 @@ describe("enum expansions", function()
         assert.are.equal(im2:height(), 1)
         assert.are.equal(im2:bands(), 1)
         assert.are.equal(im2:avg(), (1 ^ 1 + 2 ^ 2 + 3 ^ 3 + 4 ^ 4) / 4)
-
     end)
 
     it("can call lshift()", function()
@@ -38,7 +37,6 @@ describe("enum expansions", function()
         assert.are.equal(im2:height(), 1)
         assert.are.equal(im2:bands(), 1)
         assert.are.equal(im2:avg(), (2 + 4 + 6 + 8) / 4)
-
     end)
 
     it("can call less()", function()
@@ -48,7 +46,5 @@ describe("enum expansions", function()
         assert.are.equal(im2:height(), 1)
         assert.are.equal(im2:bands(), 1)
         assert.are.equal(im2:avg(), (255 + 0 + 0 + 0) / 4)
-
     end)
-
 end)

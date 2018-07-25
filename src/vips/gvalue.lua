@@ -1,9 +1,7 @@
 -- manipulate GValue objects from lua
 -- pull in gobject via the vips library
 
-local ffi = require "ffi" 
-
-local log = require "vips/log"
+local ffi = require "ffi"
 
 local verror = require "vips/verror"
 local version = require "vips/version"
@@ -25,19 +23,19 @@ end
 -- GType is an int the size of a pointer ... I don't think we can just use
 -- size_t, sadly
 if ffi.arch == "x64" then
-    ffi.cdef[[
+    ffi.cdef [[
         typedef uint64_t GType;
     ]]
 else
-    ffi.cdef[[
+    ffi.cdef [[
         typedef uint32_t GType;
     ]]
 end
 
-ffi.cdef[[
+ffi.cdef [[
     typedef struct _GValue {
         GType gtype;
-        uint64_t data[2]; 
+        uint64_t data[2];
     } GValue;
 
     typedef struct _VipsImage VipsImage;
@@ -57,7 +55,7 @@ ffi.cdef[[
     GType vips_blend_mode_get_type (void);
     GType vips_band_format_get_type (void);
 
-    int vips_enum_from_nick (const char* domain, 
+    int vips_enum_from_nick (const char* domain,
         GType gtype, const char* str);
     const char *vips_enum_nick (GType gtype, int value);
 
@@ -68,9 +66,9 @@ ffi.cdef[[
     void g_value_set_flags (GValue* value, unsigned int f);
     void g_value_set_string (GValue* value, const char *str);
     void g_value_set_object (GValue* value, void* object);
-    void vips_value_set_array_double (GValue* value, 
+    void vips_value_set_array_double (GValue* value,
         const double* array, int n );
-    void vips_value_set_array_int (GValue* value, 
+    void vips_value_set_array_int (GValue* value,
         const int* array, int n );
     void vips_value_set_array_image (GValue *value, int n);
     void vips_value_set_blob (GValue* value,
@@ -98,7 +96,9 @@ if version.at_least(8, 6) then
 end
 vips_lib.vips_band_format_get_type()
 
-local function print_all(msg)
+-- Print a table of all active libvips objects.
+-- Handy for debugging.
+local function print_all(msg) -- luacheck: ignore
     collectgarbage()
     print(msg)
     vips_lib.vips_object_print_all()
@@ -137,8 +137,8 @@ local gvalue_mt = {
         refstr_type = gobject_lib.g_type_from_name("VipsRefString"),
         blob_type = gobject_lib.g_type_from_name("VipsBlob"),
         band_format_type = gobject_lib.g_type_from_name("VipsBandFormat"),
-        blend_mode_type = version.at_least(8, 6) and 
-            gobject_lib.g_type_from_name("VipsBlendMode") or 0,
+        blend_mode_type = version.at_least(8, 6) and
+                gobject_lib.g_type_from_name("VipsBlendMode") or 0,
 
         new = function()
             -- with no init, this will initialize with 0, which is what we need
@@ -151,7 +151,7 @@ local gvalue_mt = {
             local enum_value
 
             if type(value) == "string" then
-                enum_value = vips_lib.vips_enum_from_nick("lua-vips", 
+                enum_value = vips_lib.vips_enum_from_nick("lua-vips",
                     gtype, value)
 
                 if enum_value < 0 then
@@ -171,7 +171,7 @@ local gvalue_mt = {
         end,
 
         type_name = function(gtype)
-            return(ffi.string(gobject_lib.g_type_name(gtype)))
+            return (ffi.string(gobject_lib.g_type_name(gtype)))
         end,
 
         init = function(gv, gtype)
@@ -198,7 +198,7 @@ local gvalue_mt = {
                 gobject_lib.g_value_set_object(gv, value.vimage)
             elseif gtype == gvalue.array_int_type then
                 if type(value) == "number" then
-                    value = {value}
+                    value = { value }
                 end
 
                 local n = #value
@@ -208,7 +208,7 @@ local gvalue_mt = {
 
             elseif gtype == gvalue.array_double_type then
                 if type(value) == "number" then
-                    value = {value}
+                    value = { value }
                 end
 
                 local n = #value
@@ -218,7 +218,7 @@ local gvalue_mt = {
 
             elseif gtype == gvalue.array_image_type then
                 if Image.is_Image(value) then
-                    value = {value}
+                    value = { value }
                 end
 
                 local n = #value
@@ -241,7 +241,7 @@ local gvalue_mt = {
                 ffi.copy(buf, value, n)
                 vips_lib.vips_value_set_blob(gv, glib_lib.g_free, buf, n)
             else
-                 error("unsupported gtype for set " .. gvalue.type_name(gtype))
+                error("unsupported gtype for set " .. gvalue.type_name(gtype))
             end
         end,
 
@@ -289,9 +289,9 @@ local gvalue_mt = {
                 local vo = gobject_lib.g_value_get_object(gv)
                 local vimage = ffi.cast(gvalue.image_typeof, vo)
 
-                -- we want a ref that will last with the life of the vimage: 
+                -- we want a ref that will last with the life of the vimage:
                 -- this ref is matched by the unref that's attached to finalize
-                -- by Image.new() 
+                -- by Image.new()
                 gobject_lib.g_object_ref(vimage)
 
                 result = Image.new(vimage)
@@ -320,12 +320,12 @@ local gvalue_mt = {
                 local array = vips_lib.vips_value_get_array_image(gv, pint)
                 result = {}
                 for i = 0, pint[0] - 1 do
-                    -- this will make a new cdata object 
+                    -- this will make a new cdata object
                     local vimage = array[i]
 
                     -- vips_value_get_array_image() adds a ref for each image in
                     -- the array ... we must remember to drop them
-                    vobject.new(vimage)
+                    gobject_lib.g_object_ref(vimage)
 
                     result[i + 1] = Image.new(vimage)
                 end
@@ -337,12 +337,11 @@ local gvalue_mt = {
 
                 result = ffi.string(array, psize[0])
             else
-                 error("unsupported gtype for get " .. gvalue.type_name(gtype))
+                error("unsupported gtype for get " .. gvalue.type_name(gtype))
             end
 
             return result
-        end,
-
+        end
     }
 }
 
