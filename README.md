@@ -588,7 +588,7 @@ Run the example script with:
 
 ### Update rock
 	
-	luarocks upload lua-vips-1.1-7.rockspec --api-key=xxxxxxxxxxxxxx
+	luarocks upload lua-vips-1.1-8.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 
