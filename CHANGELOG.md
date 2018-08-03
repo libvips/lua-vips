@@ -2,6 +2,11 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-9 - 2018-08-03
+
+- add `vips.leak_set()` [jcupitt]
+- add `soak.lua` example [jcupitt]
+
 # 1.1-8 - 2018-07-25
 
 - cleanups and some reorganisation [kleisauke]

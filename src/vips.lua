@@ -7,6 +7,8 @@ local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 ffi.cdef [[
     int vips_init (const char* argv0);
 
+    void vips_leak_set (int leak);
+    void vips_cache_set_max (int max);
     void vips_cache_set_max (int max);
     int vips_cache_get_max (void);
     void vips_cache_set_max_mem (size_t max_mem);
@@ -36,6 +38,10 @@ local vips = {
 }
 
 require "vips/Image_methods"
+
+function vips.leak_set(leak)
+    vips_lib.vips_leak_set(leak)
+end
 
 function vips.cache_set_max(max)
     vips_lib.vips_cache_set_max(max)
