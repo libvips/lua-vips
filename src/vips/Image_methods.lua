@@ -106,6 +106,14 @@ local function call_enum(image, other, base, operation)
     end
 end
 
+-- turn a string from libvips that must be g_free()d into a lua string
+local function to_string_copy(vips_string)
+    local lua_string = ffi.string(vips_string)
+    glib_lib.g_free(vips_string)
+    return lua_string
+end
+
+
 -- class methods
 
 function Image.is_Image(thing)
@@ -146,15 +154,17 @@ function Image.find_load(filename)
 end
 
 function Image.new_from_file(vips_filename, ...)
-    local filename = vips_lib.vips_filename_get_filename(vips_filename)
-    local options = vips_lib.vips_filename_get_options(vips_filename)
+    local filename =
+        to_string_copy(vips_lib.vips_filename_get_filename(vips_filename))
+    local options =
+        to_string_copy(vips_lib.vips_filename_get_options(vips_filename))
+
     local name = Image.find_load(filename)
     if name == nil then
         error(verror.get())
     end
 
-    return voperation.call(name, ffi.string(options),
-        ffi.string(filename), unpack { ... })
+    return voperation.call(name, options, filename, unpack { ... })
 end
 
 function Image.find_load_buffer(data)
@@ -389,26 +399,28 @@ local instance_methods = {
     -- writers
 
     write_to_file = function(self, vips_filename, ...)
-        local filename = vips_lib.vips_filename_get_filename(vips_filename)
-        local options = vips_lib.vips_filename_get_options(vips_filename)
+        local filename =
+            to_string_copy(vips_lib.vips_filename_get_filename(vips_filename))
+        local options =
+            to_string_copy(vips_lib.vips_filename_get_options(vips_filename))
         local name = vips_lib.vips_foreign_find_save(filename)
         if name == nil then
             error(verror.get())
         end
 
-        return voperation.call(ffi.string(name), ffi.string(options),
+        return voperation.call(ffi.string(name), options,
             self, filename, unpack { ... })
     end,
 
     write_to_buffer = function(self, format_string, ...)
-        local options = vips_lib.vips_filename_get_options(format_string)
+        local options =
+            to_string_copy(vips_lib.vips_filename_get_options(format_string))
         local name = vips_lib.vips_foreign_find_save_buffer(format_string)
         if name == nil then
             error(verror.get())
         end
 
-        return voperation.call(ffi.string(name), ffi.string(options),
-            self, unpack { ... })
+        return voperation.call(ffi.string(name), options, self, unpack { ... })
     end,
 
     write_to_memory = function(self)

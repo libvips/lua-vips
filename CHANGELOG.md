@@ -6,6 +6,7 @@ All notable changes to `lua-vips` will be documented in this file.
 
 - add `vips.leak_set()` [jcupitt]
 - add `soak.lua` example [jcupitt]
+- fix five minor memleaks [kleisauke]
 
 # 1.1-8 - 2018-07-25
 
