@@ -35,10 +35,7 @@ local vobject_mt = {
         end,
 
         new = function(self)
-            ffi.gc(self, function(x)
-                gobject_lib.g_object_unref(x)
-            end)
-            return self
+            return ffi.gc(self, gobject_lib.g_object_unref)
         end,
 
         -- return 0 for not found and leave the error in the error log
