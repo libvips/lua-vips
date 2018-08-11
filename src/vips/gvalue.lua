@@ -134,7 +134,6 @@ local gvalue_mt = {
                 local a = ffi.new(gvalue.pint_typeof, n, value)
 
                 vips_lib.vips_value_set_array_int(gv, a, n)
-
             elseif gtype == gvalue.array_double_type then
                 if type(value) == "number" then
                     value = { value }
@@ -144,7 +143,6 @@ local gvalue_mt = {
                 local a = ffi.new(gvalue.pdouble_typeof, n, value)
 
                 vips_lib.vips_value_set_array_double(gv, a, n)
-
             elseif gtype == gvalue.array_image_type then
                 if Image.is_Image(value) then
                     value = { value }
@@ -160,7 +158,6 @@ local gvalue_mt = {
                     -- the gvalue needs a set of refs to own
                     gobject_lib.g_object_ref(a[i])
                 end
-
             elseif gtype == gvalue.blob_type then
                 -- we need to set the blob to a copy of the lua string that vips
                 -- can own
@@ -168,7 +165,12 @@ local gvalue_mt = {
 
                 local buf = glib_lib.g_malloc(n)
                 ffi.copy(buf, value, n)
-                vips_lib.vips_value_set_blob(gv, glib_lib.g_free, buf, n)
+
+                if version.at_least(8, 6) then
+                    vips_lib.vips_value_set_blob_free(gv, buf, n)
+                else
+                    vips_lib.vips_value_set_blob(gv, glib_lib.g_free, buf, n)
+                end
             else
                 error("unsupported gtype for set " .. gvalue.type_name(gtype))
             end
@@ -224,7 +226,6 @@ local gvalue_mt = {
                 gobject_lib.g_object_ref(vimage)
 
                 result = Image.new(vimage)
-
             elseif gtype == gvalue.array_int_type then
                 local pint = ffi.new(gvalue.pint_typeof, 1)
 
@@ -242,7 +243,6 @@ local gvalue_mt = {
                 for i = 0, pint[0] - 1 do
                     result[i + 1] = array[i]
                 end
-
             elseif gtype == gvalue.array_image_type then
                 local pint = ffi.new(gvalue.pint_typeof, 1)
 
@@ -258,7 +258,6 @@ local gvalue_mt = {
 
                     result[i + 1] = Image.new(vimage)
                 end
-
             elseif gtype == gvalue.blob_type then
                 local psize = ffi.new(gvalue.psize_typeof, 1)
 
