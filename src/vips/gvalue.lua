@@ -121,8 +121,10 @@ local gvalue_mt = {
                 gobject_lib.g_value_set_enum(gv, gvalue.to_enum(gtype, value))
             elseif fundamental == gvalue.gflags_type then
                 gobject_lib.g_value_set_flags(gv, value)
-            elseif gtype == gvalue.gstr_type or gtype == gvalue.refstr_type then
+            elseif gtype == gvalue.gstr_type then
                 gobject_lib.g_value_set_string(gv, value)
+            elseif gtype == gvalue.refstr_type then
+                gobject_lib.vips_value_set_ref_string(gv, value)
             elseif gtype == gvalue.image_type then
                 gobject_lib.g_value_set_object(gv, value.vimage)
             elseif gtype == gvalue.array_int_type then
