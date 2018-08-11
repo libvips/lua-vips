@@ -15,16 +15,16 @@ if result ~= 0 then
 end
 
 local vips = {
-    verror = require "vips/verror",
-    version = require "vips/version",
-    log = require "vips/log",
-    gvalue = require "vips/gvalue",
-    vobject = require "vips/vobject",
-    voperation = require "vips/voperation",
-    Image = require "vips/Image",
+    verror = require "vips.verror",
+    version = require "vips.version",
+    log = require "vips.log",
+    gvalue = require "vips.gvalue",
+    vobject = require "vips.vobject",
+    voperation = require "vips.voperation",
+    Image = require "vips.Image",
 }
 
-require "vips/Image_methods"
+require "vips.Image_methods"
 
 function vips.leak_set(leak)
     vips_lib.vips_leak_set(leak)

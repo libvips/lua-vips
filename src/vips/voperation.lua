@@ -5,11 +5,11 @@ local ffi = require "ffi"
 local bit = require "bit"
 local band = bit.band
 
-local verror = require "vips/verror"
-local log = require "vips/log"
-local gvalue = require "vips/gvalue"
-local vobject = require "vips/vobject"
-local Image = require "vips/Image"
+local verror = require "vips.verror"
+local log = require "vips.log"
+local gvalue = require "vips.gvalue"
+local vobject = require "vips.vobject"
+local Image = require "vips.Image"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 

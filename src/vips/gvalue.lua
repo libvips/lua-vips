@@ -3,9 +3,9 @@
 
 local ffi = require "ffi"
 
-local verror = require "vips/verror"
-local version = require "vips/version"
-local Image = require "vips/Image"
+local verror = require "vips.verror"
+local version = require "vips.version"
+local Image = require "vips.Image"
 
 local vips_lib
 local gobject_lib

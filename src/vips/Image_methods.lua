@@ -2,12 +2,12 @@
 
 local ffi = require "ffi"
 
-local verror = require "vips/verror"
-local version = require "vips/version"
-local gvalue = require "vips/gvalue"
-local vobject = require "vips/vobject"
-local voperation = require "vips/voperation"
-local Image = require "vips/Image"
+local verror = require "vips.verror"
+local version = require "vips.version"
+local gvalue = require "vips.gvalue"
+local vobject = require "vips.vobject"
+local voperation = require "vips.voperation"
+local Image = require "vips.Image"
 
 local vips_lib
 local gobject_lib
