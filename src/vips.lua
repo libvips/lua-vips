@@ -21,10 +21,8 @@ local vips = {
     gvalue = require "vips.gvalue",
     vobject = require "vips.vobject",
     voperation = require "vips.voperation",
-    Image = require "vips.Image",
+    Image = require "vips.Image_methods",
 }
-
-require "vips.Image_methods"
 
 function vips.leak_set(leak)
     vips_lib.vips_leak_set(leak)

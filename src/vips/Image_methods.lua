@@ -83,7 +83,6 @@ local function to_string_copy(vips_string)
     return lua_string
 end
 
-
 -- class methods
 
 function Image.is_Image(thing)
@@ -214,13 +213,6 @@ function Image.new_from_image(base_image, value)
     }
 
     return image
-end
-
--- this is for undefined class methods, like Image.text
-function Image.__index(_, name)
-    return function(...)
-        return voperation.call(name, "", unpack { ... })
-    end
 end
 
 -- overloads
@@ -776,14 +768,25 @@ local instance_methods = {
     end
 }
 
-function Image.mt.__index(_, index)
-    if instance_methods[index] then
-        return instance_methods[index]
-    else
-        return function(...)
-            return voperation.call(index, "", unpack { ... })
-        end
+-- this is for undefined class / instance methods, like Image.text or image:avg
+local fall_back = function(name)
+    return function(...)
+        return voperation.call(name, "", unpack { ... })
     end
 end
 
-return Image
+function Image.mt.__index(_, name)
+    if instance_methods[name] then
+        return instance_methods[name]
+    else
+        -- undefined instance methods
+        return fall_back(name)
+    end
+end
+
+return setmetatable(Image, {
+    __index = function(_, name)
+        -- undefined class methods
+        return fall_back(name)
+    end
+})
