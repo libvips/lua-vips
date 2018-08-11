@@ -3,7 +3,6 @@
 
 local ffi = require "ffi"
 
-local verror = require "vips.verror"
 local log = require "vips.log"
 local gvalue = require "vips.gvalue"
 
@@ -55,12 +54,11 @@ local vobject_mt = {
 
         get = function(self, name)
             log.msg("vobject.get")
-            log.msg("  self =", self)
             log.msg("  name =", name)
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error(verror.get())
+                return false
             end
 
             local pgv = gvalue.newp()
@@ -77,13 +75,12 @@ local vobject_mt = {
 
         set = function(self, name, value)
             log.msg("vobject.set")
-            log.msg("  self =", self)
             log.msg("  name =", name)
             log.msg("  value =", value)
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error(verror.get())
+                return false
             end
 
             local gv = gvalue.new()
