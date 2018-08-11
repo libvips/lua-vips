@@ -110,9 +110,9 @@ describe("test image creation", function()
         it("throws error when loading from unknown buffer", function()
             local buf = "GIF89a"
 
-            assert.has_error(function()
+            assert.error_matches(function()
                 vips.Image.new_from_buffer(buf)
-            end, "unable to call VipsForeignLoadGifBuffer\ngifload_buffer: No screen descriptor detected\n")
+            end, "unable to call VipsForeignLoadGifBuffer\ngifload_buffer: .+")
         end)
 
         it("can load a jpeg from a buffer, options in a table", function()
