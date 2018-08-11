@@ -6,6 +6,9 @@ local ffi = require "ffi"
 local log = require "vips.log"
 local gvalue = require "vips.gvalue"
 
+local print = print
+local collectgarbage = collectgarbage
+
 local vips_lib
 local gobject_lib
 if ffi.os == "Windows" then

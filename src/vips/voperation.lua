@@ -3,13 +3,21 @@
 
 local ffi = require "ffi"
 local bit = require "bit"
-local band = bit.band
 
 local verror = require "vips.verror"
 local log = require "vips.log"
 local gvalue = require "vips.gvalue"
 local vobject = require "vips.vobject"
 local Image = require "vips.Image"
+
+local band = bit.band
+local type = type
+local error = error
+local pairs = pairs
+local ipairs = ipairs
+local unpack = unpack
+local tonumber = tonumber
+local str_gsub = string.gsub
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
@@ -101,7 +109,7 @@ local voperation_mt = {
                 function(_, pspec, argument_class, _, _, _)
                     -- libvips uses "-" to separate parts of arg names, but we
                     -- need "_" for lua
-                    local name = string.gsub(ffi.string(pspec.name), "-", "_")
+                    local name = str_gsub(ffi.string(pspec.name), "-", "_")
 
                     args[#args + 1] = {
                         name = name,

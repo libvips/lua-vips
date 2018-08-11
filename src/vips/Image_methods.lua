@@ -9,6 +9,14 @@ local vobject = require "vips.vobject"
 local voperation = require "vips.voperation"
 local Image = require "vips.Image"
 
+local type = type
+local error = error
+local pairs = pairs
+local ipairs = ipairs
+local unpack = unpack
+local setmetatable = setmetatable
+local getmetatable = getmetatable
+
 local vips_lib
 local gobject_lib
 local glib_lib

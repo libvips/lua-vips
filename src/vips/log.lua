@@ -2,6 +2,13 @@
 
 local logging_enabled = false
 
+local type = type
+local print = print
+local pairs = pairs
+local unpack = unpack
+local tostring = tostring
+local str_rep = string.rep
+
 local log = {}
 log = {
     enable = function(on)
@@ -27,8 +34,8 @@ log = {
                             p(indent ..
                                     "[" .. pos .. "] => " .. tostring(t) .. " {")
                             local length = type(pos) == "string" and #pos or pos
-                            sub_p_r(val, indent .. string.rep(" ", length + 8))
-                            p(indent .. string.rep(" ", length + 6) .. "}")
+                            sub_p_r(val, indent .. str_rep(" ", length + 8))
+                            p(indent .. str_rep(" ", length + 6) .. "}")
                         elseif type(val) == "string" then
                             p(indent .. "[" .. pos .. '] => "' ..
                                     val .. '"')
