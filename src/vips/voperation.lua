@@ -219,6 +219,7 @@ local voperation_mt = {
 
             local result = {}
             local vob = vop:vobject()
+
             n = 1
             for i = 1, #arguments do
                 local flags = arguments[i].flags
@@ -245,16 +246,6 @@ local voperation_mt = {
                 if band(flags, OUTPUT) ~= 0 and
                         band(flags, REQUIRED) == 0 and
                         band(flags, DEPRECATED) == 0 then
-                    result[n] = vob:get(arguments[i].name)
-                    n = n + 1
-                end
-            end
-
-            for i = 1, #arguments do
-                local flags = arguments[i].flags
-
-                if band(flags, OUTPUT) ~= 0 and
-                        band(flags, DEPRECATED) ~= 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end

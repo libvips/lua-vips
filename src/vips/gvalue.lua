@@ -25,15 +25,6 @@ if version.at_least(8, 6) then
 end
 vips_lib.vips_band_format_get_type()
 
--- Print a table of all active libvips objects.
--- Handy for debugging.
-local function print_all(msg) -- luacheck: ignore
-    collectgarbage()
-    print(msg)
-    vips_lib.vips_object_print_all()
-    print()
-end
-
 local gvalue = {}
 local gvalue_mt = {
     __gc = function(gv)
@@ -45,11 +36,9 @@ local gvalue_mt = {
         gv_typeof = ffi.typeof("GValue"),
         pgv_typeof = ffi.typeof("GValue[1]"),
         image_typeof = ffi.typeof("VipsImage*"),
-        pimage_typeof = ffi.typeof("VipsImage*[?]"),
         pint_typeof = ffi.typeof("int[?]"),
         pdouble_typeof = ffi.typeof("double[?]"),
         psize_typeof = ffi.typeof("size_t[?]"),
-        pstr_typeof = ffi.typeof("char*[?]"),
         mem_typeof = ffi.typeof("unsigned char[?]"),
 
         -- look up some common gtypes at init for speed
@@ -100,7 +89,7 @@ local gvalue_mt = {
         end,
 
         type_name = function(gtype)
-            return (ffi.string(gobject_lib.g_type_name(gtype)))
+            return ffi.string(gobject_lib.g_type_name(gtype))
         end,
 
         init = function(gv, gtype)
