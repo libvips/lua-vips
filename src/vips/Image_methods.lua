@@ -22,36 +22,6 @@ else
     glib_lib = vips_lib
 end
 
-ffi.cdef [[
-    const char* vips_foreign_find_load (const char* name);
-    const char* vips_foreign_find_load_buffer (const void* data, size_t size);
-    const char* vips_foreign_find_save (const char* name);
-    const char* vips_foreign_find_save_buffer (const char* suffix);
-
-    VipsImage* vips_image_new_matrix_from_array (int width, int height,
-            const double* array, int size);
-
-    VipsImage* vips_image_new_from_memory (const void *data, size_t size,
-            int width, int height, int bands, int format);
-    unsigned char* vips_image_write_to_memory (VipsImage* image,
-            size_t* size_out);
-
-    VipsImage* vips_image_copy_memory (VipsImage* image);
-
-    GType vips_image_get_typeof (const VipsImage* image,
-        const char* name);
-    int vips_image_get (const VipsImage* image,
-        const char* name, GValue* value_copy);
-    void vips_image_set (VipsImage* image, const char* name, GValue* value);
-    int vips_image_remove (VipsImage* image, const char* name);
-
-    char* vips_filename_get_filename (const char* vips_filename);
-    char* vips_filename_get_options (const char* vips_filename);
-
-]]
-
-require "vips/vimage"
-
 -- test for rectangular array of something
 local function is_2D(table)
     if type(table) ~= "table" then

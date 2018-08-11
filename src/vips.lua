@@ -4,19 +4,7 @@ local ffi = require "ffi"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
-ffi.cdef [[
-    int vips_init (const char* argv0);
-
-    void vips_leak_set (int leak);
-    void vips_cache_set_max (int max);
-    void vips_cache_set_max (int max);
-    int vips_cache_get_max (void);
-    void vips_cache_set_max_mem (size_t max_mem);
-    size_t vips_cache_get_max_mem (void);
-    void vips_cache_set_max_files (int max_files);
-    int vips_cache_get_max_files (void);
-
-]]
+require "vips.cdefs"
 
 local result = vips_lib.vips_init("")
 if result ~= 0 then
@@ -33,7 +21,6 @@ local vips = {
     gvalue = require "vips/gvalue",
     vobject = require "vips/vobject",
     voperation = require "vips/voperation",
-    vimage = require "vips/vimage",
     Image = require "vips/Image",
 }
 

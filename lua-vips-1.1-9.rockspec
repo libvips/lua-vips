@@ -24,13 +24,13 @@ build = {
    type = "builtin",
    modules = {
        vips = "src/vips.lua",
+       ["vips.cdefs"] = "src/vips/cdefs.lua",
        ["vips.verror"] = "src/vips/verror.lua",
        ["vips.version"] = "src/vips/version.lua",
        ["vips.log"] = "src/vips/log.lua",
        ["vips.gvalue"] = "src/vips/gvalue.lua",
        ["vips.vobject"] = "src/vips/vobject.lua",
        ["vips.voperation"] = "src/vips/voperation.lua",
-       ["vips.vimage"] = "src/vips/vimage.lua",
        ["vips.Image"] = "src/vips/Image.lua",
        ["vips.Image_methods"] = "src/vips/Image_methods.lua"
    }

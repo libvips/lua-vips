@@ -13,31 +13,6 @@ local Image = require "vips/Image"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
-ffi.cdef [[
-    typedef struct _VipsOperation {
-        VipsObject parent_instance;
-
-        // opaque
-    } VipsOperation;
-
-    VipsOperation* vips_operation_new (const char* name);
-
-    typedef void *(*VipsArgumentMapFn) (VipsOperation* object,
-        GParamSpec* pspec,
-        VipsArgumentClass* argument_class,
-        VipsArgumentInstance* argument_instance,
-        void* a, void* b);
-
-    void* vips_argument_map (VipsOperation* object,
-        VipsArgumentMapFn fn, void* a, void* b);
-
-    VipsOperation* vips_cache_operation_build (VipsOperation* operation);
-    void vips_object_unref_outputs (VipsOperation *operation);
-
-    int vips_object_set_from_string (VipsObject* object, const char* options);
-
-]]
-
 local REQUIRED = 1
 local CONSTRUCT = 2 -- luacheck: ignore
 local SET_ONCE = 4 -- luacheck: ignore
