@@ -6,10 +6,10 @@ local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
 require "vips.cdefs"
 
-local result = vips_lib.vips_init("")
+local result = vips_lib.vips_init("lua-vips")
 if result ~= 0 then
     local errstr = ffi.string(vips_lib.vips_error_buffer())
-    vips_lib._libvips_error_clear()
+    vips_lib.vips_error_clear()
 
     error("unable to start up libvips: " .. errstr)
 end
