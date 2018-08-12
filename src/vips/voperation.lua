@@ -68,6 +68,7 @@ local voperation_mt = {
 
         -- cast to a vobject ... this will create a new cdata object, but won't
         -- change any VipsObject reference counts, nor add a finalizer
+        -- TODO: Could we use `self.parent_instance` here?
         vobject = function(self)
             return ffi.cast(vobject.typeof, self)
         end,

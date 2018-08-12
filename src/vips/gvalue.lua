@@ -7,6 +7,9 @@ local verror = require "vips.verror"
 local version = require "vips.version"
 local Image = require "vips.Image"
 
+local type = type
+local error = error
+
 local vips_lib
 local gobject_lib
 local glib_lib
@@ -57,12 +60,6 @@ local gvalue_mt = {
         band_format_type = gobject_lib.g_type_from_name("VipsBandFormat"),
         blend_mode_type = version.at_least(8, 6) and
                 gobject_lib.g_type_from_name("VipsBlendMode") or 0,
-
-        new = function()
-            -- with no init, this will initialize with 0, which is what we need
-            -- for a blank GValue
-            return ffi.new(gvalue.gv_typeof)
-        end,
 
         to_enum = function(gtype, value)
             -- turn a string into an int, ready to be passed into libvips

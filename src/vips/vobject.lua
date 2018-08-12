@@ -66,6 +66,7 @@ local vobject_mt = {
 
             local pgv = gvalue.newp()
             pgv[0]:init(gtype)
+
             -- this will add a ref for GObject properties, that ref will be
             -- unreffed when the gvalue is finalized
             gobject_lib.g_object_get_property(self, name, pgv)
@@ -86,7 +87,7 @@ local vobject_mt = {
                 return false
             end
 
-            local gv = gvalue.new()
+            local gv = gvalue()
             gv:init(gtype)
             gv:set(value)
             gobject_lib.g_object_set_property(self, name, gv)

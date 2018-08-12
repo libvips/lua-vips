@@ -339,6 +339,7 @@ end
 local Image_method = {}
 
 function Image_method:vobject()
+    -- TODO: Could we use `self.vimage.parent_instance` here?
     return ffi.cast(vobject.typeof, self.vimage)
 end
 
@@ -445,7 +446,7 @@ function Image_method:get(name)
 end
 
 function Image_method:set_type(gtype, name, value)
-    local gv = gvalue.new()
+    local gv = gvalue()
     gv:init(gtype)
     gv:set(value)
     vips_lib.vips_image_set(self.vimage, name, gv)
