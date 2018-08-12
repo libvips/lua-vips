@@ -3,9 +3,11 @@
 
 local ffi = require "ffi"
 
-local verror = require "vips/verror"
-local log = require "vips/log"
-local gvalue = require "vips/gvalue"
+local log = require "vips.log"
+local gvalue = require "vips.gvalue"
+
+local print = print
+local collectgarbage = collectgarbage
 
 local vips_lib
 local gobject_lib
@@ -16,86 +18,6 @@ else
     vips_lib = ffi.load("vips")
     gobject_lib = vips_lib
 end
-
-ffi.cdef [[
-    typedef struct _GObject {
-        void *g_type_instance;
-        unsigned int ref_count;
-        void *qdata;
-    } GObject;
-
-    typedef struct _VipsObject {
-        GObject parent_object;
-        bool constructed;
-        bool static_object;
-        void *argument_table;
-        char *nickname;
-        char *description;
-        bool preclose;
-        bool close;
-        bool postclose;
-        size_t local_memory;
-    } VipsObject;
-
-    typedef struct _VipsObjectClass {
-        // opaque
-    } VipsObjectClass;
-
-    typedef struct _GParamSpec {
-        void* g_type_instance;
-
-        const char* name;
-        unsigned int flags;
-        GType value_type;
-        GType owner_type;
-
-        // rest opaque
-    } GParamSpec;
-
-    typedef struct _VipsArgument {
-        GParamSpec *pspec;
-    } VipsArgument;
-
-    typedef struct _VipsArgumentInstance {
-        VipsArgument parent;
-
-        // opaque
-    } VipsArgumentInstance;
-
-    typedef enum _VipsArgumentFlags {
-        VIPS_ARGUMENT_NONE = 0,
-        VIPS_ARGUMENT_REQUIRED = 1,
-        VIPS_ARGUMENT_CONSTRUCT = 2,
-        VIPS_ARGUMENT_SET_ONCE = 4,
-        VIPS_ARGUMENT_SET_ALWAYS = 8,
-        VIPS_ARGUMENT_INPUT = 16,
-        VIPS_ARGUMENT_OUTPUT = 32,
-        VIPS_ARGUMENT_DEPRECATED = 64,
-        VIPS_ARGUMENT_MODIFY = 128
-    } VipsArgumentFlags;
-
-    typedef struct _VipsArgumentClass {
-        VipsArgument parent;
-
-        VipsObjectClass *object_class;
-        VipsArgumentFlags flags;
-        int priority;
-        uint64_t offset;
-    } VipsArgumentClass;
-
-    int vips_object_get_argument (VipsObject* object,
-        const char *name, GParamSpec** pspec,
-        VipsArgumentClass** argument_class,
-        VipsArgumentInstance** argument_instance);
-
-    void g_object_set_property (VipsObject* object,
-        const char *name, GValue* value);
-    void g_object_get_property (VipsObject* object,
-        const char* name, GValue* value);
-
-    void vips_object_print_all (void);
-
-]]
 
 local vobject = {}
 local vobject_mt = {
@@ -115,10 +37,7 @@ local vobject_mt = {
         end,
 
         new = function(self)
-            ffi.gc(self, function(x)
-                gobject_lib.g_object_unref(x)
-            end)
-            return self
+            return ffi.gc(self, gobject_lib.g_object_unref)
         end,
 
         -- return 0 for not found and leave the error in the error log
@@ -138,12 +57,11 @@ local vobject_mt = {
 
         get = function(self, name)
             log.msg("vobject.get")
-            log.msg("  self =", self)
             log.msg("  name =", name)
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error(verror.get())
+                return false
             end
 
             local pgv = gvalue.newp()
@@ -160,13 +78,12 @@ local vobject_mt = {
 
         set = function(self, name, value)
             log.msg("vobject.set")
-            log.msg("  self =", self)
             log.msg("  name =", name)
             log.msg("  value =", value)
 
             local gtype = self:get_typeof(name)
             if gtype == 0 then
-                error(verror.get())
+                return false
             end
 
             local gv = gvalue.new()

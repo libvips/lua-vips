@@ -3,40 +3,23 @@
 
 local ffi = require "ffi"
 local bit = require "bit"
-local band = bit.band
 
-local verror = require "vips/verror"
-local log = require "vips/log"
-local gvalue = require "vips/gvalue"
-local vobject = require "vips/vobject"
-local Image = require "vips/Image"
+local verror = require "vips.verror"
+local log = require "vips.log"
+local gvalue = require "vips.gvalue"
+local vobject = require "vips.vobject"
+local Image = require "vips.Image"
+
+local band = bit.band
+local type = type
+local error = error
+local pairs = pairs
+local ipairs = ipairs
+local unpack = unpack
+local tonumber = tonumber
+local str_gsub = string.gsub
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
-
-ffi.cdef [[
-    typedef struct _VipsOperation {
-        VipsObject parent_instance;
-
-        // opaque
-    } VipsOperation;
-
-    VipsOperation* vips_operation_new (const char* name);
-
-    typedef void *(*VipsArgumentMapFn) (VipsOperation* object,
-        GParamSpec* pspec,
-        VipsArgumentClass* argument_class,
-        VipsArgumentInstance* argument_instance,
-        void* a, void* b);
-
-    void* vips_argument_map (VipsOperation* object,
-        VipsArgumentMapFn fn, void* a, void* b);
-
-    VipsOperation* vips_cache_operation_build (VipsOperation* operation);
-    void vips_object_unref_outputs (VipsOperation *operation);
-
-    int vips_object_set_from_string (VipsObject* object, const char* options);
-
-]]
 
 local REQUIRED = 1
 local CONSTRUCT = 2 -- luacheck: ignore
@@ -124,16 +107,14 @@ local voperation_mt = {
             local args = {}
             local cb = ffi.cast(voperation.argumentmap_typeof,
                 function(_, pspec, argument_class, _, _, _)
-                    local name = ffi.string(pspec.name)
-
                     -- libvips uses "-" to separate parts of arg names, but we
                     -- need "_" for lua
-                    name = string.gsub(name, "-", "_")
+                    local name = str_gsub(ffi.string(pspec.name), "-", "_")
 
-                    table.insert(args, {
+                    args[#args + 1] = {
                         name = name,
                         flags = tonumber(argument_class.flags)
-                    })
+                    }
                 end)
             vips_lib.vips_argument_map(self, cb, nil, nil)
             cb:free()
@@ -150,18 +131,26 @@ local voperation_mt = {
             if vop == nil then
                 error("no such operation\n" .. verror.get())
             end
-            vop:new()
+            vop = vop:new()
 
             local arguments = vop:getargs()
+
+            -- cache the lengths
+            local arguments_length = #arguments
+            local call_args_length = #call_args
 
             log.msg("calling operation:", name)
             log.msg("passed:")
             log.msg_r(call_args)
 
+            -- make a thing to quickly get flags from an arg name
+            local flags_from_name = {}
+
             -- count required input args
             local n_required = 0
-            for i = 1, #arguments do
+            for i = 1, arguments_length do
                 local flags = arguments[i].flags
+                flags_from_name[arguments[i].name] = flags
 
                 if band(flags, INPUT) ~= 0 and
                         band(flags, REQUIRED) ~= 0 and
@@ -173,17 +162,17 @@ local voperation_mt = {
             -- so we should have been passed n_required, or n_required + 1 if
             -- there's a table of options at the end
             local last_arg
-            if #call_args == n_required then
+            if call_args_length == n_required then
                 last_arg = nil
-            elseif #call_args == n_required + 1 then
+            elseif call_args_length == n_required + 1 then
                 last_arg = call_args[#call_args]
                 if type(last_arg) ~= "table" then
-                    error("unable to call " .. name .. ": " .. #call_args ..
+                    error("unable to call " .. name .. ": " .. call_args_length ..
                             " arguments given, " .. n_required ..
                             ", but final argument is not a table")
                 end
             else
-                error("unable to call " .. name .. ": " .. #call_args ..
+                error("unable to call " .. name .. ": " .. call_args_length ..
                         " arguments given, but " .. n_required .. " required")
             end
 
@@ -206,7 +195,7 @@ local voperation_mt = {
             end
 
             local n = 0
-            for i = 1, #arguments do
+            for i = 1, arguments_length do
                 local flags = arguments[i].flags
 
                 if band(flags, INPUT) ~= 0 and
@@ -222,15 +211,9 @@ local voperation_mt = {
             end
 
             if last_arg then
-                local args_by_name = {}
-                for i = 1, #arguments do
-                    args_by_name[arguments[i].name] = arguments[i].flags
-                end
-
                 for k, v in pairs(last_arg) do
-                    if not vop:set(k, args_by_name[k], match_image, v) then
-                        error("unable to call " .. name .. "\n" ..
-                                verror.get())
+                    if not vop:set(k, flags_from_name[k], match_image, v) then
+                        error("unable to call " .. name .. "\n" .. verror.get())
                     end
                 end
             end
@@ -239,13 +222,14 @@ local voperation_mt = {
             if vop2 == nil then
                 error("unable to call " .. name .. "\n" .. verror.get())
             end
-            vop2:new()
-            vop = vop2
+            vop = vop2:new()
 
             local result = {}
             local vob = vop:vobject()
+
+            -- fetch required output args, plus modified input images
             n = 1
-            for i = 1, #arguments do
+            for i = 1, arguments_length do
                 local flags = arguments[i].flags
 
                 if band(flags, OUTPUT) ~= 0 and
@@ -264,22 +248,13 @@ local voperation_mt = {
                 end
             end
 
-            for i = 1, #arguments do
+            --  fetch optional output args
+            for i = 1, arguments_length do
                 local flags = arguments[i].flags
 
                 if band(flags, OUTPUT) ~= 0 and
                         band(flags, REQUIRED) == 0 and
                         band(flags, DEPRECATED) == 0 then
-                    result[n] = vob:get(arguments[i].name)
-                    n = n + 1
-                end
-            end
-
-            for i = 1, #arguments do
-                local flags = arguments[i].flags
-
-                if band(flags, OUTPUT) ~= 0 and
-                        band(flags, DEPRECATED) ~= 0 then
                     result[n] = vob:get(arguments[i].name)
                     n = n + 1
                 end

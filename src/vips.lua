@@ -4,40 +4,25 @@ local ffi = require "ffi"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
-ffi.cdef [[
-    int vips_init (const char* argv0);
+require "vips.cdefs"
 
-    void vips_leak_set (int leak);
-    void vips_cache_set_max (int max);
-    void vips_cache_set_max (int max);
-    int vips_cache_get_max (void);
-    void vips_cache_set_max_mem (size_t max_mem);
-    size_t vips_cache_get_max_mem (void);
-    void vips_cache_set_max_files (int max_files);
-    int vips_cache_get_max_files (void);
-
-]]
-
-local result = vips_lib.vips_init("")
+local result = vips_lib.vips_init("lua-vips")
 if result ~= 0 then
     local errstr = ffi.string(vips_lib.vips_error_buffer())
-    vips_lib._libvips_error_clear()
+    vips_lib.vips_error_clear()
 
     error("unable to start up libvips: " .. errstr)
 end
 
 local vips = {
-    verror = require "vips/verror",
-    version = require "vips/version",
-    log = require "vips/log",
-    gvalue = require "vips/gvalue",
-    vobject = require "vips/vobject",
-    voperation = require "vips/voperation",
-    vimage = require "vips/vimage",
-    Image = require "vips/Image",
+    verror = require "vips.verror",
+    version = require "vips.version",
+    log = require "vips.log",
+    gvalue = require "vips.gvalue",
+    vobject = require "vips.vobject",
+    voperation = require "vips.voperation",
+    Image = require "vips.Image_methods",
 }
-
-require "vips/Image_methods"
 
 function vips.leak_set(leak)
     vips_lib.vips_leak_set(leak)
