@@ -22,7 +22,7 @@ for i = 0, tonumber(arg[2]) do
     -- local buf = im:write_to_buffer(".jpg")
     -- im:write_to_file("x.jpg")
     im:write_to_file("x.v")
-    im = nil
+    im = nil -- luacheck: ignore
 
     collectgarbage()
 end

@@ -1,0 +1,64 @@
+sudo: false
+
+language: generic
+
+dist: trusty
+
+env:
+  global:
+    - LUAROCKS_VERSION=3.0.0
+    - VIPS_VERSION=8.7.0
+    - VIPS_PRE_VERSION=rc1
+    - VIPS_TAR_VERSION=$VIPS_VERSION
+    - VIPS_WARNING=0
+    - JOBS=2
+    - LD_LIBRARY_PATH=$HOME/vips/lib:$LD_LIBRARY_PATH
+    - PKG_CONFIG_PATH=$HOME/vips/lib/pkgconfig:$PKG_CONFIG_PATH
+    - PATH=$HOME/vips/bin:$HOME/luarocks/bin:/usr/local/openresty/luajit/bin:$PATH
+
+cache:
+  directories:
+    - $HOME/vips
+    - $HOME/luarocks
+
+addons:
+  apt:
+    sources:
+      # Use the official APT repositories from OpenResty (which includes LuaJIT 2.1.0-beta3),
+      # because LuaJIT on trusty is quite old.
+      - sourceline: 'deb http://openresty.org/package/ubuntu trusty main'
+        key_url: 'https://openresty.org/package/pubkey.gpg'
+    packages:
+      - openresty
+      - libexpat1-dev
+      - gettext
+      - libglib2.0-dev
+      - liborc-0.4-dev
+      - libfftw3-dev
+      - liblcms2-dev
+      - libmagickwand-dev
+      - libopenexr-dev
+      - libcfitsio3-dev
+      - libgif-dev
+      - libgsf-1-dev
+      - libmatio-dev
+      - libopenslide-dev
+      - libpango1.0-dev
+      - libpoppler-glib-dev
+      - librsvg2-dev
+      - libwebp-dev
+
+before_install:
+  - bash .ci/install-vips.sh
+  - bash .ci/install-luarocks.sh
+    --with-lua=/usr/local/openresty/luajit/
+    --lua-suffix=jit-2.1.0-beta3
+    --with-lua-include=/usr/local/openresty/luajit/include/luajit-2.1
+  - eval `luarocks path`
+
+install:
+  - make dev
+
+script:
+  - make lint
+  - make test
