@@ -41,13 +41,15 @@ local function map(fn, array)
     return new_array
 end
 
--- find in order, and recurse
-local function find_order(fn, array)
-    for i = 1, #array do
-        if fn(array[i]) then
+-- find the first image, and recurse
+local function find_first_image(array, length)
+    length = length or #array
+
+    for i = 1, length do
+        if Image.is_Image(array[i]) then
             return array[i]
         elseif type(array[i]) == "table" then
-            local result = find_order(fn, array[i])
+            local result = find_first_image(array[i])
 
             if result then
                 return result
@@ -81,12 +83,14 @@ local voperation_mt = {
         end,
 
         set = function(self, name, flags, match_image, value)
+            local vob = self:vobject()
+
             -- if the object wants an image and we have a constant, imageize it
             --
             -- if the object wants an image array, imageize any constants in the
             -- array
             if match_image then
-                local gtype = self:vobject():get_typeof(name)
+                local gtype = vob:get_typeof(name)
 
                 if gtype == gvalue.image_type then
                     value = match_image:imageize(value)
@@ -104,7 +108,7 @@ local voperation_mt = {
                 value = value:copy():copy_memory()
             end
 
-            return self:vobject():set(name, value)
+            return vob:set(name, value)
         end,
 
         -- this is slow ... call as little as possible
@@ -202,13 +206,7 @@ local voperation_mt = {
             -- the first image argument is the thing we expand constants to
             -- match ... look inside tables for images, since we may be passing
             -- an array of image as a single param
-            local match_image = find_order(function(x)
-                if Image.is_Image(x) then
-                    return x
-                else
-                    return nil
-                end
-            end, call_args)
+            local match_image = find_first_image(call_args, call_args_length)
 
             -- set any string options before any args so they can't be
             -- overridden
