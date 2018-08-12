@@ -283,7 +283,13 @@ local voperation_mt = {
 
             vips_lib.vips_object_unref_outputs(vop)
 
-            return unpack(result)
+            if n == 1 then
+                return nil
+            elseif n == 2 then
+                return result[1]
+            else
+                return unpack(result)
+            end
         end
     }
 }
