@@ -42,7 +42,9 @@ describe("test gvalue", function()
         if vips.version.at_least(8, 6) then
             local value = vips.gvalue()
             value:init(vips.gvalue.blend_mode_type)
-            value:set('over')
+            -- need to map str -> int by hand, since the mode arg is actually
+            -- arrayint
+            value:set(vips.gvalue.to_enum(vips.gvalue.blend_mode_type, 'over'))
             assert.are.equal('over', value:get())
         end
     end)

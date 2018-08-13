@@ -40,7 +40,8 @@ local gvalue_mt = {
         pgv_typeof = ffi.typeof("GValue[1]"),
         image_typeof = ffi.typeof("VipsImage*"),
         pint_typeof = ffi.typeof("int[?]"),
-        pdouble_typeof = ffi.typeof("double[?]"),
+        int_arr_typeof = ffi.typeof("const int[?]"),
+        double_arr_typeof = ffi.typeof("const double[?]"),
         psize_typeof = ffi.typeof("size_t[?]"),
         mem_typeof = ffi.typeof("unsigned char[?]"),
 
@@ -119,7 +120,7 @@ local gvalue_mt = {
                 end
 
                 local n = #value
-                local a = ffi.new(gvalue.pint_typeof, n, value)
+                local a = ffi.new(gvalue.int_arr_typeof, n, value)
 
                 vips_lib.vips_value_set_array_int(gv, a, n)
             elseif gtype == gvalue.array_double_type then
@@ -128,7 +129,7 @@ local gvalue_mt = {
                 end
 
                 local n = #value
-                local a = ffi.new(gvalue.pdouble_typeof, n, value)
+                local a = ffi.new(gvalue.double_arr_typeof, n, value)
 
                 vips_lib.vips_value_set_array_double(gv, a, n)
             elseif gtype == gvalue.array_image_type then

@@ -185,18 +185,20 @@ function Image.new_from_array(array, scale, offset)
     local height = #array
 
     local n = width * height
-    local a = ffi.new(gvalue.pdouble_typeof, n)
+    local a = {}
     for y = 0, height - 1 do
         for x = 0, width - 1 do
             a[x + y * width] = array[y + 1][x + 1]
         end
     end
+    a = ffi.new(gvalue.double_arr_typeof, n, a)
+
     local vimage = vips_lib.vips_image_new_matrix_from_array(width,
         height, a, n)
     local image = Image.new(vimage)
 
-    image:set_type(gvalue.gdouble_type, "scale", scale or 1)
-    image:set_type(gvalue.gdouble_type, "offset", offset or 0)
+    image:set_type(gvalue.gdouble_type, "scale", scale or 1.0)
+    image:set_type(gvalue.gdouble_type, "offset", offset or 0.0)
 
     return image
 end
@@ -439,7 +441,6 @@ function Image_method:get(name)
     end
 
     result = pgv[0]:get()
-
     gobject_lib.g_value_unset(pgv[0])
 
     return result
