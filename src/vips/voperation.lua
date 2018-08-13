@@ -272,11 +272,16 @@ local voperation_mt = {
 
             vips_lib.vips_object_unref_outputs(vop)
 
+            -- this strange if expression is because unpack
+            -- has not yet been implemented in the JIT compiler
+            -- of LuaJIT, see: http://wiki.luajit.org/NYI.
             if n == 1 then
                 return nil
             elseif n == 2 then
                 return result[1]
             else
+                -- we could extend this if expression even more,
+                -- but usually one item is returned.
                 return unpack(result)
             end
         end
