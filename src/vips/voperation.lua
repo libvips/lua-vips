@@ -15,7 +15,6 @@ local band = bit.band
 local type = type
 local error = error
 local pairs = pairs
-local ipairs = ipairs
 local unpack = unpack
 local tonumber = tonumber
 local str_gsub = string.gsub
@@ -30,16 +29,6 @@ local INPUT = 16
 local OUTPUT = 32
 local DEPRECATED = 64
 local MODIFY = 128
-
-local function map(fn, array)
-    local new_array = {}
-
-    for i, v in ipairs(array) do
-        new_array[i] = fn(v)
-    end
-
-    return new_array
-end
 
 -- find the first image, and recurse
 local function find_first_image(array, length)
@@ -95,9 +84,9 @@ local voperation_mt = {
                 if gtype == gvalue.image_type then
                     value = match_image:imageize(value)
                 elseif gtype == gvalue.array_image_type then
-                    value = map(function(x)
-                        return match_image:imageize(x)
-                    end, value)
+                    for i = 1, #value do
+                        value[i] = match_image:imageize(value[i])
+                    end
                 end
             end
 
