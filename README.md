@@ -1,5 +1,7 @@
 # lua-vips
 
+[![Build Status](https://travis-ci.org/jcupitt/lua-vips.svg?branch=master)](https://travis-ci.org/jcupitt/lua-vips)
+
 This is a Lua binding for the [libvips image processing
 library](http://jcupitt.github.io/libvips).  libvips
 is a [fast image processing library with low memory
