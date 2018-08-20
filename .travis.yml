@@ -49,7 +49,7 @@ addons:
       - libwebp-dev
 
 before_install:
-  - bash .ci/install-vips.sh
+  - bash .ci/install-vips.sh 
   - bash .ci/install-luarocks.sh
     --with-lua=/usr/local/openresty/luajit/
     --lua-suffix=jit-2.1.0-beta3
