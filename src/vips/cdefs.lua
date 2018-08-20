@@ -197,6 +197,9 @@ ffi.cdef [[
     void* vips_argument_map (VipsOperation* object,
         VipsArgumentMapFn fn, void* a, void* b);
 
+    void vips_object_get_args (VipsOperation* object,
+        const char*** names, int** flags, int* n_args);
+
     VipsOperation* vips_cache_operation_build (VipsOperation* operation);
     void vips_object_unref_outputs (VipsOperation *operation);
 

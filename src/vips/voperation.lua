@@ -5,6 +5,7 @@ local ffi = require "ffi"
 local bit = require "bit"
 
 local verror = require "vips.verror"
+local version = require "vips.version"
 local log = require "vips.log"
 local gvalue = require "vips.gvalue"
 local vobject = require "vips.vobject"
@@ -61,6 +62,9 @@ local voperation = {}
 local voperation_mt = {
     __index = {
         argumentmap_typeof = ffi.typeof("VipsArgumentMapFn"),
+        pstring_array_typeof = ffi.typeof("const char**[1]"),
+        pint_array_typeof = ffi.typeof("int*[1]"),
+        pint_typeof = ffi.typeof("int[1]"),
 
         -- cast to a vobject ... this will create a new cdata object, but won't
         -- change any VipsObject reference counts, nor add a finalizer
@@ -104,22 +108,41 @@ local voperation_mt = {
 
         -- this is slow ... call as little as possible
         getargs = function(self)
-            local args = {}
-            local cb = ffi.cast(voperation.argumentmap_typeof,
-                function(_, pspec, argument_class, _, _, _)
-                    -- libvips uses "-" to separate parts of arg names, but we
-                    -- need "_" for lua
-                    local name = str_gsub(ffi.string(pspec.name), "-", "_")
+            local names = {}
+            local flags = {}
+            local n_args = 0
 
-                    args[#args + 1] = {
-                        name = name,
-                        flags = tonumber(argument_class.flags)
-                    }
-                end)
-            vips_lib.vips_argument_map(self, cb, nil, nil)
-            cb:free()
+            if version.at_least(8, 7) then
+                local p_names = ffi.new(voperation.pstring_array_typeof)
+                local p_flags = ffi.new(voperation.pint_array_typeof)
+                local p_n_args = ffi.new(voperation.pint_typeof)
 
-            return args
+                vips_lib.vips_object_get_args(self, p_names, p_flags, p_n_args)
+
+                p_names = p_names[0]
+                p_flags = p_flags[0]
+                n_args = p_n_args[0]
+
+                -- C-array is numbered from zero
+                for i = 0, n_args - 1 do
+                    names[i + 1] = str_gsub(ffi.string(p_names[i]), "-", "_")
+                    flags[i + 1] = p_flags[i]
+                end
+            else
+                local cb = ffi.cast(voperation.argumentmap_typeof,
+                    function(_, pspec, argument_class, _, _, _)
+                        n_args = n_args + 1
+
+                        -- libvips uses "-" to separate parts of arg names, but we
+                        -- need "_" for lua
+                        names[n_args] = str_gsub(ffi.string(pspec.name), "-", "_")
+                        flags[n_args] = tonumber(argument_class.flags)
+                    end)
+                vips_lib.vips_argument_map(self, cb, nil, nil)
+                cb:free()
+            end
+
+            return names, flags, n_args
         end,
 
         -- string_options is any optional args coded as a string, perhaps
@@ -133,10 +156,9 @@ local voperation_mt = {
             end
             vop = vop:new()
 
-            local arguments = vop:getargs()
+            local names, flags, arguments_length = vop:getargs()
 
-            -- cache the lengths
-            local arguments_length = #arguments
+            -- cache the call args length
             local call_args_length = #call_args
 
             log.msg("calling operation:", name)
@@ -149,12 +171,12 @@ local voperation_mt = {
             -- count required input args
             local n_required = 0
             for i = 1, arguments_length do
-                local flags = arguments[i].flags
-                flags_from_name[arguments[i].name] = flags
+                local flag = flags[i]
+                flags_from_name[names[i]] = flag
 
-                if band(flags, INPUT) ~= 0 and
-                        band(flags, REQUIRED) ~= 0 and
-                        band(flags, DEPRECATED) == 0 then
+                if band(flag, INPUT) ~= 0 and
+                        band(flag, REQUIRED) ~= 0 and
+                        band(flag, DEPRECATED) == 0 then
                     n_required = n_required + 1
                 end
             end
@@ -196,14 +218,14 @@ local voperation_mt = {
 
             local n = 0
             for i = 1, arguments_length do
-                local flags = arguments[i].flags
+                local flag = flags[i]
 
-                if band(flags, INPUT) ~= 0 and
-                        band(flags, REQUIRED) ~= 0 and
-                        band(flags, DEPRECATED) == 0 then
+                if band(flag, INPUT) ~= 0 and
+                        band(flag, REQUIRED) ~= 0 and
+                        band(flag, DEPRECATED) == 0 then
                     n = n + 1
 
-                    if not vop:set(arguments[i].name, flags,
+                    if not vop:set(names[i], flag,
                         match_image, call_args[n]) then
                         error("unable to call " .. name .. "\n" .. verror.get())
                     end
@@ -230,32 +252,32 @@ local voperation_mt = {
             -- fetch required output args, plus modified input images
             n = 1
             for i = 1, arguments_length do
-                local flags = arguments[i].flags
+                local flag = flags[i]
 
-                if band(flags, OUTPUT) ~= 0 and
-                        band(flags, REQUIRED) ~= 0 and
-                        band(flags, DEPRECATED) == 0 then
-                    result[n] = vob:get(arguments[i].name)
+                if band(flag, OUTPUT) ~= 0 and
+                        band(flag, REQUIRED) ~= 0 and
+                        band(flag, DEPRECATED) == 0 then
+                    result[n] = vob:get(names[i])
                     n = n + 1
                 end
 
                 -- MODIFY input args are returned .. this will get the copy we
                 -- made above
-                if band(flags, INPUT) ~= 0 and
-                        band(flags, MODIFY) ~= 0 then
-                    result[n] = vob:get(arguments[i].name)
+                if band(flag, INPUT) ~= 0 and
+                        band(flag, MODIFY) ~= 0 then
+                    result[n] = vob:get(names[i])
                     n = n + 1
                 end
             end
 
             --  fetch optional output args
             for i = 1, arguments_length do
-                local flags = arguments[i].flags
+                local flag = flags[i]
 
-                if band(flags, OUTPUT) ~= 0 and
-                        band(flags, REQUIRED) == 0 and
-                        band(flags, DEPRECATED) == 0 then
-                    result[n] = vob:get(arguments[i].name)
+                if band(flag, OUTPUT) ~= 0 and
+                        band(flag, REQUIRED) == 0 and
+                        band(flag, DEPRECATED) == 0 then
+                    result[n] = vob:get(names[i])
                     n = n + 1
                 end
             end
