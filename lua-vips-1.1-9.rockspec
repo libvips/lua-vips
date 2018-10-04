@@ -2,7 +2,7 @@ package = "lua-vips"
 version = "1.1-9"
 
 source = {
-   url = "git://github.com/jcupitt/lua-vips.git"
+   url = "git://github.com/libvips/lua-vips.git"
 }
 
 description = {
@@ -12,7 +12,7 @@ description = {
       processing library. It is usually faster and needs less memory than 
       similar libraries. 
    ]],
-   homepage = "https://github.com/jcupitt/lua-vips",
+   homepage = "https://github.com/libvips/lua-vips",
    license = "MIT" 
 }
 

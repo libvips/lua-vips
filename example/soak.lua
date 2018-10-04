@@ -1,5 +1,5 @@
 -- a lua version of
--- https://github.com/jcupitt/pyvips/blob/master/examples/soak-test.py
+-- https://github.com/libvips/pyvips/blob/master/examples/soak-test.py
 -- this should run in a steady amount of memory
 
 local vips = require "vips"

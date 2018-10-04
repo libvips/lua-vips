@@ -1,23 +1,23 @@
 # lua-vips
 
-[![Build Status](https://travis-ci.org/jcupitt/lua-vips.svg?branch=master)](https://travis-ci.org/jcupitt/lua-vips)
+[![Build Status](https://travis-ci.org/libvips/lua-vips.svg?branch=master)](https://travis-ci.org/libvips/lua-vips)
 
 This is a Lua binding for the [libvips image processing
-library](http://jcupitt.github.io/libvips).  libvips
+library](http://libvips.github.io/libvips).  libvips
 is a [fast image processing library with low memory
 needs](https://github.com/jcupitt/lua-vips-bench).  `lua-vips` uses ffi
 and needs luajit 2.0 or later.
 
 The libvips documentation includes a
 handy searchable table of [every operation in
-libvips](http://jcupitt.github.io/libvips/API/current/func-list.html). This
+libvips](http://libvips.github.io/libvips/API/current/func-list.html). This
 is a good place to check if it supports some feature you need. Read on to
 see how to call libvips operations.
 
 # Example
 
 [Install the libvips shared
-library](https://jcupitt.github.io/libvips/install.html), then install this rock with:
+library](https://libvips.github.io/libvips/install.html), then install this rock with:
 	
 	luarocks install lua-vips
 
@@ -88,7 +88,7 @@ up to date.
 # Getting more help
 
 The libvips website has a handy table of [all the libvips
-operators](http://jcupitt.github.io/libvips/API/current/func-list.html). Each
+operators](http://libvips.github.io/libvips/API/current/func-list.html). Each
 one links to the main API docs so you can see what you need to pass to it.
 
 A simple way to see the arguments for an operation is to try running it
@@ -176,7 +176,7 @@ local image = vips.Image.jpegload("somefile.jpg", { shrink = 4 })
 ```
 
 The [loader section in the API
-docs](http://jcupitt.github.io/libvips/API/current/VipsForeignSave.html) lists
+docs](http://libvips.github.io/libvips/API/current/VipsForeignSave.html) lists
 all loaders and their options. 
 
 ### `image = vips.Image.new_from_buffer(string [, string_options, options])`
@@ -274,7 +274,7 @@ local noise = vips.Image.perlin(256, 256, { cell_size = 128 })
 
 See:
 
-[http://jcupitt.github.io/libvips/API/current/libvips-create.html](http://jcupitt.github.io/libvips/API/current/libvips-create.html)
+[http://libvips.github.io/libvips/API/current/libvips-create.html](http://libvips.github.io/libvips/API/current/libvips-create.html)
 
 ## Get and set image metadata
 
@@ -322,7 +322,7 @@ successfully removed, `false` otherwise.
 You can call any libvips operation as a member function, for example
 `hough_circle`, the circular Hough transform:
 
-[http://jcupitt.github.io/libvips/API/current/libvips-arithmetic.html#vips-hough-circle](http://jcupitt.github.io/libvips/API/current/libvips-arithmetic.html#vips-hough-circle)
+[http://libvips.github.io/libvips/API/current/libvips-arithmetic.html#vips-hough-circle](http://libvips.github.io/libvips/API/current/libvips-arithmetic.html#vips-hough-circle)
 
 Can be called from Lua like this:
 
@@ -360,7 +360,7 @@ max_value = image:max()
 ```
 
 To get the maximum value from an image. If you look at [the `max`
-operator](http://jcupitt.github.io/libvips/API/current/libvips-arithmetic.html#vips-max),
+operator](http://libvips.github.io/libvips/API/current/libvips-arithmetic.html#vips-max),
 it can actually return a lot more than this. You can write:
 
 ```lua
@@ -590,7 +590,7 @@ Run the example script with:
 
 ### Update rock
 	
-	luarocks upload lua-vips-1.1-8.rockspec --api-key=xxxxxxxxxxxxxx
+	luarocks upload lua-vips-1.1-9.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 
