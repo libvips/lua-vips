@@ -1,4 +1,5 @@
 .*.swp
+lua-vips-*.src.rock
 
 # LuaCov
 luacov.stats.out
