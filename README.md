@@ -547,36 +547,40 @@ vips.cache_set_max_files(10)
 
 Configure `luarocks` for a local tree
 
-	luarocks help path
+	  luarocks help path
 
 append
 
-	eval `luarocks path`
-	export PATH="$HOME/.luarocks/bin:$PATH"
+	  eval `luarocks path`
+	  export PATH="$HOME/.luarocks/bin:$PATH"
 
 to `~/.bashrc`
 
 ### Install
 
-	luarocks --local make
+	  luarocks --local make
 
 ### Unit testing
 
 You need:
 
-	luarocks --local install busted 
-	luarocks --local install luacov
-	luarocks --local install say
+	  luarocks --local install busted 
+	  luarocks --local install luacov
+	  luarocks --local install say
 
 Then to run the test suite:
 
-	busted . -o gtest -v
+	  busted . 
+
+for verbose output:
+
+	  busted . -o gtest -v
 
 ### Linting and static analysis
 
 You need:
 
-	luarocks --local install luacheck
+	  luarocks --local install luacheck
 
 Then to run the linter:
 
@@ -586,58 +590,59 @@ Then to run the linter:
 
 Run the example script with:
 
-	luajit example/hello-world.lua
+	  luajit example/hello-world.lua
 
 ### Update rock
 	
-	luarocks upload lua-vips-1.1-9.rockspec --api-key=xxxxxxxxxxxxxx
+    rm *.src.rock
+	  luarocks upload lua-vips-1.1-9.rockspec --api-key=xxxxxxxxxxxxxx
 
 ### Links
 
-	http://luajit.org/ext_ffi_api.html
-	http://luajit.org/ext_ffi_semantics.html
-	https://github.com/luarocks/luarocks/wiki/creating-a-rock
-	https://olivinelabs.com/busted/
+    http://luajit.org/ext_ffi_api.html
+    http://luajit.org/ext_ffi_semantics.html
+    https://github.com/luarocks/luarocks/wiki/creating-a-rock
+    https://olivinelabs.com/busted/
 
 ### Running under Wine (Windows emulation on Linux)
 
 I used the luapower all-in-one to get a 64-bit Windows LuaJIT build:
 
-	https://luapower.com/
+	  https://luapower.com/
 
 LuaJIT on Windows searches `PATH` to find DLLs. You can't set this directly
 from Linux, you have to change the registry. See:
 
-	https://www.winehq.org/docs/wineusr-guide/environment-variables
+	  https://www.winehq.org/docs/wineusr-guide/environment-variables
 
 Then add the `bin` area of the libvips Windows build to `PATH`.
 
-	z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+	  z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
 
 You must have no trailing backslash.
 
 Try LuaJIT:
 
-	$ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe 
-	LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall.
-	http://luajit.org/
-	JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
-	> print(os.getenv("PATH"))
-	C:\windows\system32;C:\windows;C:\windows\system32\wbem;z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
-	> ffi = require "ffi"
-	> ffi.load("libvips-42.dll")
-	> ^D
+	  $ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe 
+	  LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall.
+	  http://luajit.org/
+	  JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
+	  > print(os.getenv("PATH"))
+	  C:\windows\system32;C:\windows;C:\windows\system32\wbem;z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+	  > ffi = require "ffi"
+	  > ffi.load("libvips-42.dll")
+	  > ^D
 
 The Windows luajit will pick up your .luarocks/share/lua/5.1/vips.lua install,
 so to test just install and run:
 
-	$ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe
-	LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall. http://luajit.org/
-	JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
-	> vips = require "vips"
-	> x = vips.Image.new_from_file("z:\\data\\john\\pics\\k2.jpg")
-	> print(x:width())
-	1450
+	  $ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe
+	  LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall. http://luajit.org/
+	    JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
+	  > vips = require "vips"
+	  > x = vips.Image.new_from_file("z:\\data\\john\\pics\\k2.jpg")
+	  > print(x:width())
+	  1450
     > x = vips.Image.text("hello", {dpi = 300})
     > x:write_to_file("x.png")
     > 
