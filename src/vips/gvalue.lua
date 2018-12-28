@@ -74,12 +74,6 @@ gvalue.to_enum = function(gtype, value)
     return enum_value
 end
 
--- this won't be unset() automatically! you need to
--- g_value_unset() yourself after calling
-gvalue.newp = function()
-    return ffi.new(gvalue.pgv_typeof)
-end
-
 gvalue.type_name = function(gtype)
     return ffi.string(gobject_lib.g_type_name(gtype))
 end
@@ -255,6 +249,13 @@ gvalue.get = function(gv)
 end
 
 return ffi.metatype("GValue", {
+    __new = function(ct, pt)
+        -- if pt equals to true you'll need to
+        -- g_value_unset() yourself after calling it,
+        -- it won't unset() automatically!
+        return pt and ffi.new(gvalue.pgv_typeof) or ffi.new(ct)
+    end,
+
     __gc = function(gv)
         gobject_lib.g_value_unset(gv)
     end,

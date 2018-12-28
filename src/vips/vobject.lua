@@ -62,7 +62,7 @@ vobject.get = function(self, name)
         return false
     end
 
-    local pgv = gvalue.newp()
+    local pgv = gvalue(true)
     pgv[0]:init(gtype)
 
     -- this will add a ref for GObject properties, that ref will be
@@ -85,10 +85,11 @@ vobject.set = function(self, name, value)
         return false
     end
 
-    local gv = gvalue()
-    gv:init(gtype)
-    gv:set(value)
-    gobject_lib.g_object_set_property(self, name, gv)
+    local pgv = gvalue(true)
+    pgv[0]:init(gtype)
+    pgv[0]:set(value)
+    gobject_lib.g_object_set_property(self, name, pgv)
+    gobject_lib.g_value_unset(pgv[0])
 
     return true
 end

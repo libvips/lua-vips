@@ -438,7 +438,7 @@ function Image_method:get(name)
         verror.get()
     end
 
-    local pgv = gvalue.newp()
+    local pgv = gvalue(true)
 
     local result = vips_lib.vips_image_get(self.vimage, name, pgv)
     if result ~= 0 then
@@ -452,10 +452,11 @@ function Image_method:get(name)
 end
 
 function Image_method:set_type(gtype, name, value)
-    local gv = gvalue()
-    gv:init(gtype)
-    gv:set(value)
-    vips_lib.vips_image_set(self.vimage, name, gv)
+    local pgv = gvalue(true)
+    pgv[0]:init(gtype)
+    pgv[0]:set(value)
+    vips_lib.vips_image_set(self.vimage, name, pgv)
+    gobject_lib.g_value_unset(pgv[0])
 end
 
 function Image_method:set(name, value)
