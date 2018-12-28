@@ -780,7 +780,7 @@ local fall_back = function(name)
     end
 end
 
-function Image.mt:__index(name)
+function Image.mt.__index(_, name)
     -- try to get instance method otherwise fallback to voperation
     return rawget(Image_method, name) or fall_back(name)
 end
