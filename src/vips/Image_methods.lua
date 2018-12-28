@@ -14,6 +14,7 @@ local error = error
 local pairs = pairs
 local ipairs = ipairs
 local unpack = unpack
+local rawget = rawget
 local setmetatable = setmetatable
 local getmetatable = getmetatable
 
@@ -163,7 +164,7 @@ function Image.new_from_memory(data, width, height, bands, format)
     local size = ffi.sizeof(data)
 
     local vimage = vips_lib.vips_image_new_from_memory(data, size,
-        width, height, bands, format_value)
+            width, height, bands, format_value)
     if vimage == nil then
         error(verror.get())
     end
@@ -194,7 +195,7 @@ function Image.new_from_array(array, scale, offset)
     a = ffi.new(gvalue.double_arr_typeof, n, a)
 
     local vimage = vips_lib.vips_image_new_matrix_from_array(width,
-        height, a, n)
+            height, a, n)
     local image = Image.new(vimage)
 
     image:set_type(gvalue.gdouble_type, "scale", scale or 1.0)
@@ -206,7 +207,7 @@ end
 function Image.new_from_image(base_image, value)
     local pixel = (Image.black(1, 1) + value):cast(base_image:format())
     local image = pixel:embed(0, 0, base_image:width(), base_image:height(),
-        { extend = "copy" })
+            { extend = "copy" })
     image = image:copy {
         interpretation = base_image:interpretation(),
         xres = base_image:xres(),
@@ -237,7 +238,9 @@ function Image.mt.__sub(a, b)
         if type(b) == "number" then
             return a:linear({ 1 }, { -b })
         elseif is_pixel(b) then
-            return a:linear({ 1 }, map(function(x) return -x end, b))
+            return a:linear({ 1 }, map(function(x)
+                return -x
+            end, b))
         else
             return a:subtract(b)
         end
@@ -269,7 +272,9 @@ function Image.mt.__div(a, b)
         if type(b) == "number" then
             return a:linear({ 1 / b }, { 0 })
         elseif is_pixel(b) then
-            return a:linear(map(function(x) return x ^ -1 end, b), { 0 })
+            return a:linear(map(function(x)
+                return x ^ -1
+            end, b), { 0 })
         else
             return a:divide(b)
         end
@@ -374,7 +379,7 @@ function Image_method:write_to_file(vips_filename, ...)
     end
 
     return voperation.call(ffi.string(name), options,
-        self, filename, unpack { ... })
+            self, filename, unpack { ... })
 end
 
 function Image_method:write_to_buffer(format_string, ...)
@@ -773,13 +778,9 @@ local fall_back = function(name)
     end
 end
 
-function Image.mt.__index(_, name)
-    if Image_method[name] then
-        return Image_method[name]
-    else
-        -- undefined instance methods
-        return fall_back(name)
-    end
+function Image.mt:__index(name)
+    -- try to get instance method otherwise fallback to voperation
+    return rawget(Image_method, name) or fall_back(name)
 end
 
 return setmetatable(Image, {
