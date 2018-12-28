@@ -3,10 +3,12 @@
 
 local ffi = require "ffi"
 
+local verror = require "vips.verror"
 local log = require "vips.log"
 local gvalue = require "vips.gvalue"
 
 local print = print
+local error = error
 local collectgarbage = collectgarbage
 
 local vips_lib
@@ -53,11 +55,10 @@ vobject.get_typeof = function(self, name)
     return pspec[0].value_type
 end
 
-vobject.get = function(self, name)
-    log.msg("vobject.get")
+vobject.get_type = function(self, name, gtype)
+    log.msg("vobject.get_type")
     log.msg("  name =", name)
 
-    local gtype = self:get_typeof(name)
     if gtype == 0 then
         return false
     end
@@ -75,12 +76,11 @@ vobject.get = function(self, name)
     return result
 end
 
-vobject.set = function(self, name, value)
-    log.msg("vobject.set")
+vobject.set_type = function(self, name, value, gtype)
+    log.msg("vobject.set_type")
     log.msg("  name =", name)
     log.msg("  value =", value)
 
-    local gtype = self:get_typeof(name)
     if gtype == 0 then
         return false
     end
@@ -90,6 +90,33 @@ vobject.set = function(self, name, value)
     pgv[0]:set(value)
     gobject_lib.g_object_set_property(self, name, pgv)
     gobject_lib.g_value_unset(pgv[0])
+
+    return true
+end
+
+vobject.get = function(self, name)
+    log.msg("vobject.get")
+    log.msg("  name =", name)
+
+    local gtype = self:get_typeof(name)
+    if gtype == 0 then
+        error(verror.get())
+    end
+
+    return vobject.get_type(self, name, gtype)
+end
+
+vobject.set = function(self, name, value)
+    log.msg("vobject.set")
+    log.msg("  name =", name)
+    log.msg("  value =", value)
+
+    local gtype = self:get_typeof(name)
+    if gtype == 0 then
+        error(verror.get())
+    end
+
+    vobject.set_type(self, name, value, gtype)
 
     return true
 end

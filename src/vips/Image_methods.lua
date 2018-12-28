@@ -411,9 +411,10 @@ function Image_method:get_typeof(name)
     -- our superclass get_typeof(), since vips_image_get_typeof() returned
     -- enum properties as ints
     if not version.at_least(8, 5) then
-        local gtype = self:vobject():get_typeof(name)
+        local vob = self:vobject()
+        local gtype = vob:get_typeof(name)
         if gtype ~= 0 then
-            return gtype
+            return vob:get_type(name, gtype)
         end
 
         -- we must clear the error buffer after vobject typeof fails
