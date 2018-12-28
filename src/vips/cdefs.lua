@@ -37,51 +37,51 @@ ffi.cdef [[
 
     int vips_enum_from_nick (const char* domain,
         GType gtype, const char* str);
-    const char *vips_enum_nick (GType gtype, int value);
+    const char* vips_enum_nick (GType gtype, int value);
 
     void g_value_set_boolean (GValue* value, int v_boolean);
     void g_value_set_int (GValue* value, int i);
     void g_value_set_double (GValue* value, double d);
     void g_value_set_enum (GValue* value, int e);
     void g_value_set_flags (GValue* value, unsigned int f);
-    void g_value_set_string (GValue* value, const char *str);
+    void g_value_set_string (GValue* value, const char* str);
     void vips_value_set_ref_string (GValue* value, const char* str);
     void g_value_set_object (GValue* value, void* object);
     void vips_value_set_array_double (GValue* value,
-        const double* array, int n );
+        const double* array, int n);
     void vips_value_set_array_int (GValue* value,
-        const int* array, int n );
-    void vips_value_set_array_image (GValue *value, int n);
+        const int* array, int n);
+    void vips_value_set_array_image (GValue* value, int n);
     void vips_value_set_blob (GValue* value,
         void (*free_fn)(void* data), void* data, size_t length);
     void vips_value_set_blob_free (GValue* value,
         void* data, size_t length);
 
     int g_value_get_boolean (const GValue* value);
-    int g_value_get_int (GValue* value);
-    double g_value_get_double (GValue* value);
-    int g_value_get_enum (GValue* value);
-    unsigned int g_value_get_flags (GValue* value);
-    const char* g_value_get_string (GValue* value);
+    int g_value_get_int (const GValue* value);
+    double g_value_get_double (const GValue* value);
+    int g_value_get_enum (const GValue* value);
+    unsigned int g_value_get_flags (const GValue* value);
+    const char* g_value_get_string (const GValue* value);
     const char* vips_value_get_ref_string (const GValue* value, size_t* length);
-    void* g_value_get_object (GValue* value);
+    void* g_value_get_object (const GValue* value);
     double* vips_value_get_array_double (const GValue* value, int* n);
     int* vips_value_get_array_int (const GValue* value, int* n);
     void* vips_value_get_blob (const GValue* value, size_t* length);
 
     typedef struct _GObject {
-        void *g_type_instance;
+        void* g_type_instance;
         unsigned int ref_count;
-        void *qdata;
+        void* qdata;
     } GObject;
 
     typedef struct _VipsObject {
         GObject parent_instance;
         bool constructed;
         bool static_object;
-        void *argument_table;
-        char *nickname;
-        char *description;
+        void* argument_table;
+        char* nickname;
+        char* description;
         bool preclose;
         bool close;
         bool postclose;
@@ -104,7 +104,7 @@ ffi.cdef [[
     } GParamSpec;
 
     typedef struct _VipsArgument {
-        GParamSpec *pspec;
+        GParamSpec* pspec;
     } VipsArgument;
 
     typedef struct _VipsArgumentInstance {
@@ -128,19 +128,19 @@ ffi.cdef [[
     typedef struct _VipsArgumentClass {
         VipsArgument parent;
 
-        VipsObjectClass *object_class;
+        VipsObjectClass* object_class;
         VipsArgumentFlags flags;
         int priority;
         uint64_t offset;
     } VipsArgumentClass;
 
     int vips_object_get_argument (VipsObject* object,
-        const char *name, GParamSpec** pspec,
+        const char* name, GParamSpec** pspec,
         VipsArgumentClass** argument_class,
         VipsArgumentInstance** argument_instance);
 
     void g_object_set_property (VipsObject* object,
-        const char *name, GValue* value);
+        const char* name, const GValue* value);
     void g_object_get_property (VipsObject* object,
         const char* name, GValue* value);
 
@@ -162,7 +162,7 @@ ffi.cdef [[
     VipsImage* vips_image_new_matrix_from_array (int width, int height,
         const double* array, int size);
 
-    VipsImage* vips_image_new_from_memory (const void *data, size_t size,
+    VipsImage* vips_image_new_from_memory (const void* data, size_t size,
         int width, int height, int bands, int format);
     unsigned char* vips_image_write_to_memory (VipsImage* image,
         size_t* size_out);
@@ -201,7 +201,7 @@ ffi.cdef [[
         const char*** names, int** flags, int* n_args);
 
     VipsOperation* vips_cache_operation_build (VipsOperation* operation);
-    void vips_object_unref_outputs (VipsOperation *operation);
+    void vips_object_unref_outputs (VipsOperation* operation);
 
     void vips_leak_set (int leak);
     void vips_cache_set_max (int max);
