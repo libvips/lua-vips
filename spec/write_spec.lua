@@ -83,14 +83,14 @@ describe("test image write", function()
 
         it("can write an image to a memory area (no copy)", function()
             local im = vips.Image.new_from_file("./spec/images/Gugg_coloured.jpg")
-            local ptr, size = im:write_to_memory_nocopy()
+            local ptr, size = im:write_to_memory_ptr()
 
             assert.are.equal(im:width() * im:height() * 3, size)
         end)
 
         it("can read an image back from a memory area (no copy)", function()
             local im = vips.Image.new_from_file("./spec/images/Gugg_coloured.jpg")
-            local ptr, size = im:write_to_memory_nocopy()
+            local ptr, size = im:write_to_memory_ptr()
             assert.are.equal(im:width() * im:height() * 3, size)
             local im2 = vips.Image.new_from_memory_ptr(ptr,
                 size, im:width(), im:height(), im:bands(), im:format())

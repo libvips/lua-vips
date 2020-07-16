@@ -519,7 +519,7 @@ local mem = image:write_to_memory()
 print("written ", ffi.sizeof(mem), "bytes to", mem)
 ```
 
-### `ptr, size = image:write_to_memory_nocopy()`
+### `ptr, size = image:write_to_memory_ptr()`
 
 An allocated char array pointer (GCd with a `ffi.gc` callback) and the length in bytes of the image data is directly returned from libvips (no intermediate FFI allocation).
 

@@ -395,7 +395,7 @@ function Image_method:write_to_memory()
     return lua_memory
 end
 
-function Image_method:write_to_memory_nocopy()
+function Image_method:write_to_memory_ptr()
     local psize = ffi.new(gvalue.psize_typeof, 1)
     local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, psize)
 
