@@ -177,7 +177,7 @@ describe("test image creation", function()
             local width = 64
             local height = 32
             local size = width * height
-            local data = ffi.gc(ffi.C.malloc(size), ffi.C.free)
+            local data = ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(size)), ffi.C.free)
 
             for y = 0, height - 1 do
                 for x = 0, width - 1 do
