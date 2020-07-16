@@ -1,4 +1,8 @@
 local ffi = require("ffi")
+ffi.cdef[[
+void* malloc(size_t size);
+void free(void *ptr);
+]]
 local vips = require "vips"
 
 -- test image new/load/etc.
