@@ -83,7 +83,7 @@ describe("test image write", function()
 
         it("can write an image to a memory area (no copy)", function()
             local im = vips.Image.new_from_file("./spec/images/Gugg_coloured.jpg")
-            local ptr, size = im:write_to_memory_ptr()
+            local _, size = im:write_to_memory_ptr()
 
             assert.are.equal(im:width() * im:height() * 3, size)
         end)
