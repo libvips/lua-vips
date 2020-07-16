@@ -194,7 +194,7 @@ local image = vips.Image.new_from_buffer(string, "shrink=2")
 
 Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
-### `image = vips.Image.new_from_memory(ptr, width, height, bands, format)`
+### `image = vips.Image.new_from_memory(data, width, height, bands, format)`
 
 This wraps a libvips image around a FFI memory array. The memory array should be
 formatted as a C-style array. Images are always band-interleaved, so an RGB
@@ -217,6 +217,12 @@ local im = vips.Image.new_from_memory(data, width, height, 1, "uchar")
 The returned image is using a pointer to the `data` area, but luajit won't
 always know this. You should keep a reference to `data` alive for as long as you
 are using any downstream images, or you'll get a crash.
+
+### `image = vips.Image.new_from_memory_ptr(data, size, width, height, bands, format)`
+
+Same as `new_from_memory`, but for any kind of data pointer (non-FFI allocated) by specifying the length of the data in bytes. The pointed data must be valid for the lifespan of the image and any downstream images.
+
+A string can be used as the data pointer thanks to LuaJIT FFI semantics.
 
 ### `image = vips.Image.new_from_image(image, pixel)`
 
@@ -512,6 +518,10 @@ A large ffi char array is allocated and the image is rendered to it.
 local mem = image:write_to_memory()
 print("written ", ffi.sizeof(mem), "bytes to", mem)
 ```
+
+### `ptr, size = image:write_to_memory_ptr()`
+
+An allocated char array pointer (GCd with a `ffi.gc` callback) and the length in bytes of the image data is directly returned from libvips (no intermediate FFI allocation).
 
 ## Error handling
 

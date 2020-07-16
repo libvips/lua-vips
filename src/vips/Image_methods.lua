@@ -158,22 +158,21 @@ function Image.new_from_buffer(data, options, ...)
     return voperation.call(name, options or "", data, unpack { ... })
 end
 
-function Image.new_from_memory(data, width, height, bands, format)
+function Image.new_from_memory_ptr(data, size, width, height, bands, format)
     local format_value = gvalue.to_enum(gvalue.band_format_type, format)
-    local size = ffi.sizeof(data)
-
     local vimage = vips_lib.vips_image_new_from_memory(data, size,
         width, height, bands, format_value)
     if vimage == nil then
         error(verror.get())
     end
+    return Image.new(vimage)
+end
 
-    local image = Image.new(vimage)
-
+function Image.new_from_memory(data, width, height, bands, format)
+    local image = Image.new_from_memory_ptr(data, ffi.sizeof(data), width, height, bands, format)
     -- libvips is using the memory we passed in: save a pointer to the memory
     -- block to try to stop it being GCd
     image._data = data
-
     return image
 end
 
@@ -388,12 +387,19 @@ function Image_method:write_to_memory()
     local psize = ffi.new(gvalue.psize_typeof, 1)
     local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, psize)
     local size = psize[0]
-    -- FIXME can we avoid the copy somehow?
+
     local lua_memory = ffi.new(gvalue.mem_typeof, size)
     ffi.copy(lua_memory, vips_memory, size)
     glib_lib.g_free(vips_memory)
 
     return lua_memory
+end
+
+function Image_method:write_to_memory_ptr()
+    local psize = ffi.new(gvalue.psize_typeof, 1)
+    local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, psize)
+
+    return ffi.gc(vips_memory, glib_lib.g_free), psize[0]
 end
 
 -- get/set metadata
