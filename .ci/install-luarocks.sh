@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-version=${LUAROCKS_VERSION}
-luarocks_tarball=https://luarocks.github.io/luarocks/releases/luarocks-${version}.tar.gz
+version=$LUAROCKS_VERSION
+luarocks_tarball=https://luarocks.github.io/luarocks/releases/luarocks-$version.tar.gz
 
 set -e
 
@@ -11,7 +11,7 @@ if [ -d "$HOME/luarocks/bin" ]; then
     echo "Need LuaRocks $version"
     echo "Found LuaRocks $installed_version"
 
-    if [ "$installed_version" == "$version" ]; then
+    if [ "$installed_version" = "$version" ]; then
         echo "Using cached LuaRocks directory"
         exit 0
     fi
@@ -19,13 +19,13 @@ fi
 
 echo "Installing LuaRocks $version"
 
-rm -rf $HOME/luarocks
-mkdir $HOME/luarocks
+mkdir -p "$HOME/luarocks"
 
-curl -L ${luarocks_tarball} | tar xz
-cd luarocks-${version}
-./configure --prefix="$HOME/luarocks" $*
-make build -j${JOBS} && make install
+curl -L $luarocks_tarball | tar xz
+cd luarocks-$version
+./configure --prefix="$HOME/luarocks" "$@"
+make -j${JOBS} && make install
 
+# Clean-up build directory
 cd ../
-rm -rf luarocks-${version}
+rm -rf luarocks-$version

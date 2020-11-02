@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-version=${VIPS_VERSION}
-pre_version=${VIPS_PRE_VERSION}
-tar_version=${VIPS_TAR_VERSION}
-vips_tarball=https://github.com/libvips/libvips/releases/download/v${version}${pre_version:+-$pre_version}/vips-${tar_version}.tar.gz
+version=$VIPS_VERSION
+pre_version=$VIPS_PRE_VERSION
+tag_version=$version${pre_version:+-$pre_version}
+vips_tarball=https://github.com/libvips/libvips/releases/download/v$tag_version/vips-$tag_version.tar.gz
 
 set -e
 
@@ -13,21 +13,21 @@ if [ -d "$HOME/vips/bin" ]; then
     echo "Need vips $version"
     echo "Found vips $installed_version"
 
-    if [[ "$installed_version" == "$version" ]]; then
+    if [ "$installed_version" = "$version" ]; then
         echo "Using cached vips directory"
-        # exit 0
+        exit 0
     fi
 fi
 
+mkdir -p "$HOME/vips"
+
 echo "Installing vips $version"
 
-rm -rf $HOME/vips
-mkdir $HOME/vips
+curl -Ls $vips_tarball | tar xz
+cd vips-$version
+./configure --prefix="$HOME/vips" "$@"
+make -j$JOBS && make install
 
-curl -L ${vips_tarball} | tar xz
-cd vips-${version}
-CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0 ./configure --prefix="$HOME/vips" $*
-make -j${JOBS} && make install
-
+# Clean-up build directory
 cd ../
-rm -rf vips-${version}
+rm -rf vips-$version
