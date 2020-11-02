@@ -185,13 +185,13 @@ function Image.new_from_array(array, scale, offset)
     local height = #array
 
     local n = width * height
-    local a = {}
+    local arr = {}
     for y = 0, height - 1 do
         for x = 0, width - 1 do
-            a[x + y * width] = array[y + 1][x + 1]
+            arr[x + y * width] = array[y + 1][x + 1]
         end
     end
-    a = ffi.new(gvalue.double_arr_typeof, n, a)
+    local a = ffi.new(gvalue.double_arr_typeof, n, arr)
 
     local vimage = vips_lib.vips_image_new_matrix_from_array(width,
             height, a, n)
