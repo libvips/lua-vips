@@ -1,4 +1,8 @@
 local ffi = require("ffi")
+ffi.cdef[[
+void* malloc(size_t size);
+void free(void *ptr);
+]]
 local vips = require "vips"
 
 -- test image new/load/etc.
@@ -161,6 +165,28 @@ describe("test image creation", function()
 
             local im = vips.Image.new_from_memory(data,
                 width, height, 1, "uchar")
+
+            assert.are.equal(im:width(), width)
+            assert.are.equal(im:height(), height)
+            assert.are.equal(im:bands(), 1)
+            assert.are.equal(im:format(), "uchar")
+            assert.are.equal(im:avg(), 47)
+        end)
+
+        it("can make an image from a memory area (pointer)", function()
+            local width = 64
+            local height = 32
+            local size = width * height
+            local data = ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(size)), ffi.C.free)
+
+            for y = 0, height - 1 do
+                for x = 0, width - 1 do
+                    data[x + y * width] = x + y
+                end
+            end
+
+            local im = vips.Image.new_from_memory_ptr(data,
+                size, width, height, 1, "uchar")
 
             assert.are.equal(im:width(), width)
             assert.are.equal(im:height(), height)

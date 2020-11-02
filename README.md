@@ -19,7 +19,9 @@ see how to call libvips operations.
 [Install the libvips shared
 library](https://libvips.github.io/libvips/install.html), then install this rock with:
 	
-	luarocks install lua-vips
+```shell
+luarocks install lua-vips
+```
 
 Example:
 
@@ -78,12 +80,12 @@ When you call something like `image:hough_circle{ scale = 4 }`, the `__index`
 method on the `lua-vips` image class opens libvips with ffi and searches
 for an operation called `hough_circle`. It discovers what arguments the
 operation takes, checks you supplied the correct arguments, and transforms
-them into the form that libvips needs. It executes the operator, then
-pulls out all the results and returns them as a Lua table.
+them into the form that libvips needs. It executes the operator, then pulls
+out all the results and returns them as a Lua table.
 
-This means that, although `lua-vips` supports almost 300 operators,
-the binding itself is small, should be simple to maintain, and should always be
-up to date.
+This means that, although `lua-vips` supports almost 300 operators, the
+binding itself is small, should be simple to maintain, and should always
+be up to date.
 
 # Getting more help
 
@@ -192,7 +194,7 @@ local image = vips.Image.new_from_buffer(string, "shrink=2")
 
 Use (for example) `vips.Image.jpegload_buffer` to call a loader directly.
 
-### `image = vips.Image.new_from_memory(ptr, width, height, bands, format)`
+### `image = vips.Image.new_from_memory(data, width, height, bands, format)`
 
 This wraps a libvips image around a FFI memory array. The memory array should be
 formatted as a C-style array. Images are always band-interleaved, so an RGB
@@ -215,6 +217,12 @@ local im = vips.Image.new_from_memory(data, width, height, 1, "uchar")
 The returned image is using a pointer to the `data` area, but luajit won't
 always know this. You should keep a reference to `data` alive for as long as you
 are using any downstream images, or you'll get a crash.
+
+### `image = vips.Image.new_from_memory_ptr(data, size, width, height, bands, format)`
+
+Same as `new_from_memory`, but for any kind of data pointer (non-FFI allocated) by specifying the length of the data in bytes. The pointed data must be valid for the lifespan of the image and any downstream images.
+
+A string can be used as the data pointer thanks to LuaJIT FFI semantics.
 
 ### `image = vips.Image.new_from_image(image, pixel)`
 
@@ -511,6 +519,10 @@ local mem = image:write_to_memory()
 print("written ", ffi.sizeof(mem), "bytes to", mem)
 ```
 
+### `ptr, size = image:write_to_memory_ptr()`
+
+An allocated char array pointer (GCd with a `ffi.gc` callback) and the length in bytes of the image data is directly returned from libvips (no intermediate FFI allocation).
+
 ## Error handling
 
 Most `lua-vips` methods will call `error()` if they detect an error. Use
@@ -547,103 +559,132 @@ vips.cache_set_max_files(10)
 
 Configure `luarocks` for a local tree
 
-	  luarocks help path
+```shell
+luarocks help path
+```
 
 append
 
-	  eval `luarocks path`
-	  export PATH="$HOME/.luarocks/bin:$PATH"
+```shell
+eval `luarocks path`
+export PATH="$HOME/.luarocks/bin:$PATH"
+```
 
-to `~/.bashrc`
+to `~/.bashrc`.
 
 ### Install
 
-	  luarocks --local make
+```shell
+luarocks --local make
+```
 
 ### Unit testing
 
 You need:
 
-	  luarocks --local install busted 
-	  luarocks --local install luacov
-	  luarocks --local install say
+```shell
+luarocks --local install busted 
+luarocks --local install luacov
+luarocks --local install say
+```
 
 Then to run the test suite:
 
-	  busted . 
+```shell
+busted . 
+```
 
 for verbose output:
 
-	  busted . -o gtest -v
+```shell
+busted . -o gtest -v
+```
 
 ### Linting and static analysis
 
 You need:
 
-	  luarocks --local install luacheck
+```shell
+luarocks --local install luacheck
+```
 
 Then to run the linter:
 
-	 luacheck .
+```shell
+luacheck .
+```
 
 ### Test
 
 Run the example script with:
 
-	  luajit example/hello-world.lua
+```shell
+luajit example/hello-world.lua
+```
 
 ### Update rock
-	
-    rm *.src.rock
-	  luarocks upload lua-vips-1.1-9.rockspec --api-key=xxxxxxxxxxxxxx
+
+```shell
+rm *.src.rock
+luarocks upload lua-vips-1.1-9.rockspec --api-key=xxxxxxxxxxxxxx
+```
 
 ### Links
 
-    http://luajit.org/ext_ffi_api.html
-    http://luajit.org/ext_ffi_semantics.html
-    https://github.com/luarocks/luarocks/wiki/creating-a-rock
-    https://olivinelabs.com/busted/
+http://luajit.org/ext_ffi_api.html
+
+http://luajit.org/ext_ffi_semantics.html
+
+https://github.com/luarocks/luarocks/wiki/creating-a-rock
+
+https://olivinelabs.com/busted/
 
 ### Running under Wine (Windows emulation on Linux)
 
 I used the luapower all-in-one to get a 64-bit Windows LuaJIT build:
 
-	  https://luapower.com/
+https://luapower.com/
 
 LuaJIT on Windows searches `PATH` to find DLLs. You can't set this directly
 from Linux, you have to change the registry. See:
 
-	  https://www.winehq.org/docs/wineusr-guide/environment-variables
+https://www.winehq.org/docs/wineusr-guide/environment-variables
 
 Then add the `bin` area of the libvips Windows build to `PATH`.
 
-	  z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+```
+z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+```
 
 You must have no trailing backslash.
 
 Try LuaJIT:
 
-	  $ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe 
-	  LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall.
-	  http://luajit.org/
-	  JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
-	  > print(os.getenv("PATH"))
-	  C:\windows\system32;C:\windows;C:\windows\system32\wbem;z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
-	  > ffi = require "ffi"
-	  > ffi.load("libvips-42.dll")
-	  > ^D
+```
+$ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe 
+LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall.
+http://luajit.org/
+JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
+> print(os.getenv("PATH"))
+C:\windows\system32;C:\windows;C:\windows\system32\wbem;z:\home\john\GIT\build-win64\8.5\vips-dev-8.5\bin
+> ffi = require "ffi"
+> ffi.load("libvips-42.dll")
+> ^D
+```
 
-The Windows luajit will pick up your .luarocks/share/lua/5.1/vips.lua install,
+The Windows luajit will pick up your `.luarocks/share/lua/5.1/vips.lua` install,
 so to test just install and run:
 
-	  $ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe
-	  LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall. http://luajit.org/
-	    JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
-	  > vips = require "vips"
-	  > x = vips.Image.new_from_file("z:\\data\\john\\pics\\k2.jpg")
-	  > print(x:width())
-	  1450
-    > x = vips.Image.text("hello", {dpi = 300})
-    > x:write_to_file("x.png")
-    > 
+```
+$ ~/packages/luajit/luapower-all-master/bin/mingw64/luajit.exe
+LuaJIT 2.1.0-beta2 -- Copyright (C) 2005-2016 Mike Pall. http://luajit.org/
+  JIT: ON SSE2 SSE3 SSE4.1 fold cse dce fwd dse narrow loop abc sink fuse
+> vips = require "vips"
+> x = vips.Image.new_from_file("z:\\data\\john\\pics\\k2.jpg")
+> print(x:width())
+1450
+> x = vips.Image.text("hello", {dpi = 300})
+> x:write_to_file("x.png")
+> 
+```
 
