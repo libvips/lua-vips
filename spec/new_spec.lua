@@ -58,7 +58,7 @@ describe("test image creation", function()
         it("throws error when file does not exits", function()
             assert.has_error(function()
                 vips.Image.new_from_file("/path/does/not/exist/unknown.jpg")
-            end, "VipsForeignLoad: file \"/path/does/not/exist/unknown.jpg\" not found\n")
+            end, "VipsForeignLoad: file \"/path/does/not/exist/unknown.jpg\" does not exist\n")
         end)
 
         it("can subsample a jpeg from a file", function()

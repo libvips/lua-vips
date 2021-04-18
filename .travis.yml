@@ -1,17 +1,14 @@
-sudo: false
-
 language: generic
 
-dist: trusty
+os: linux
+dist: bionic
 
 env:
   global:
-    - LUAROCKS_VERSION=3.0.0
-    - VIPS_VERSION=8.7.0
-    - VIPS_PRE_VERSION=rc2
-    - VIPS_TAR_VERSION=$VIPS_VERSION-rc2
+    - LUAROCKS_VERSION=3.4.0
+    - VIPS_VERSION=8.10.2
     - VIPS_WARNING=0
-    - JOBS=2
+    - JOBS=`nproc`
     - LD_LIBRARY_PATH=$HOME/vips/lib:$LD_LIBRARY_PATH
     - PKG_CONFIG_PATH=$HOME/vips/lib/pkgconfig:$PKG_CONFIG_PATH
     - PATH=$HOME/vips/bin:$HOME/luarocks/bin:/usr/local/openresty/luajit/bin:$PATH
@@ -24,35 +21,36 @@ cache:
 addons:
   apt:
     sources:
-      # Use the official APT repositories from OpenResty (which includes LuaJIT 2.1.0-beta3),
-      # because LuaJIT on trusty is quite old.
-      - sourceline: 'deb http://openresty.org/package/ubuntu trusty main'
+      # Use the official APT repositories from OpenResty, because LuaJIT on bionic is quite old
+      - sourceline: 'deb http://openresty.org/package/ubuntu $(lsb_release -cs) main'
         key_url: 'https://openresty.org/package/pubkey.gpg'
     packages:
       - openresty
+      - libcfitsio-dev
+      - libexif-dev
       - libexpat1-dev
-      - gettext
-      - libglib2.0-dev
-      - liborc-0.4-dev
       - libfftw3-dev
-      - liblcms2-dev
-      - libmagickwand-dev
-      - libopenexr-dev
-      - libcfitsio3-dev
       - libgif-dev
       - libgsf-1-dev
+      - libgsl-dev
+      - liblcms2-dev
+      - libmagickwand-dev
       - libmatio-dev
+      - libnifti-dev
+      - libopenexr-dev
       - libopenslide-dev
+      - liborc-0.4-dev
       - libpango1.0-dev
+      - libpng-dev
       - libpoppler-glib-dev
       - librsvg2-dev
+      - libtiff5-dev
       - libwebp-dev
 
 before_install:
   - bash .ci/install-vips.sh 
   - bash .ci/install-luarocks.sh
     --with-lua=/usr/local/openresty/luajit/
-    --lua-suffix=jit-2.1.0-beta3
     --with-lua-include=/usr/local/openresty/luajit/include/luajit-2.1
   - eval `luarocks path`
 

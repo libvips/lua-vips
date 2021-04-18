@@ -14,6 +14,7 @@ local error = error
 local pairs = pairs
 local ipairs = ipairs
 local unpack = unpack
+local rawget = rawget
 local setmetatable = setmetatable
 local getmetatable = getmetatable
 
@@ -161,7 +162,7 @@ end
 function Image.new_from_memory_ptr(data, size, width, height, bands, format)
     local format_value = gvalue.to_enum(gvalue.band_format_type, format)
     local vimage = vips_lib.vips_image_new_from_memory(data, size,
-        width, height, bands, format_value)
+            width, height, bands, format_value)
     if vimage == nil then
         error(verror.get())
     end
@@ -184,18 +185,20 @@ function Image.new_from_array(array, scale, offset)
     local height = #array
 
     local n = width * height
-    local a = ffi.new(gvalue.pdouble_typeof, n)
+    local arr = {}
     for y = 0, height - 1 do
         for x = 0, width - 1 do
-            a[x + y * width] = array[y + 1][x + 1]
+            arr[x + y * width] = array[y + 1][x + 1]
         end
     end
+    local a = ffi.new(gvalue.double_arr_typeof, n, arr)
+
     local vimage = vips_lib.vips_image_new_matrix_from_array(width,
-        height, a, n)
+            height, a, n)
     local image = Image.new(vimage)
 
-    image:set_type(gvalue.gdouble_type, "scale", scale or 1)
-    image:set_type(gvalue.gdouble_type, "offset", offset or 0)
+    image:set_type(gvalue.gdouble_type, "scale", scale or 1.0)
+    image:set_type(gvalue.gdouble_type, "offset", offset or 0.0)
 
     return image
 end
@@ -203,7 +206,7 @@ end
 function Image.new_from_image(base_image, value)
     local pixel = (Image.black(1, 1) + value):cast(base_image:format())
     local image = pixel:embed(0, 0, base_image:width(), base_image:height(),
-        { extend = "copy" })
+            { extend = "copy" })
     image = image:copy {
         interpretation = base_image:interpretation(),
         xres = base_image:xres(),
@@ -234,7 +237,9 @@ function Image.mt.__sub(a, b)
         if type(b) == "number" then
             return a:linear({ 1 }, { -b })
         elseif is_pixel(b) then
-            return a:linear({ 1 }, map(function(x) return -x end, b))
+            return a:linear({ 1 }, map(function(x)
+                return -x
+            end, b))
         else
             return a:subtract(b)
         end
@@ -266,7 +271,9 @@ function Image.mt.__div(a, b)
         if type(b) == "number" then
             return a:linear({ 1 / b }, { 0 })
         elseif is_pixel(b) then
-            return a:linear(map(function(x) return x ^ -1 end, b), { 0 })
+            return a:linear(map(function(x)
+                return x ^ -1
+            end, b), { 0 })
         else
             return a:divide(b)
         end
@@ -338,6 +345,7 @@ end
 local Image_method = {}
 
 function Image_method:vobject()
+    -- TODO: Could we use `self.vimage.parent_instance` here?
     return ffi.cast(vobject.typeof, self.vimage)
 end
 
@@ -370,7 +378,7 @@ function Image_method:write_to_file(vips_filename, ...)
     end
 
     return voperation.call(ffi.string(name), options,
-        self, filename, unpack { ... })
+            self, filename, unpack { ... })
 end
 
 function Image_method:write_to_buffer(format_string, ...)
@@ -409,9 +417,10 @@ function Image_method:get_typeof(name)
     -- our superclass get_typeof(), since vips_image_get_typeof() returned
     -- enum properties as ints
     if not version.at_least(8, 5) then
-        local gtype = self:vobject():get_typeof(name)
+        local vob = self:vobject()
+        local gtype = vob:get_typeof(name)
         if gtype ~= 0 then
-            return gtype
+            return vob:get_type(name, gtype)
         end
 
         -- we must clear the error buffer after vobject typeof fails
@@ -436,7 +445,7 @@ function Image_method:get(name)
         verror.get()
     end
 
-    local pgv = gvalue.newp()
+    local pgv = gvalue(true)
 
     local result = vips_lib.vips_image_get(self.vimage, name, pgv)
     if result ~= 0 then
@@ -444,17 +453,17 @@ function Image_method:get(name)
     end
 
     result = pgv[0]:get()
-
     gobject_lib.g_value_unset(pgv[0])
 
     return result
 end
 
 function Image_method:set_type(gtype, name, value)
-    local gv = gvalue.new()
-    gv:init(gtype)
-    gv:set(value)
-    vips_lib.vips_image_set(self.vimage, name, gv)
+    local pgv = gvalue(true)
+    pgv[0]:init(gtype)
+    pgv[0]:set(value)
+    vips_lib.vips_image_set(self.vimage, name, pgv)
+    gobject_lib.g_value_unset(pgv[0])
 end
 
 function Image_method:set(name, value)
@@ -778,12 +787,8 @@ local fall_back = function(name)
 end
 
 function Image.mt.__index(_, name)
-    if Image_method[name] then
-        return Image_method[name]
-    else
-        -- undefined instance methods
-        return fall_back(name)
-    end
+    -- try to get instance method otherwise fallback to voperation
+    return rawget(Image_method, name) or fall_back(name)
 end
 
 return setmetatable(Image, {
