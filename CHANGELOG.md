@@ -2,6 +2,10 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# 1.1-10 - 2021-04-18
+
+- fix NYI warnings [kleisauke]
+
 # 1.1-9 - 2018-08-03
 
 - add `vips.leak_set()` [jcupitt]
