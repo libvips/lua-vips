@@ -8,21 +8,13 @@ local watermark_filename = "images/PNG_transparency_demonstration_1.png"
 
 local main = vips.Image.new_from_file(main_filename)
 local watermark = vips.Image.new_from_file(watermark_filename)
-local left, top, width, height = 100, 100, watermark:width(), watermark:height()
 
--- extract related area from main image
-local base = main:crop(left, top, width, height)
+-- scale the alpha down to 30% transparency
+watermark = watermark * { 1, 1, 1, 0.3 }
 
--- composite the two areas using the PDF "over" mode
-local composite = base:composite(watermark, "over")
-
--- the result will have an alpha, and our base image does not .. we must flatten
--- out the alpha before we can insert it back into a plain RGB JPG image
-composite = composite:flatten()
-
--- insert composite back in to main image on related area
-local combined = main:insert(composite, left, top)
+-- composite onto the base image at the top left
+local result = main:composite(watermark, "over", { x = 10, y = 10 })
 
 print("writing x.jpg ...")
-combined:write_to_file("x.jpg")
+result:write_to_file("x.jpg")
 
