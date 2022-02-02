@@ -220,7 +220,13 @@ voperation.call = function(name, string_options, ...)
 
     if last_arg then
         for k, v in pairs(last_arg) do
-            if not vop:set(k, flags_from_name[k], match_image, v) then
+            local flag = flags_from_name[k]
+            if not flag then
+                error("unable to call " .. name .. ": invalid flag '" ..
+                        tostring(k) .. "'")
+            end
+
+            if not vop:set(k, flag, match_image, v) then
                 error("unable to call " .. name .. "\n" .. verror.get())
             end
         end
