@@ -116,7 +116,7 @@ describe("test image creation", function()
 
             assert.error_matches(function()
                 vips.Image.new_from_buffer(buf)
-            end, "unable to call VipsForeignLoadGifBuffer\ngifload_buffer: .+")
+            end, "unable to call VipsForeignLoadNsgifBuffer\ngifload_buffer: .+")
         end)
 
         it("can load a jpeg from a buffer, options in a table", function()
