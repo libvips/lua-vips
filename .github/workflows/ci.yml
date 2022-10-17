@@ -12,8 +12,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
           # Use the official APT repositories from OpenResty to install LuaJIT
           curl -sSL "https://openresty.org/package/pubkey.gpg" | sudo gpg --dearmor -o /usr/share/keyrings/openresty.gpg
@@ -21,7 +19,7 @@ jobs:
             sudo tee /etc/apt/sources.list.d/openresty.list > /dev/null
           # Install dependencies
           sudo apt-get update
-          sudo -E apt-get -y install --no-install-recommends openresty libvips-dev
+          sudo apt-get install --no-install-recommends openresty libvips-dev
 
       - name: Install LuaRocks
         env:
