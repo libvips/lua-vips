@@ -1,6 +1,6 @@
 # lua-vips
 
-[![Build Status](https://travis-ci.org/libvips/lua-vips.svg?branch=master)](https://travis-ci.org/libvips/lua-vips)
+[![CI](https://github.com/libvips/lua-vips/workflows/CI/badge.svg)](https://github.com/libvips/lua-vips/actions)
 
 This is a Lua binding for the [libvips image processing
 library](http://libvips.github.io/libvips).  libvips
