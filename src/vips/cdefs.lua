@@ -212,6 +212,9 @@ ffi.cdef [[
     void vips_cache_set_max_files (int max_files);
     int vips_cache_get_max_files (void);
 
+    void vips_concurrency_set (int concurrency);
+    int vips_concurrency_get ();
+
     int vips_init (const char *argv0);
     int vips_version (int flag);
 

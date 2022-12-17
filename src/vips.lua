@@ -52,6 +52,14 @@ function vips.cache_get_max_mem()
     return vips_lib.vips_cache_get_max_mem()
 end
 
+function vips.concurrency_set(concurrency)
+    return vips_lib.vips_concurrency_set(concurrency)
+end
+
+function vips.concurrency_get()
+    return vips_lib.vips_concurrency_get()
+end
+
 -- for compat with 1.1-6, when these were misnamed
 vips.set_max = vips.cache_set_max
 vips.get_max = vips.cache_get_max
