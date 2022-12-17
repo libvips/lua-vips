@@ -2,6 +2,10 @@
 
 All notable changes to `lua-vips` will be documented in this file.
 
+# master
+
+- add `vips.concurrency_get()` and `set()` [kamyabzad]
+
 # 1.1-10 - 2021-04-18
 
 - fix NYI warnings [kleisauke]
