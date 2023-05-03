@@ -5,7 +5,7 @@ local logging_enabled = false
 local type = type
 local print = print
 local pairs = pairs
-local unpack = unpack
+local unpack = unpack or table.unpack
 local tostring = tostring
 local str_rep = string.rep
 
