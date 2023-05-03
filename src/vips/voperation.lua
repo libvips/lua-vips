@@ -15,7 +15,7 @@ local band = bit.band
 local type = type
 local error = error
 local pairs = pairs
-local unpack = unpack
+local unpack = unpack or table.unpack
 local tonumber = tonumber
 local str_gsub = string.gsub
 
