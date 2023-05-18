@@ -83,8 +83,9 @@ gvalue.init = function(gv, gtype)
 end
 
 gvalue.set = function(gv, value)
-    local gtype = gv.gtype
-    local fundamental = gobject_lib.g_type_fundamental(gtype)
+    local gtype_raw = gv.gtype
+    local gtype = tonumber(gtype_raw)
+    local fundamental = gobject_lib.g_type_fundamental(gtype_raw)
 
     if gtype == gvalue.gbool_type then
         gobject_lib.g_value_set_boolean(gv, value)
@@ -93,7 +94,7 @@ gvalue.set = function(gv, value)
     elseif gtype == gvalue.gdouble_type then
         gobject_lib.g_value_set_double(gv, value)
     elseif fundamental == gvalue.genum_type then
-        gobject_lib.g_value_set_enum(gv, gvalue.to_enum(gtype, value))
+        gobject_lib.g_value_set_enum(gv, gvalue.to_enum(gtype_raw, value))
     elseif fundamental == gvalue.gflags_type then
         gobject_lib.g_value_set_flags(gv, value)
     elseif gtype == gvalue.gstr_type then
@@ -149,13 +150,14 @@ gvalue.set = function(gv, value)
             vips_lib.vips_value_set_blob(gv, glib_lib.g_free, buf, n)
         end
     else
-        error("unsupported gtype for set " .. gvalue.type_name(gtype))
+        error("unsupported gtype for set " .. gvalue.type_name(gtype_raw))
     end
 end
 
 gvalue.get = function(gv)
-    local gtype = gv.gtype
-    local fundamental = gobject_lib.g_type_fundamental(gtype)
+    local gtype_raw = gv.gtype
+    local gtype = tonumber(gtype_raw)
+    local fundamental = gobject_lib.g_type_fundamental(gtype_raw)
 
     local result
 
@@ -168,7 +170,7 @@ gvalue.get = function(gv)
     elseif fundamental == gvalue.genum_type then
         local enum_value = gobject_lib.g_value_get_enum(gv)
 
-        local cstr = vips_lib.vips_enum_nick(gtype, enum_value)
+        local cstr = vips_lib.vips_enum_nick(gtype_raw, enum_value)
 
         if cstr == nil then
             error("value not in enum")
@@ -242,7 +244,7 @@ gvalue.get = function(gv)
 
         result = ffi.string(array, psize[0])
     else
-        error("unsupported gtype for get " .. gvalue.type_name(gtype))
+        error("unsupported gtype for get " .. gvalue.type_name(gtype_raw))
     end
 
     return result
