@@ -192,7 +192,7 @@ gvalue.get = function(gv)
 
         local cstr = vips_lib.vips_value_get_ref_string(gv, psize)
 
-        result = ffi.string(cstr, psize[0])
+        result = ffi.string(cstr, tonumber(psize[0]))
     elseif gtype == gvalue.image_type then
         -- g_value_get_object() will not add a ref ... that is
         -- held by the gvalue
@@ -242,7 +242,7 @@ gvalue.get = function(gv)
 
         local array = vips_lib.vips_value_get_blob(gv, psize)
 
-        result = ffi.string(array, psize[0])
+        result = ffi.string(array, tonumber(psize[0]))
     else
         error("unsupported gtype for get " .. gvalue.type_name(gtype_raw))
     end
