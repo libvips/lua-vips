@@ -394,7 +394,7 @@ end
 function Image_method:write_to_memory()
     local psize = ffi.new(gvalue.psize_typeof, 1)
     local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, psize)
-    local size = psize[0]
+    local size = tonumber(psize[0])
 
     local lua_memory = ffi.new(gvalue.mem_typeof, size)
     ffi.copy(lua_memory, vips_memory, size)
@@ -407,7 +407,7 @@ function Image_method:write_to_memory_ptr()
     local psize = ffi.new(gvalue.psize_typeof, 1)
     local vips_memory = vips_lib.vips_image_write_to_memory(self.vimage, psize)
 
-    return ffi.gc(vips_memory, glib_lib.g_free), psize[0]
+    return ffi.gc(vips_memory, glib_lib.g_free), tonumber(psize[0])
 end
 
 -- get/set metadata
