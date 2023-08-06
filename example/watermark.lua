@@ -19,8 +19,8 @@ text = (text * 0.3):cast("uchar")
 text = text:gravity("centre", 200, 200)
 -- this block of pixels will be reused many times ... make a copy
 text = text:copy_memory()
-text = text:replicate(1 + im:width() / text:width(),
-    1 + im:height() / text:height())
+text = text:replicate(1 + im:width() // text:width(),
+    1 + im:height() // text:height())
 text = text:crop(0, 0, im:width(), im:height())
 
 -- we make a constant colour image and attach the text mask as the alpha
