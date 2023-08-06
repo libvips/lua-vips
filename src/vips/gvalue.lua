@@ -172,7 +172,7 @@ gvalue.get = function(gv)
 
         local cstr = vips_lib.vips_enum_nick(gtype_raw, enum_value)
 
-        if cstr == nil then
+        if cstr == ffi.NULL then
             error("value not in enum")
         end
 
@@ -182,7 +182,7 @@ gvalue.get = function(gv)
     elseif gtype == gvalue.gstr_type then
         local cstr = gobject_lib.g_value_get_string(gv)
 
-        if cstr ~= nil then
+        if cstr ~= ffi.NULL then
             result = ffi.string(cstr)
         else
             result = nil

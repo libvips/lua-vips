@@ -122,8 +122,8 @@ end
 
 function Image.find_load(filename)
     local name = vips_lib.vips_foreign_find_load(filename)
-    if name == nil then
-        return nil
+    if name == ffi.NULL then
+        return ffi.NULL
     else
         return ffi.string(name)
     end
@@ -134,7 +134,7 @@ function Image.new_from_file(vips_filename, ...)
     local options = to_string_copy(vips_lib.vips_filename_get_options(vips_filename))
 
     local name = Image.find_load(filename)
-    if name == nil then
+    if name == ffi.NULL then
         error(verror.get())
     end
 
@@ -143,7 +143,7 @@ end
 
 function Image.find_load_buffer(data)
     local name = vips_lib.vips_foreign_find_load_buffer(data, #data)
-    if name == nil then
+    if name == ffi.NULL then
         return nil
     else
         return ffi.string(name)
@@ -152,7 +152,7 @@ end
 
 function Image.new_from_buffer(data, options, ...)
     local name = Image.find_load_buffer(data)
-    if name == nil then
+    if name == ffi.NULL then
         error(verror.get())
     end
 
@@ -163,7 +163,7 @@ function Image.new_from_memory_ptr(data, size, width, height, bands, format)
     local format_value = gvalue.to_enum(gvalue.band_format_type, format)
     local vimage = vips_lib.vips_image_new_from_memory(data, size,
             width, height, bands, format_value)
-    if vimage == nil then
+    if vimage == ffi.NULL then
         error(verror.get())
     end
     return Image.new(vimage)
@@ -361,7 +361,7 @@ end
 
 function Image_method:copy_memory()
     local vimage = vips_lib.vips_image_copy_memory(self.vimage)
-    if vimage == nil then
+    if vimage == ffi.NULL then
         error(verror.get())
     end
     return Image.new(vimage)
@@ -373,7 +373,7 @@ function Image_method:write_to_file(vips_filename, ...)
     local filename = to_string_copy(vips_lib.vips_filename_get_filename(vips_filename))
     local options = to_string_copy(vips_lib.vips_filename_get_options(vips_filename))
     local name = vips_lib.vips_foreign_find_save(filename)
-    if name == nil then
+    if name == ffi.NULL then
         error(verror.get())
     end
 
@@ -384,7 +384,7 @@ end
 function Image_method:write_to_buffer(format_string, ...)
     local options = to_string_copy(vips_lib.vips_filename_get_options(format_string))
     local name = vips_lib.vips_foreign_find_save_buffer(format_string)
-    if name == nil then
+    if name == ffi.NULL then
         error(verror.get())
     end
 
