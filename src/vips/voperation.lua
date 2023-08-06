@@ -144,7 +144,7 @@ voperation.call = function(name, string_options, ...)
     local call_args = { ... }
 
     local vop = vips_lib.vips_operation_new(name)
-    if vop == nil then
+    if vop == ffi.NULL then
         error("no such operation\n" .. verror.get())
     end
     vop = vop:new()
@@ -234,7 +234,7 @@ voperation.call = function(name, string_options, ...)
     end
 
     local vop2 = vips_lib.vips_cache_operation_build(vop)
-    if vop2 == nil then
+    if vop2 == ffi.NULL then
         error("unable to call " .. name .. "\n" .. verror.get())
     end
     vop = vop2:new()
