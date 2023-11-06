@@ -1,26 +1,35 @@
--- write a vips image to lua data structure
+#!/usr/bin/luajit
 
-local vips = require "vips"
-local ffi = require "ffi"
+-- turn a vips image into a lua array
+
+vips = require "vips"
+ffi = require "ffi"
 
 -- make a tiny two band u16 image whose pixels are their coordinates
 local im = vips.Image.xyz(3, 2):cast("ushort")
 
--- write as a C-style memory array, so band-interleaved, a set of scanlines,
--- each array element a uint8
+-- write as a C-style memory array, so band-interleaved, a series of scanlines
+--
+-- "data" is a pointer of type uchar*, though the underlying memory is really
+-- pairs of int16s, see above
 local data = im:write_to_memory()
 
--- the type of each pixel
-local ptype = ffi.typeof("typedef unsigned short int[$][?]", im:bands())
-
--- cast the memory area we got back from vips to an array of pixels
-local data16 = ffi.cast(ptype, data)
+-- the type of each pixel ... a pair of shorts
+ffi.cdef [[
+  typedef struct {
+      unsigned short x;
+      unsigned short y;
+  } pixel;
+]]
+-- and cast the image pointer to a 1D array of pixel structs
+local ptype = ffi.typeof("pixel*")
+local array = ffi.cast(ptype, data)
 
 -- and print! ffi arrays number from 0
-for y = 0, im:height() do
-    for x = 0, im:width() do
+for y = 0, im:height() - 1 do
+    for x = 0, im:width() - 1 do
         local i = x + y * im:width()
 
-        print("x = ", x, "y = ", y, data16[i][0], data[i][1])
+        print("x = ", x, "y = ", y, "value = ", array[i].x, array[i].y)
     end
 end
