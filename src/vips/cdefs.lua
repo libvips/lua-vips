@@ -186,6 +186,8 @@ ffi.cdef [[
         // opaque
     } VipsOperation;
 
+    VipsInterpolate *vips_interpolate_new (const char *name);
+
     VipsOperation *vips_operation_new (const char *name);
 
     typedef void * (*VipsArgumentMapFn) (VipsOperation *object,
