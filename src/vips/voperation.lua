@@ -72,7 +72,8 @@ end
 
 voperation.set = function(self, name, flags, match_image, value)
     local vob = self:vobject()
-    local gtype = vob:get_typeof(name)
+    local gtype_raw = vob:get_typeof(name)
+    local gtype = tonumber(gtype_raw)
 
     -- if the object wants an image and we have a constant, imageize it
     --
@@ -95,7 +96,7 @@ voperation.set = function(self, name, flags, match_image, value)
         value = value:copy():copy_memory()
     end
 
-    return vob:set_type(name, value, gtype)
+    return vob:set_type(name, value, gtype_raw)
 end
 
 -- this is slow ... call as little as possible
