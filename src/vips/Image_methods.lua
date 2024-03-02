@@ -188,7 +188,7 @@ function Image.new_from_array(array, scale, offset)
     local arr = {}
     for y = 0, height - 1 do
         for x = 0, width - 1 do
-            arr[x + y * width] = array[y + 1][x + 1]
+            arr[x + y * width + 1] = array[y + 1][x + 1]
         end
     end
     local a = ffi.new(gvalue.double_arr_typeof, n, arr)
