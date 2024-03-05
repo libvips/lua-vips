@@ -2,8 +2,8 @@
 
 -- turn a vips image into a lua array
 
-vips = require "vips"
-ffi = require "ffi"
+local vips = require "vips"
+local ffi = require "ffi"
 
 -- make a tiny two band u16 image whose pixels are their coordinates
 local im = vips.Image.xyz(3, 2):cast("ushort")
