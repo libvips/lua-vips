@@ -177,6 +177,8 @@ ffi.cdef [[
     void vips_image_set (VipsImage *image, const char *name, GValue *value);
     int vips_image_remove (VipsImage *image, const char *name);
 
+    int vips_image_hasalpha(VipsImage *image);
+
     char *vips_filename_get_filename (const char *vips_filename);
     char *vips_filename_get_options (const char *vips_filename);
 
