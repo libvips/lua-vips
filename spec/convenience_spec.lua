@@ -117,5 +117,16 @@ describe("test convenience functions", function()
         assert.are.equal(result:bands(), 1)
         assert.are.equal(result:avg(), 17 / 4)
     end)
-end)
 
+    it("can call hasalpha", function()
+        local im1 = vips.Image.new_from_file("./spec/images/Gugg_coloured.jpg")
+        local im2 = vips.Image.new_from_file("./spec/images/watermark.png")
+
+        assert.is_false(im1:hasalpha())
+        assert.is_true(im2:hasalpha())
+    end)
+
+    it("can call addalpha", function ()
+        assert.are.equal(im:addalpha():avg(), 128.75)
+    end)
+end)

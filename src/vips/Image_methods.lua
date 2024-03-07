@@ -575,6 +575,28 @@ end
 
 -- convenience functions
 
+function Image_method:hasalpha()
+    local result = vips_lib.vips_image_hasalpha(self.vimage)
+    if result == nil then
+        error(verror.get())
+    end
+
+    return result ~= 0
+end
+
+function Image_method:addalpha()
+    local max_alpha
+    if self:interpretation() == "rgb16" or self:interpretation() == "grey16" then
+        max_alpha = 65535
+    elseif self:interpretation() == "scrgb" then
+        max_alpha = 1.0
+    else
+        max_alpha = 255
+    end
+
+    return self:bandjoin(max_alpha)
+end
+
 function Image_method:bandsplit()
     local result
 
