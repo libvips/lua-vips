@@ -5,6 +5,7 @@ All notable changes to `lua-vips` will be documented in this file.
 # master
 
 - add `vips.concurrency_get()` and `set()` [kamyabzad]
+- add `hasalpha`/`addalpha` [RiskoZoSlovenska]
 
 # 1.1-10 - 2021-04-18
 
@@ -66,4 +67,3 @@ All notable changes to `lua-vips` will be documented in this file.
 # 1.0-1 - 2017-06-04
 
 - first API stable release
-
