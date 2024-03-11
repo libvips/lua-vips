@@ -582,17 +582,20 @@ function Image_method:hasalpha()
     return vips_lib.vips_image_hasalpha(self.vimage) ~= 0
 end
 
-function Image_method:addalpha()
-    local max_alpha
-    if self:interpretation() == "rgb16" or self:interpretation() == "grey16" then
-        max_alpha = 65535
-    elseif self:interpretation() == "scrgb" then
-        max_alpha = 1.0
-    else
-        max_alpha = 255
-    end
+-- addalpha was made a VipsOperation in vips 8.16; earlier versions need this polyfill
+if not version.at_least(8, 16) then
+    function Image_method:addalpha()
+        local max_alpha
+        if self:interpretation() == "rgb16" or self:interpretation() == "grey16" then
+            max_alpha = 65535
+        elseif self:interpretation() == "scrgb" then
+            max_alpha = 1.0
+        else
+            max_alpha = 255
+        end
 
-    return self:bandjoin(max_alpha)
+        return self:bandjoin(max_alpha)
+    end
 end
 
 function Image_method:bandsplit()
