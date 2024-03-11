@@ -123,7 +123,7 @@ end
 function Image.find_load(filename)
     local name = vips_lib.vips_foreign_find_load(filename)
     if name == ffi.NULL then
-        return ffi.NULL
+        return nil
     else
         return ffi.string(name)
     end
@@ -134,7 +134,7 @@ function Image.new_from_file(vips_filename, ...)
     local options = to_string_copy(vips_lib.vips_filename_get_options(vips_filename))
 
     local name = Image.find_load(filename)
-    if name == ffi.NULL then
+    if name == nil then
         error(verror.get())
     end
 
@@ -152,7 +152,7 @@ end
 
 function Image.new_from_buffer(data, options, ...)
     local name = Image.find_load_buffer(data)
-    if name == ffi.NULL then
+    if name == nil then
         error(verror.get())
     end
 
