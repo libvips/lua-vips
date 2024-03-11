@@ -576,12 +576,7 @@ end
 -- convenience functions
 
 function Image_method:hasalpha()
-    local result = vips_lib.vips_image_hasalpha(self.vimage)
-    if result == nil then
-        error(verror.get())
-    end
-
-    return result ~= 0
+    return vips_lib.vips_image_hasalpha(self.vimage) ~= 0
 end
 
 function Image_method:addalpha()
