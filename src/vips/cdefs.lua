@@ -188,6 +188,12 @@ ffi.cdef [[
         // opaque
     } VipsOperation;
 
+    typedef struct _VipsInterpolate {
+        VipsObject parent_instance;
+
+        // opaque
+    } VipsInterpolate;
+
     VipsInterpolate *vips_interpolate_new (const char *name);
 
     VipsOperation *vips_operation_new (const char *name);

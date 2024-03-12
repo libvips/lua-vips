@@ -27,7 +27,7 @@ Interpolate.new_from_name = function(name)
     return Interpolate.new(interpolate)
 end
 
-return ffi.metatype("Interpolate", {
+return ffi.metatype("VipsInterpolate", {
     __index = Interpolate
 })
 

@@ -33,6 +33,7 @@ build = {
        ["vips.vobject"] = "src/vips/vobject.lua",
        ["vips.voperation"] = "src/vips/voperation.lua",
        ["vips.Image"] = "src/vips/Image.lua",
-       ["vips.Image_methods"] = "src/vips/Image_methods.lua"
+       ["vips.Image_methods"] = "src/vips/Image_methods.lua",
+       ["vips.Interpolate"] = "src/vips/Interpolate.lua"
    }
 }
