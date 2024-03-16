@@ -8,7 +8,7 @@ if #arg ~= 1 then
     print("usage: luajit buffer.lua image-file")
     error()
 end
-local f = io.open(arg[1], "rb")
+local f = assert(io.open(arg[1], "rb"))
 local content = f:read("*all")
 
 local im = vips.Image.new_from_buffer(content, "", {access = "sequential"})
