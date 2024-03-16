@@ -275,7 +275,10 @@ voperation.call = function(name, string_options, ...)
         end
     end
 
+    -- garbage collection during vips_object_unref_outputs leads to crashes on Lua 5.3
+    collectgarbage("stop")
     vips_lib.vips_object_unref_outputs(vop)
+    collectgarbage("restart")
 
     -- this strange if expression is because unpack
     -- has not yet been implemented in the JIT compiler
