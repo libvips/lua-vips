@@ -4,6 +4,10 @@
 
 local vips = require "vips"
 
+if #arg ~= 1 then
+    print("usage: luajit buffer.lua image-file")
+    error()
+end
 local f = io.open(arg[1], "rb")
 local content = f:read("*all")
 
