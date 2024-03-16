@@ -8,6 +8,10 @@ local vips = require "vips"
 -- uncomment for very chatty output
 -- vips.log.enable(true)
 
+if #arg ~= 3 then
+    print("usage: luajit watermark.lua input-image-file output-image-file text")
+    error()
+end
 local im = vips.Image.new_from_file(arg[1], {access = "sequential"})
 
 -- make the text mask
