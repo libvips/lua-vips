@@ -3,13 +3,13 @@ name: CI
 on: [ push, pull_request ]
 
 jobs:
-  CI:
-    name: "Linux x64 (Ubuntu 22.04)"
+  CI-Linux-LuaJIT:
+    name: "Linux x64 with LuaJIT"
     runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -23,7 +23,7 @@ jobs:
 
       - name: Install LuaRocks
         env:
-          LUAROCKS_VERSION: 3.9.1
+          LUAROCKS_VERSION: 3.9.2
         run:
           .ci/install-luarocks.sh
             --with-lua=/usr/local/openresty/luajit/
@@ -35,6 +35,42 @@ jobs:
 
       - name: Install Lua modules
         run: make dev
+
+      - name: Lint with luacheck
+        run: make lint
+
+      - name: Test with busted
+        run: make test
+
+  CI-Linux-Lua-54:
+    name: "Linux x64 with Lua 5.4"
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt install lua5.4 liblua5.4-dev libvips-dev
+
+      - name: Install LuaRocks
+        env:
+          LUAROCKS_VERSION: 3.9.2
+        run:
+          .ci/install-luarocks.sh
+            --with-lua=/usr/
+            --with-lua-include=/usr/include/lua5.4
+
+      - name: Prepare environment
+        run: |
+          echo "/usr/bin:$HOME/luarocks/bin" >> $GITHUB_PATH
+
+      - name: Install Lua modules
+        run: make dev
+
+      - name: Install ffi
+        run: make ffi
 
       - name: Lint with luacheck
         run: make lint
