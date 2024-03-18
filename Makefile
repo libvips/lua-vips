@@ -2,7 +2,7 @@ DEV_ROCKS = "busted 2.1.1" "luacheck 1.0.0"
 BUSTED_ARGS ?= -o gtest -v
 TEST_CMD ?= busted $(BUSTED_ARGS)
 
-.PHONY: dev lint test
+.PHONY: dev ffi lint test
 
 dev:
 	@for rock in $(DEV_ROCKS) ; do \
@@ -13,6 +13,9 @@ dev:
 	    luarocks install $$rock ; \
 	  fi \
 	done;
+
+ffi:
+	@luarocks install luaffi-tkl
 
 lint:
 	@luacheck -q .
