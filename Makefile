@@ -1,4 +1,4 @@
-DEV_ROCKS = "busted 2.1.1" "luacheck 1.0.0"
+DEV_ROCKS = "busted 2.2.0" "luacheck 1.1.2"
 BUSTED_ARGS ?= -o gtest -v
 TEST_CMD ?= busted $(BUSTED_ARGS)
 
