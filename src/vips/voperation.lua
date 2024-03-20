@@ -2,8 +2,8 @@
 -- lookup and call operations
 
 local ffi = require "ffi"
-local bit = require "bit"
 
+local bitops = require "vips.bitops"
 local verror = require "vips.verror"
 local version = require "vips.version"
 local log = require "vips.log"
@@ -11,7 +11,7 @@ local gvalue = require "vips.gvalue"
 local vobject = require "vips.vobject"
 local Image = require "vips.Image"
 
-local band = bit.band
+local band = bitops.band
 local type = type
 local error = error
 local pairs = pairs
