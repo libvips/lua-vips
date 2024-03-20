@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        luaVersion: ["5.3", "5.4", "luajit-2.1.0-beta3", "luajit-openresty"]
+        luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit-2.1.0-beta3", "luajit-openresty"]
 
     steps:
     - uses: actions/checkout@v4
@@ -28,6 +28,9 @@ jobs:
       run: |
         make dev
         if [[ ${{ matrix.luaVersion }} == 5.* ]]; then make ffi; fi
+        if [[ ${{ matrix.luaVersion }} == 5.1 ]] || [[ ${{ matrix.luaVersion }} == 5.2 ]]; then
+          make bit 
+        fi
 
     - name: Lint with luacheck
       run: |
