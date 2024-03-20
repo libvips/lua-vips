@@ -4,6 +4,7 @@ All notable changes to `lua-vips` will be documented in this file.
 
 # master
 
+- add `vips.Interpolate` [jcupitt, rolandlo]
 - add `vips.concurrency_get()` and `set()` [kamyabzad]
 - add `hasalpha`/`addalpha` [RiskoZoSlovenska]
 
