@@ -13,18 +13,14 @@ Interpolate.vobject = function(self)
     return ffi.cast(vobject.typeof, self)
 end
 
-Interpolate.new = function(self)
-    return vobject.new(self)
-end
-
-Interpolate.new_from_name = function(name)
+Interpolate.new = function(name)
     -- there could potentially be other params here, but ignore that for now
     local interpolate = vips_lib.vips_interpolate_new(name)
     if interpolate == nil then
         error("no such interpolator\n" .. verror.get())
     end
 
-    return Interpolate.new(interpolate)
+    return vobject.new(interpolate)
 end
 
 return ffi.metatype("VipsInterpolate", {

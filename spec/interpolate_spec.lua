@@ -7,7 +7,7 @@ describe("image interpolation", function()
     end)
 
     it("can rotate an image using nearest interpolator", function()
-        local interpolate = vips.Interpolate.new_from_name("nearest")
+        local interpolate = vips.Interpolate.new("nearest")
         local original = {
             { 1, 2, 3 },
             { 4, 5, 6 },
