@@ -4,12 +4,13 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
         luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit-2.1.0-beta3", "luajit-openresty"]
+        os: ["ubuntu-latest", "macos-latest"]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
@@ -22,7 +23,11 @@ jobs:
 
     - name: Install libvips
       run: |
-        sudo apt install --no-install-recommends libvips-dev
+        if [[ ${{ matrix.os }} == macos* ]]; then
+          brew install vips
+        elif [[ ${{ matrix.os }} == ubuntu* ]]; then
+          sudo apt install --no-install-recommends libvips-dev
+        fi
 
     - name: Lua dependencies
       run: |
