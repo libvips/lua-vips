@@ -1,9 +1,10 @@
 local vips = require "vips"
+local ffi = require "ffi"
 
 -- test metadata read/write
 describe("metadata", function()
     local array, im
-    local tmp_vips_filename = "/tmp/x.v"
+    local tmp_vips_filename = ffi.os == "Windows" and os.getenv("TMP") .. "\\x.v" or "/tmp/x.v"
 
     setup(function()
         array = { 1, 2, 3, 4 }

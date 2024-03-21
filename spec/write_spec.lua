@@ -11,8 +11,8 @@ describe("test image write", function()
     describe("to file", function()
         local array = { 1, 2, 3, 4 }
         local im = vips.Image.new_from_array(array)
-        local tmp_png_filename = "/tmp/x.png"
-        local tmp_jpg_filename = "/tmp/x.jpg"
+        local tmp_png_filename = ffi.os == "Windows" and os.getenv("TMP") .. "\\x.png" or "/tmp/x.png"
+        local tmp_jpg_filename = ffi.os == "Windows" and os.getenv("TMP") .. "\\x.jpg" or "/tmp/x.jpg"
 
         teardown(function()
             os.remove(tmp_png_filename)
