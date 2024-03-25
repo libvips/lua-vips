@@ -73,7 +73,7 @@ end
 voperation.set = function(self, name, flags, match_image, value)
     local vob = self:vobject()
     local gtype_raw = vob:get_typeof(name)
-    local gtype = tonumber(gtype_raw)
+    local gtype = gvalue.comparable_type(gtype_raw)
 
     -- if the object wants an image and we have a constant, imageize it
     --

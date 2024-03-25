@@ -56,6 +56,12 @@ gvalue.blob_type = gobject_lib.g_type_from_name("VipsBlob")
 gvalue.band_format_type = gobject_lib.g_type_from_name("VipsBandFormat")
 gvalue.blend_mode_type = version.at_least(8, 6) and gobject_lib.g_type_from_name("VipsBlendMode") or 0
 
+-- gvalue.*_type can be of type cdata or number depending on the OS and Lua version
+-- gtypes as returned by vips_lib can also be of type cdata or number
+-- cdata and number are not comparable with Standard Lua (using luaffi-tkl)
+gvalue.comparable_type = type(gvalue.gdouble_type) == "number" and
+    function(gtype) return tonumber(gtype) end or
+    function(gtype) return gtype end
 gvalue.to_enum = function(gtype, value)
     -- turn a string into an int, ready to be passed into libvips
     local enum_value
@@ -84,7 +90,7 @@ end
 
 gvalue.set = function(gv, value)
     local gtype_raw = gv.gtype
-    local gtype = tonumber(gtype_raw)
+    local gtype = gvalue.comparable_type(gtype_raw)
     local fundamental = gobject_lib.g_type_fundamental(gtype_raw)
 
     if gtype == gvalue.gbool_type then
@@ -156,7 +162,7 @@ end
 
 gvalue.get = function(gv)
     local gtype_raw = gv.gtype
-    local gtype = tonumber(gtype_raw)
+    local gtype = gvalue.comparable_type(gtype_raw)
     local fundamental = gobject_lib.g_type_fundamental(gtype_raw)
 
     local result
