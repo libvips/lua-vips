@@ -1,8 +1,6 @@
 DEV_ROCKS = "busted 2.2.0" "luacheck 1.1.2"
-BUSTED_ARGS ?= -o gtest -v
-TEST_CMD ?= busted $(BUSTED_ARGS)
 
-.PHONY: dev ffi bit lint test
+.PHONY: dev ffi bit
 
 dev:
 	@for rock in $(DEV_ROCKS) ; do \
@@ -19,9 +17,3 @@ ffi:
 
 bit:
 	@luarocks install luabitop
-
-lint:
-	@luacheck -q .
-
-test:
-	@$(TEST_CMD) spec/

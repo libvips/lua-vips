@@ -1,9 +1,9 @@
-name: "Unix build"
+name: "CI"
 
 on: [push, pull_request]
 
 jobs:
-  test:
+  unix:
     strategy:
       fail-fast: false
       matrix:
@@ -39,8 +39,71 @@ jobs:
 
     - name: Lint with luacheck
       run: |
-        make lint
+        luacheck -q .
 
     - name: Busted tests
       run: |
-        make test
+        busted -o gtest -v spec
+
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        lua: [
+              #{name: "lua51", exe: "lua5.1", version: 5.1, incdir: "/mingw64/include/lua5.1/"},  #(two tests are failing)
+              {name: "lua53", exe: "lua5.3", version: 5.3, incdir: "/mingw64/include/lua5.3/"},
+              {name: "lua", exe: "lua", version: 5.4, incdir: "/mingw64/include/"},
+              {name: "luajit", exe: "luajit", version: 5.1, incdir: "/mingw64/include/luajit-2.1/"}
+             ]
+
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git
+                   make
+                   mingw-w64-x86_64-toolchain
+                   mingw-w64-x86_64-libvips
+                   mingw-w64-x86_64-openslide
+                   mingw-w64-x86_64-libheif
+                   mingw-w64-x86_64-libjxl
+                   mingw-w64-x86_64-imagemagick
+                   mingw-w64-x86_64-poppler
+                   mingw-w64-x86_64-lua-luarocks
+                   mingw-w64-x86_64-${{ matrix.lua.name }}
+
+      - if: matrix.lua.name == 'lua51'
+        name: Install bitop
+        run: |
+          pacman --noconfirm -S mingw-w64-x86_64-lua51-bitop
+
+      - name: Lua dependencies
+        run: |
+          if [[ ${{ matrix.lua.exe }} == lua5.3 ]]; then
+            cp /mingw64/etc/luarocks/config-5.{4,3}.lua
+          fi
+          luarocks config --scope system lua_version ${{ matrix.lua.version }}
+          luarocks config --scope system lua_interpreter ${{ matrix.lua.exe }}.exe
+          luarocks config --scope system variables.LUA_DIR /mingw64/bin
+          luarocks config --scope system variables.LUA_INCDIR ${{ matrix.lua.incdir }}
+          make dev
+          if [[ ${{ matrix.lua.exe }} != luajit ]]; then make ffi; fi
+
+      - name: Add to PATH
+        run: |
+          echo $RUNNER_TEMP/msys64/mingw64/bin:$HOME/.luarocks/bin >> $GITHUB_PATH
+
+      - name: Lint with luacheck
+        run: |
+          luacheck.bat -q .
+
+      - name: Busted tests
+        run: |
+          busted.bat --lua=${{ matrix.lua.exe }} -o gtest -v spec
