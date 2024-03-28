@@ -4,7 +4,7 @@ local ffi = require "ffi"
 
 -- GType is an int the size of a pointer ... I don't think we can just use
 -- size_t, sadly
-if ffi.arch == "x64" then
+if ffi.arch == "x64" or ffi.arch == "arm64" then
     ffi.cdef [[
         typedef uint64_t GType;
     ]]
@@ -92,11 +92,23 @@ ffi.cdef [[
         // opaque
     } VipsObjectClass;
 
+    typedef enum {
+        G_PARAM_READABLE = 1,
+        G_PARAM_WRITABLE = 2,
+        G_PARAM_CONSTRUCT = 4,
+        G_PARAM_CONSTRUCT_ONLY = 8,
+        G_PARAM_LAX_VALIDATION = 16,
+        G_PARAM_STATIC_NAME = 32,
+        G_PARAM_PRIVATE = G_PARAM_STATIC_NAME,
+        G_PARAM_STATIC_NICK = 64,
+        G_PARAM_STATIC_BLURB = 128
+    } GParamFlags;
+
     typedef struct _GParamSpec {
         void *g_type_instance;
 
         const char *name;
-        unsigned int flags;
+        GParamFlags flags;
         GType value_type;
         GType owner_type;
 
