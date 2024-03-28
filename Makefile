@@ -1,6 +1,6 @@
 DEV_ROCKS = "busted 2.2.0" "luacheck 1.1.2"
 
-.PHONY: dev ffi bit
+.PHONY: dev ffi
 
 dev:
 	@for rock in $(DEV_ROCKS) ; do \
@@ -14,6 +14,3 @@ dev:
 
 ffi:
 	@luarocks install luaffi-tkl
-
-bit:
-	@luarocks install luabitop
