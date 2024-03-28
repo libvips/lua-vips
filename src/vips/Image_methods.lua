@@ -370,20 +370,23 @@ end
 -- writers
 
 function Image_method:write_to_file(vips_filename, ...)
+    collectgarbage("stop")
     local filename = to_string_copy(vips_lib.vips_filename_get_filename(vips_filename))
     local options = to_string_copy(vips_lib.vips_filename_get_options(vips_filename))
     local name = vips_lib.vips_foreign_find_save(filename)
+    collectgarbage("restart")
     if name == ffi.NULL then
         error(verror.get())
     end
-
     return voperation.call(ffi.string(name), options,
             self, filename, unpack { ... })
 end
 
 function Image_method:write_to_buffer(format_string, ...)
+    collectgarbage("stop")
     local options = to_string_copy(vips_lib.vips_filename_get_options(format_string))
     local name = vips_lib.vips_foreign_find_save_buffer(format_string)
+    collectgarbage("restart")
     if name == ffi.NULL then
         error(verror.get())
     end
