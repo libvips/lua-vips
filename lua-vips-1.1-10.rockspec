@@ -24,7 +24,6 @@ build = {
    type = "builtin",
    modules = {
        vips = "src/vips.lua",
-       ["vips.bitops"] = "src/vips/bitops.lua",
        ["vips.cdefs"] = "src/vips/cdefs.lua",
        ["vips.verror"] = "src/vips/verror.lua",
        ["vips.version"] = "src/vips/version.lua",

@@ -3,7 +3,6 @@
 
 local ffi = require "ffi"
 
-local bitops = require "vips.bitops"
 local verror = require "vips.verror"
 local version = require "vips.version"
 local log = require "vips.log"
@@ -11,7 +10,6 @@ local gvalue = require "vips.gvalue"
 local vobject = require "vips.vobject"
 local Image = require "vips.Image"
 
-local band = bitops.band
 local type = type
 local error = error
 local pairs = pairs
@@ -29,6 +27,10 @@ local INPUT = 16
 local OUTPUT = 32
 local DEPRECATED = 64
 local MODIFY = 128
+
+local function isbitset(a, b)
+    return ( (a - (a % b)) / b ) % 2 == 1
+end
 
 -- find the first image, and recurse
 local function find_first_image(array, length)
@@ -90,7 +92,7 @@ voperation.set = function(self, name, flags, match_image, value)
     end
 
     -- MODIFY args need to be copied before they are set
-    if band(flags, MODIFY) ~= 0 then
+    if isbitset(flags, MODIFY) then
         log.msg("copying MODIFY arg", name)
         -- make sure we have a unique copy
         value = value:copy():copy_memory()
@@ -167,9 +169,9 @@ voperation.call = function(name, string_options, ...)
         local flag = flags[i]
         flags_from_name[names[i]] = flag
 
-        if band(flag, INPUT) ~= 0 and
-                band(flag, REQUIRED) ~= 0 and
-                band(flag, DEPRECATED) == 0 then
+        if isbitset(flag, INPUT) and
+                isbitset(flag, REQUIRED) and
+                not isbitset(flag, DEPRECATED) then
             n_required = n_required + 1
         end
     end
@@ -207,9 +209,9 @@ voperation.call = function(name, string_options, ...)
     for i = 1, arguments_length do
         local flag = flags[i]
 
-        if band(flag, INPUT) ~= 0 and
-                band(flag, REQUIRED) ~= 0 and
-                band(flag, DEPRECATED) == 0 then
+        if isbitset(flag, INPUT) and
+                isbitset(flag, REQUIRED) and
+                not isbitset(flag, DEPRECATED) then
             n = n + 1
 
             if not vop:set(names[i], flag,
@@ -247,17 +249,17 @@ voperation.call = function(name, string_options, ...)
     for i = 1, arguments_length do
         local flag = flags[i]
 
-        if band(flag, OUTPUT) ~= 0 and
-                band(flag, REQUIRED) ~= 0 and
-                band(flag, DEPRECATED) == 0 then
+        if isbitset(flag, OUTPUT) and
+                isbitset(flag, REQUIRED) and
+                not isbitset(flag, DEPRECATED) then
             result[n] = vob:get(names[i])
             n = n + 1
         end
 
         -- MODIFY input args are returned .. this will get the copy we
         -- made above
-        if band(flag, INPUT) ~= 0 and
-                band(flag, MODIFY) ~= 0 then
+        if isbitset(flag, INPUT) and
+                isbitset(flag, MODIFY) then
             result[n] = vob:get(names[i])
             n = n + 1
         end
@@ -267,9 +269,9 @@ voperation.call = function(name, string_options, ...)
     for i = 1, arguments_length do
         local flag = flags[i]
 
-        if band(flag, OUTPUT) ~= 0 and
-                band(flag, REQUIRED) == 0 and
-                band(flag, DEPRECATED) == 0 then
+        if isbitset(flag, OUTPUT) and
+                not isbitset(flag, REQUIRED) and
+                not isbitset(flag, DEPRECATED) then
             result[n] = vob:get(names[i])
             n = n + 1
         end

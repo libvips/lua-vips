@@ -33,9 +33,6 @@ jobs:
       run: |
         make dev
         if [[ ${{ matrix.luaVersion }} == 5.* ]]; then make ffi; fi
-        if [[ ${{ matrix.luaVersion }} == 5.1 ]] || [[ ${{ matrix.luaVersion }} == 5.2 ]]; then
-          make bit 
-        fi
 
     - name: Lint with luacheck
       run: |
@@ -78,11 +75,6 @@ jobs:
                    mingw-w64-x86_64-poppler
                    mingw-w64-x86_64-lua-luarocks
                    mingw-w64-x86_64-${{ matrix.lua.name }}
-
-      - if: matrix.lua.name == 'lua51'
-        name: Install bitop
-        run: |
-          pacman --noconfirm -S mingw-w64-x86_64-lua51-bitop
 
       - name: Lua dependencies
         run: |
