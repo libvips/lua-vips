@@ -3,13 +3,20 @@
 [![CI](https://github.com/libvips/lua-vips/workflows/CI/badge.svg)](https://github.com/libvips/lua-vips/actions)
 
 This is a Lua binding for the [libvips image processing
-library](http://libvips.github.io/libvips).  libvips
-is a [fast image processing library with low memory
-needs](https://github.com/jcupitt/lua-vips-bench).  `lua-vips` uses ffi
-and needs luajit 2.0 or later.
+library](http://libvips.github.io/libvips).  `libvips`
+is a [fast image processing library with low memory needs](https://github.com/jcupitt/lua-vips-bench).
+`lua-vips` uses ffi and needs either
+- luajit >= 2.0 or
+- standard Lua (5.1 up to 5.4) combined with the [`luaffi-tkl`](https://luarocks.org/modules/sudheerhebbale/luaffi-tkl) Lua package.
 
-The libvips documentation includes a
-handy searchable table of [every operation in
+On the x64 architecture `lua-vips` is continuously tested
+- on Linux and MacOS with Lua 5.1, 5.2, 5.3, 5.4, luajit and openresty-luajit
+- on Windows using [MSYS2 MinGW-w64](https://www.msys2.org/) with Lua 5.3, 5.4 and luajit
+
+`lua-vips`  should work on arm64 (recently tested on a Pinephone Pro using PostmarketOS) and possibly x86 (currently untested)
+as well.
+
+The libvips documentation includes a handy searchable table of [every operation in
 libvips](http://libvips.github.io/libvips/API/current/func-list.html). This
 is a good place to check if it supports some feature you need. Read on to
 see how to call libvips operations.
@@ -21,6 +28,11 @@ library](https://libvips.github.io/libvips/install.html), then install this rock
 	
 ```shell
 luarocks install lua-vips
+```
+
+When used with LuaJIT please first exhibit luaffi-tkl as provided by the VM via:
+```shell
+luarocks config --lua-version=5.1 rocks_provided.luaffi-tkl 2.1-1
 ```
 
 Example:
@@ -214,15 +226,13 @@ local data = ffi.new("unsigned char[?]", width * height)
 local im = vips.Image.new_from_memory(data, width, height, 1, "uchar")
 ```
 
-The returned image is using a pointer to the `data` area, but luajit won't
-always know this. You should keep a reference to `data` alive for as long as you
-are using any downstream images, or you'll get a crash.
+The returned image is using a pointer to the `data` area, but the Lua/LuaJIT interpreter won't always know this. You should keep a reference to `data` alive for as long as you are using any downstream images, or you'll get a crash.
 
 ### `image = vips.Image.new_from_memory_ptr(data, size, width, height, bands, format)`
 
 Same as `new_from_memory`, but for any kind of data pointer (non-FFI allocated) by specifying the length of the data in bytes. The pointed data must be valid for the lifespan of the image and any downstream images.
 
-A string can be used as the data pointer thanks to LuaJIT FFI semantics.
+A string can be used as the data pointer thanks to FFI semantics.
 
 ### `image = vips.Image.new_from_image(image, pixel)`
 
@@ -555,7 +565,7 @@ vips.cache_set_max_files(10)
 
 # Development
 
-### Setup for ubuntu 17.04
+### Setup for Ubuntu
 
 Configure `luarocks` for a local tree
 
@@ -619,7 +629,7 @@ luacheck .
 Run the example script with:
 
 ```shell
-luajit example/hello-world.lua
+lua example/hello-world.lua
 ```
 
 ### Update rock
@@ -639,9 +649,56 @@ https://github.com/luarocks/luarocks/wiki/creating-a-rock
 
 https://olivinelabs.com/busted/
 
+### Running on Windows using Mingw-w64
+
+Installing `lua-vips` on Windows is a bit harder than on Unix systems. We recommend using MinGW (Minimalist GNU for Windows) for the installation. Here are the steps:
+
+1. Install [MSYS2](https://www.msys2.org/) to the default path.
+2. Start Mingw-w64 64bit console from the start menu. Check that is says MINGW64. The following steps happen in that console.
+3. Update MSYS2 using
+   ```shell
+      pacman -Syuu
+   ```
+4. Install the build tools (including Lua 5.4 and Luarocks) via
+   ```shell
+      pacman -S git make mingw-w64-x86_64-toolchain mingw-w64-x86_64-lua-luarocks
+   ```
+5. Install `libvips` with (optional) dependencies via
+   ```shell
+      pacman -S
+         mingw-w64-x86_64-libvips
+         mingw-w64-x86_64-openslide
+         mingw-w64-x86_64-libheif
+         mingw-w64-x86_64-libjxl
+         mingw-w64-x86_64-imagemagick
+         mingw-w64-x86_64-poppler
+   ```
+6. Optionally: If you want to use `lua-vips` with LuaJIT instead of Lua 5.4 install LuaJIT via
+   ```shell
+      pacman -S mingw-w64-x86_64-luajit
+      luarocks config --scope system lua_version 5.1
+      luarocks config --scope system lua_interpreter luajit.exe
+      luarocks config --scope system variables.LUA_DIR /mingw64/bin
+      luarocks config --scope system variables.LUA_INCDIR /mingw64/include/luajit-2.1/
+      luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
+   ```
+7. Install `lua-vips` via
+   ```shell
+      luarocks install lua-vips
+   ```
+   or clone the repository and run `luarocks make` in the `lua-vips` folder.
+8.  Add `C:\msys64\mingw64\bin` and `C:\msys64\usr\bin` to the top of your `PATH`
+   environment variable in the Windows Advanced system settings and restart the console.
+
+9.  Run `lua` or `luajit` and try
+    ```lua
+    vips = require "vips"
+    print(vips.Image.xyz(3,2))
+    ```
+
 ### Running under Wine (Windows emulation on Linux)
 
-I used the luapower all-in-one to get a 64-bit Windows LuaJIT build:
+@jcupitt used the luapower all-in-one to get a 64-bit Windows LuaJIT build:
 
 https://luapower.com/
 
