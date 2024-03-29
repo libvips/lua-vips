@@ -26,6 +26,7 @@ jobs:
         if [[ ${{ matrix.os }} == macos* ]]; then
           brew install vips
         elif [[ ${{ matrix.os }} == ubuntu* ]]; then
+          sudo apt update
           sudo apt install --no-install-recommends libvips-dev
         fi
 
