@@ -30,18 +30,21 @@ jobs:
           sudo apt install --no-install-recommends libvips-dev
         fi
 
-    - name: Lua dependencies
+    - name: Install lua-vips
       run: |
-        make dev
-        if [[ ${{ matrix.luaVersion }} == 5.* ]]; then make ffi; fi
+        if [[ ${{ matrix.luaVersion }} == luajit* ]]; then
+          luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
+        fi
+        luarocks make
 
     - name: Lint with luacheck
       run: |
+        luarocks install luacheck
         luacheck -q .
 
     - name: Busted tests
       run: |
-        busted -o gtest -v spec
+        luarocks test spec/ -- -o gtest -v spec
 
 
   windows:
@@ -86,17 +89,23 @@ jobs:
           luarocks config --scope system lua_interpreter ${{ matrix.lua.exe }}.exe
           luarocks config --scope system variables.LUA_DIR /mingw64/bin
           luarocks config --scope system variables.LUA_INCDIR ${{ matrix.lua.incdir }}
-          make dev
-          if [[ ${{ matrix.lua.exe }} != luajit ]]; then make ffi; fi
+          if [[ ${{ matrix.lua.exe }} == luajit ]]; then
+            luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
+          fi
 
       - name: Add to PATH
         run: |
           echo $RUNNER_TEMP/msys64/mingw64/bin:$HOME/.luarocks/bin >> $GITHUB_PATH
 
+      - name: Install lua-vips
+        run: |
+          luarocks make
+
       - name: Lint with luacheck
         run: |
+          luarocks install luacheck
           luacheck.bat -q .
 
       - name: Busted tests
         run: |
-          busted.bat --lua=${{ matrix.lua.exe }} -o gtest -v spec
+          luarocks test spec -- --lua=${{ matrix.lua.exe }} -o gtest -v
