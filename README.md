@@ -330,10 +330,24 @@ This creates a new metadata item of the specified type, name and value.
 
 This changes the value of an existing field, but will not change its type.
 
+You can't use `set()` to change core fields such as like `width` or
+`interpretation`.  Use `copy()` instead.`
+
+Image references will be shared by the operation cache, so modifying an image
+can change an image somewhere else in your program. Before changing an image,
+you must make sure you own a private copy of an image with `copy`.
+
+```lua
+local new_image = image:copy()`
+new_image:set("orientation", 7)
+```
+
 ### `boolean = vips.Image.remove(image, field_name)`
 
 This will remove a piece of metadata. It returns `true` if an item was
 successfully removed, `false` otherwise. 
+
+As with `set`, you must use copy before removing a metadata item.
 
 ## Call any libvips operation
 
