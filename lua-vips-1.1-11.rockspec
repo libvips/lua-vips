@@ -1,10 +1,10 @@
 package = "lua-vips"
-version = "1.1-10"
+version = "1.1-11"
 rockspec_format = "3.0"
 
 source = {
    url = "git://github.com/libvips/lua-vips.git",
-   tag = "v1.1-10",
+   tag = "v1.1-11",
 }
 
 description = {

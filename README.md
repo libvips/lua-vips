@@ -650,7 +650,7 @@ lua example/hello-world.lua
 
 ```shell
 rm *.src.rock
-luarocks upload lua-vips-1.1-10.rockspec --api-key=xxxxxxxxxxxxxx
+luarocks upload lua-vips-1.1-11.rockspec --api-key=xxxxxxxxxxxxxx
 ```
 
 ### Links

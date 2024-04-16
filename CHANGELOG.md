@@ -4,6 +4,9 @@ All notable changes to `lua-vips` will be documented in this file.
 
 # master
 
+# 1.1-11 - 2024-04-16
+
+- add standard Lua support [rolandlo]
 - add `vips.Interpolate` [jcupitt, rolandlo]
 - add `vips.concurrency_get()` and `set()` [kamyabzad]
 - add `hasalpha`/`addalpha` [RiskoZoSlovenska]
