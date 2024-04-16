@@ -3,7 +3,8 @@ version = "1.1-10"
 rockspec_format = "3.0"
 
 source = {
-   url = "git://github.com/libvips/lua-vips.git"
+   url = "git://github.com/libvips/lua-vips.git",
+   tag = "v1.1-10",
 }
 
 description = {
