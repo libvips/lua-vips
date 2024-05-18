@@ -21,14 +21,17 @@ jobs:
 
     - uses: leafo/gh-actions-luarocks@v4
 
-    - name: Install libvips
+    - name: Install Ubuntu dependencies
+      if: runner.os == 'Linux'
       run: |
-        if [[ ${{ matrix.os }} == macos* ]]; then
-          brew install vips
-        elif [[ ${{ matrix.os }} == ubuntu* ]]; then
-          sudo apt update
-          sudo apt install --no-install-recommends libvips-dev
-        fi
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends libvips-dev
+
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: |
+        brew install vips
+        echo "DYLD_LIBRARY_PATH=$(brew --prefix vips)/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
 
     - name: Install lua-vips
       run: |
