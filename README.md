@@ -10,7 +10,7 @@ is a [fast image processing library with low memory needs](https://github.com/jc
 - standard Lua (5.1 up to 5.4) combined with the [`luaffi-tkl`](https://luarocks.org/modules/sudheerhebbale/luaffi-tkl) Lua package.
 
 On the x64 architecture `lua-vips` is continuously tested
-- on Linux and MacOS with Lua 5.1, 5.2, 5.3, 5.4, luajit and openresty-luajit
+- on Linux and MacOS with Lua 5.1, 5.2, 5.3, 5.4 and openresty-luajit
 - on Windows using [MSYS2 MinGW-w64](https://www.msys2.org/) with Lua 5.3, 5.4 and luajit
 
 `lua-vips`  should work on arm64 (recently tested on a Pinephone Pro using PostmarketOS) and possibly x86 (currently untested)
