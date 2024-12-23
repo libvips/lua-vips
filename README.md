@@ -547,6 +547,28 @@ print("written ", ffi.sizeof(mem), "bytes to", mem)
 
 An allocated char array pointer (GCd with a `ffi.gc` callback) and the length in bytes of the image data is directly returned from libvips (no intermediate FFI allocation).
 
+## True Streaming
+
+When processing images an image library would usually read an image from a file into memory, decode and process it and finally write the encoded result into a file. The processing can only start when the image is fully read into memory and the writing can only start when the processing step is completed.
+Libvips can process images directly from a pipe and write directly to a pipe, without the need to read the whole image to memory before being able to start and without the need to finish processing before being able to start writing. This is achieved using a technique called true streaming. In this context there are sources and targets and the processing step happens from source to target. Sources can be created from files, memory or descriptors (like stdin) and targets can be created to files, memory or descriptors (like stdout). Here is an example:
+
+```lua test.lua
+local vips = require "vips"
+local stdin, stdout = 0, 1
+local source = vips.Source.new_from_descriptor(stdin)
+local target = vips.Target.new_to_descriptor(stdout)
+local image = vips.Image.new_from_source(source, '', { access = 'sequential' })
+image = image:invert()
+image:write_to_target(target, '.jpg')
+```
+
+Running this script in a Unix terminal via 
+```term
+curl https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/600px-Cat03.jpg | lua test.lua > out.jpg
+```
+
+will feed a cat image from the internet into standard input, from which the Lua script reads and inverts it and writes it to standard output, where it is redirected to a file. This all happens simultaneously, so the processing and writing doesn't need to wait until the whole image is downloaded from the internet.
+
 ## Error handling
 
 Most `lua-vips` methods will call `error()` if they detect an error. Use
