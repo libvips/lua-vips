@@ -23,6 +23,9 @@ local vips = {
     voperation = require "vips.voperation",
     Image = require "vips.Image_methods",
     Interpolate = require "vips.Interpolate",
+    Connection = require "vips.Connection",
+    Source = require "vips.Source",
+    Target = require "vips.Target",
 }
 
 function vips.leak_set(leak)

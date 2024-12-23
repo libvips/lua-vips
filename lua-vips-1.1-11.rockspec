@@ -47,6 +47,9 @@ build = {
        ["vips.voperation"] = "src/vips/voperation.lua",
        ["vips.Image"] = "src/vips/Image.lua",
        ["vips.Image_methods"] = "src/vips/Image_methods.lua",
-       ["vips.Interpolate"] = "src/vips/Interpolate.lua"
+       ["vips.Interpolate"] = "src/vips/Interpolate.lua",
+       ["vips.Connection"] = "src/vips/Connection.lua",
+       ["vips.Source"] = "src/vips/Source.lua",
+       ["vips.Target"] = "src/vips/Target.lua",
    }
 }
