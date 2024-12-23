@@ -40,6 +40,9 @@ gvalue.double_arr_typeof = ffi.typeof("const double[?]")
 gvalue.psize_typeof = ffi.typeof("size_t[?]")
 gvalue.mem_typeof = ffi.typeof("unsigned char[?]")
 gvalue.interpolate_typeof = ffi.typeof("VipsInterpolate*")
+gvalue.connection_typeof = ffi.typeof("VipsConnection*")
+gvalue.source_typeof = ffi.typeof("VipsSource*")
+gvalue.target_typeof = ffi.typeof("VipsTarget*")
 
 -- look up some common gtypes at init for speed
 gvalue.gbool_type = gobject_lib.g_type_from_name("gboolean")
@@ -57,6 +60,9 @@ gvalue.blob_type = gobject_lib.g_type_from_name("VipsBlob")
 gvalue.band_format_type = gobject_lib.g_type_from_name("VipsBandFormat")
 gvalue.blend_mode_type = version.at_least(8, 6) and gobject_lib.g_type_from_name("VipsBlendMode") or 0
 gvalue.interpolate_type = gobject_lib.g_type_from_name("VipsInterpolate")
+gvalue.connection_type = gobject_lib.g_type_from_name("VipsConnection")
+gvalue.source_type = gobject_lib.g_type_from_name("VipsSource")
+gvalue.target_type = gobject_lib.g_type_from_name("VipsTarget")
 
 -- gvalue.*_type can be of type cdata or number depending on the OS and Lua version
 -- gtypes as returned by vips_lib can also be of type cdata or number
@@ -159,6 +165,12 @@ gvalue.set = function(gv, value)
         end
     elseif gtype_comp == gvalue.interpolate_type then
         gobject_lib.g_value_set_object(gv, value)
+    elseif gtype_comp == gvalue.connection_type then
+        gobject_lib.g_value_set_object(gv, value)
+    elseif gtype_comp == gvalue.source_type then
+        gobject_lib.g_value_set_object(gv, value)
+    elseif gtype_comp == gvalue.target_type then
+        gobject_lib.g_value_set_object(gv, value)
     else
         error("unsupported gtype for set " .. gvalue.type_name(gtype))
     end
@@ -256,6 +268,15 @@ gvalue.get = function(gv)
     elseif gtype_comp == gvalue.interpolate_type then
         local vo = gobject_lib.g_value_get_object(gv)
         result = ffi.cast(gvalue.interpolate_typeof, vo)
+    elseif gtype_comp == gvalue.connection_type then
+        local vo = gobject_lib.g_value_get_object(gv)
+        result = ffi.cast(gvalue.connection_typeof, vo)
+    elseif gtype_comp == gvalue.source_type then
+        local vo = gobject_lib.g_value_get_object(gv)
+        result = ffi.cast(gvalue.source_typeof, vo)
+    elseif gtype_comp == gvalue.target_type then
+        local vo = gobject_lib.g_value_get_object(gv)
+        result = ffi.cast(gvalue.target_typeof, vo)
     else
         error("unsupported gtype for get " .. gvalue.type_name(gtype))
     end

@@ -166,10 +166,71 @@ ffi.cdef [[
         // opaque
     } VipsImage;
 
+    typedef struct _VipsConnection {
+        VipsObject parent_instance;
+
+        // opaque
+    } VipsConnection;
+
+    const char *vips_connection_filename (VipsConnection *connection);
+    const char *vips_connection_nick (VipsConnection *connection);
+
+    typedef struct _VipsSource {
+        VipsConnection parent_instance;
+
+        // opaque
+    } VipsSource;
+
+    typedef struct _VipsTarget {
+        VipsConnection parent_instance;
+
+        // opaque
+    } VipsTarget;
+
+    VipsSource *vips_source_new_from_descriptor (int descriptor);
+    VipsSource *vips_source_new_from_file (const char *filename);
+    // VipsSource *vips_source_new_from_blob (VipsBlob *blob);
+    // VipsSource *vips_source_new_from_target (VipsTarget *target);
+    VipsSource *vips_source_new_from_memory (const void *data, size_t size);
+    // VipsSource *vips_source_new_from_options (const char *options);
+    // void vips_source_minimise (VipsSource *source);
+    // int vips_source_decode (VipsSource *source);
+    // gint64 vips_source_read (VipsSource *source, void *data, size_t length);
+    // gboolean vips_source_is_mappable (VipsSource *source);
+    // gboolean vips_source_is_file (VipsSource *source);
+    // const void *vips_source_map (VipsSource *source, size_t *length);
+    // VipsBlob *vips_source_map_blob (VipsSource *source);
+    // gint64 vips_source_seek (VipsSource *source, gint64 offset, int whence);
+    // int vips_source_rewind (VipsSource *source);
+    // gint64 vips_source_sniff_at_most (VipsSource *source, unsigned char **data, size_t length);
+    // unsigned char *vips_source_sniff (VipsSource *source, size_t length);
+    // gint64 vips_source_length (VipsSource *source);
+    // VipsSourceCustom *vips_source_custom_new (void);
+    // GInputStream *vips_g_input_stream_new_from_source (VipsSource *source);
+    // VipsSourceGInputStream *vips_source_g_input_stream_new (GInputStream *stream);
+
+    VipsTarget *vips_target_new_to_descriptor (int descriptor);
+    VipsTarget *vips_target_new_to_file (const char *filename);
+    VipsTarget *vips_target_new_to_memory (void);
+    // VipsTarget *vips_target_new_temp (VipsTarget *target);
+    // int vips_target_write (VipsTarget *target, const void *data, size_t length);
+    // gint64 vips_target_read (VipsTarget *target, void *buffer, size_t length);
+    // gint64 vips_target_seek (VipsTarget *target, gint64 offset, int whence);
+    // int vips_target_end (VipsTarget *target);
+    // unsigned char *vips_target_steal (VipsTarget *target, size_t *length);
+    // char *vips_target_steal_text (VipsTarget *target);
+    // int vips_target_putc (VipsTarget *target, int ch);
+    // int vips_target_writes (VipsTarget *target, const char *str);
+    // int vips_target_writef (VipsTarget *target, const char *fmt, ...);
+    // int vips_target_write_amp (VipsTarget *target, const char *str);
+    // VipsTargetCustom *vips_target_custom_new (void);
+
     const char *vips_foreign_find_load (const char *name);
     const char *vips_foreign_find_load_buffer (const void *data, size_t size);
     const char *vips_foreign_find_save (const char *name);
     const char *vips_foreign_find_save_buffer (const char *suffix);
+    const char* vips_foreign_find_load_source (VipsSource *source);
+    const char* vips_foreign_find_save_target (const char* suffix);
 
     VipsImage *vips_image_new_matrix_from_array (int width, int height,
         const double *array, int size);
