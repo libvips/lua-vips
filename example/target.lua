@@ -1,7 +1,7 @@
 local vips = require "vips"
 
 if #arg ~= 2 then
-    error("Usage: lua test.lua ~/pics/k2.png .avif > x")
+    error("Usage: lua target.lua ~/pics/k2.png .avif > x")
 end
 
 local infilename = arg[1]

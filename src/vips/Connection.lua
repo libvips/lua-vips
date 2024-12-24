@@ -6,18 +6,26 @@ local vobject = require "vips.vobject"
 
 local vips_lib = ffi.load(ffi.os == "Windows" and "libvips-42.dll" or "vips")
 
-local Connection = {}
+local Connection_method = {}
 
-Connection.vobject = function(self)
-    return ffi.cast(vobject.typeof, self)
+local Connection = {
+    mt = {
+        __index = Connection_method,
+    }
+}
+
+function Connection.mt:__tostring()
+    return self:filename() or self:nick() or "(nil)"
 end
 
-Connection.new = function(self)
-    return vobject.new(self)
+Connection.new = function(vconnection)
+    local connection = {}
+    connection.vconnection = vobject.new(vconnection)
+    return setmetatable(connection, Connection.mt)
 end
-Connection.filename = function(self)
+function Connection_method:filename()
     -- Get the filename asscoiated with a connection. Return nil if there is no associated file.
-    local so = ffi.cast('VipsConnection *', self.pointer)
+    local so = ffi.cast('VipsConnection *', self.vconnection)
     local filename = vips_lib.vips_connection_filename(so)
     if filename == ffi.NULL then
         return nil
@@ -26,10 +34,10 @@ Connection.filename = function(self)
     end
 end
 
-Connection.nick = function(self)
+function Connection_method:nick()
     -- Make a human-readable name for a connection suitable for error messages.
 
-    local so = ffi.cast('VipsConnection *', self.pointer)
+    local so = ffi.cast('VipsConnection *', self.vconnection)
     local nick = vips_lib.vips_connection_nick(so)
     if nick == ffi.NULL then
         return nil

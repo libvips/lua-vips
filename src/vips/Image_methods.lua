@@ -219,12 +219,12 @@ function Image.new_from_image(base_image, value)
 end
 
 function Image.new_from_source(source, options, ...)
-    local name = vips_lib.vips_foreign_find_load_source(source.vobject)
+    local name = vips_lib.vips_foreign_find_load_source(source.vconnection)
     if name == ffi.NULL then
         error("Unable to load from source")
     end
 
-    return voperation.call(ffi.string(name), options, source, unpack { ... })
+    return voperation.call(ffi.string(name), options, source.vconnection, unpack { ... })
 end
 -- overloads
 
@@ -430,7 +430,7 @@ function Image_method:write_to_target(target, format_string, ...)
         error(verror.get())
     end
 
-    return voperation.call(ffi.string(name), options, self, target, unpack { ... })
+    return voperation.call(ffi.string(name), options, self, target.vconnection, unpack { ... })
 end
 -- get/set metadata
 
