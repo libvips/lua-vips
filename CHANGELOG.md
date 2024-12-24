@@ -4,6 +4,8 @@ All notable changes to `lua-vips` will be documented in this file.
 
 # master
 
+- add `vips.Connection`, `vips.Source` and `vips.Target` for true streaming support [rolandlo]
+  
 # 1.1-11 - 2024-04-16
 
 - add standard Lua support [rolandlo]

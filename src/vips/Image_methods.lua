@@ -218,6 +218,14 @@ function Image.new_from_image(base_image, value)
     return image
 end
 
+function Image.new_from_source(source, options, ...)
+    local name = vips_lib.vips_foreign_find_load_source(source.vconnection)
+    if name == ffi.NULL then
+        error("Unable to load from source")
+    end
+
+    return voperation.call(ffi.string(name), options, source.vconnection, unpack { ... })
+end
 -- overloads
 
 function Image.mt.__add(a, b)
@@ -413,6 +421,17 @@ function Image_method:write_to_memory_ptr()
     return ffi.gc(vips_memory, glib_lib.g_free), tonumber(psize[0])
 end
 
+function Image_method:write_to_target(target, format_string, ...)
+    collectgarbage("stop")
+    local options = to_string_copy(vips_lib.vips_filename_get_options(format_string))
+    local name = vips_lib.vips_foreign_find_save_target(format_string)
+    collectgarbage("restart")
+    if name == ffi.NULL then
+        error(verror.get())
+    end
+
+    return voperation.call(ffi.string(name), options, self, target.vconnection, unpack { ... })
+end
 -- get/set metadata
 
 function Image_method:get_typeof(name)
