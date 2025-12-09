@@ -166,6 +166,8 @@ ffi.cdef [[
         // opaque
     } VipsImage;
 
+    VipsImage *vips_image_get_gainmap(VipsImage *image);
+
     typedef struct _VipsConnection {
         VipsObject parent_instance;
 
