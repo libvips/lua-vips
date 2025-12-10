@@ -64,6 +64,13 @@ function vips.concurrency_get()
     return vips_lib.vips_concurrency_get()
 end
 
+function vips.type_find(basename, nickname)
+    return vips_lib.vips_type_find(basename, nickname)
+end
+
+function vips.has(name)
+    return vips.type_find("VipsOperation", name) ~= 0
+end
 -- for compat with 1.1-6, when these were misnamed
 vips.set_max = vips.cache_set_max
 vips.get_max = vips.cache_get_max

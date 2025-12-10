@@ -35,6 +35,8 @@ ffi.cdef [[
     GType vips_blend_mode_get_type (void);
     GType vips_band_format_get_type (void);
 
+    GType vips_type_find (const char *basename, const char *nickname);
+
     int vips_enum_from_nick (const char *domain,
         GType gtype, const char *str);
     const char *vips_enum_nick (GType gtype, int value);
