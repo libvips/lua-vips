@@ -714,8 +714,7 @@ Installing `lua-vips` on Windows is a bit harder than on Unix systems. We recomm
       pacman -S mingw-w64-x86_64-luajit
       luarocks config --scope system lua_version 5.1
       luarocks config --scope system lua_interpreter luajit.exe
-      luarocks config --scope system variables.LUA_DIR /mingw64/bin
-      luarocks config --scope system variables.LUA_INCDIR /mingw64/include/luajit-2.1/
+      luarocks config --scope system lua_dir /mingw64
       luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
    ```
 7. Install `lua-vips` via
