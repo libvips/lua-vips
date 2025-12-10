@@ -13,96 +13,96 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - uses: leafo/gh-actions-lua@v12
-      with:
-        luaVersion: ${{ matrix.luaVersion }}
+      - uses: leafo/gh-actions-lua@v12
+        with:
+          luaVersion: ${{ matrix.luaVersion }}
 
-    - uses: leafo/gh-actions-luarocks@v6
+      - uses: leafo/gh-actions-luarocks@v6
 
-    - name: Install Ubuntu dependencies
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends libvips-dev
+      - name: Install Ubuntu dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends libvips-dev
 
-    - name: Install macOS dependencies
-      if: runner.os == 'macOS'
-      run: |
-        brew install vips
-        echo "DYLD_LIBRARY_PATH=$(brew --prefix vips)/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install vips
+          echo "DYLD_LIBRARY_PATH=$(brew --prefix vips)/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
 
-    - name: Install lua-vips
-      run: |
-        if [[ ${{ matrix.luaVersion }} == luajit* ]]; then
-          luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
-        fi
-        luarocks make
+      - name: Prepare LuaJIT environment
+        if: startsWith(matrix.luaVersion, 'luajit')
+        run: luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
 
-    - name: Lint with luacheck
-      run: |
-        luarocks install luacheck
-        luacheck -q .
+      - name: Install lua-vips
+        run: luarocks make
 
-    - name: Busted tests
-      run: |
-        luarocks test spec/ -- -o gtest -v spec
+      - name: Lint with luacheck
+        run: |
+          luarocks install luacheck
+          luacheck -q .
 
+      - name: Busted tests
+        run: luarocks test spec/ -- -o gtest -v spec
 
   windows:
     strategy:
       fail-fast: false
       matrix:
-        lua: [
-              #{name: "lua51", exe: "lua5.1", version: 5.1, incdir: "/mingw64/include/lua5.1/"},  #(two tests are failing)
-              {name: "lua53", exe: "lua5.3", version: 5.3, incdir: "/mingw64/include/lua5.3/"},
-              {name: "lua", exe: "lua", version: 5.4, incdir: "/mingw64/include/"},
-              {name: "luajit", exe: "luajit", version: 5.1, incdir: "/mingw64/include/luajit-2.1/"}
-             ]
+        include:
+          # Two tests are failing
+          #- lua: { version: "5.1", msys2-name: "lua51", exe: "lua5.1" }
+          - lua: { version: "5.3", msys2-name: "lua53", exe: "lua5.3" }
+          - lua: { version: "5.4", msys2-name: "lua", exe: "lua" }
+          - lua: { version: "5.1", msys2-name: "luajit", exe: "luajit" }
 
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: mingw64
           update: true
-          install: git
-                   make
-                   mingw-w64-x86_64-toolchain
-                   mingw-w64-x86_64-libvips
-                   mingw-w64-x86_64-openslide
-                   mingw-w64-x86_64-libheif
-                   mingw-w64-x86_64-libjxl
-                   mingw-w64-x86_64-imagemagick
-                   mingw-w64-x86_64-poppler
-                   mingw-w64-x86_64-lua-luarocks
-                   mingw-w64-x86_64-${{ matrix.lua.name }}
+          install: >-
+            git
+            make
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-libvips
+            mingw-w64-x86_64-openslide
+            mingw-w64-x86_64-libheif
+            mingw-w64-x86_64-libjxl
+            mingw-w64-x86_64-imagemagick
+            mingw-w64-x86_64-poppler
+            mingw-w64-x86_64-lua-luarocks
+            mingw-w64-x86_64-${{ matrix.lua.msys2-name }}
 
-      - name: Lua dependencies
+      - name: Prepare LuaRocks config for Lua 5.3
+        if: matrix.lua.exe == 'lua5.3'
+        run: cp /mingw64/etc/luarocks/config-5.{4,3}.lua
+
+      - name: Prepare LuaRocks
         run: |
-          if [[ ${{ matrix.lua.exe }} == lua5.3 ]]; then
-            cp /mingw64/etc/luarocks/config-5.{4,3}.lua
-          fi
           luarocks config --scope system lua_version ${{ matrix.lua.version }}
           luarocks config --scope system lua_interpreter ${{ matrix.lua.exe }}.exe
-          luarocks config --scope system variables.LUA_DIR /mingw64/bin
-          luarocks config --scope system variables.LUA_INCDIR ${{ matrix.lua.incdir }}
-          if [[ ${{ matrix.lua.exe }} == luajit ]]; then
-            luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
-          fi
+          luarocks config --scope system lua_dir /mingw64
 
-      - name: Add to PATH
-        run: |
-          echo $RUNNER_TEMP/msys64/mingw64/bin:$HOME/.luarocks/bin >> $GITHUB_PATH
+      - name: Prepare LuaJIT environment
+        if: matrix.lua.exe == 'luajit'
+        run: luarocks config --scope system rocks_provided.luaffi-tkl 2.1-1
+
+      - name: Add local LuaRocks bin to PATH
+        run: echo "$HOME/.luarocks/bin" >> $GITHUB_PATH
 
       - name: Install lua-vips
-        run: |
-          luarocks make
+        run: luarocks make
 
       - name: Lint with luacheck
         run: |
@@ -110,5 +110,4 @@ jobs:
           luacheck.bat -q .
 
       - name: Busted tests
-        run: |
-          luarocks test spec -- --lua=${{ matrix.lua.exe }} -o gtest -v
+        run: luarocks test spec -- --lua=${{ matrix.lua.exe }} -o gtest -v
