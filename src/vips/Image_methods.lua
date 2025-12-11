@@ -500,11 +500,11 @@ end
 function Image_method:get_gainmap()
     collectgarbage("stop")
     local vimage = vips_lib.vips_image_get_gainmap(self.vimage)
+    collectgarbage("restart")
     if vimage == ffi.NULL then
         return nil
     end
 
-    collectgarbage("restart")
     return Image.new(vimage)
 end
 -- standard header fields
