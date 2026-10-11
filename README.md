@@ -7,11 +7,11 @@ library](http://libvips.github.io/libvips).  `libvips`
 is a [fast image processing library with low memory needs](https://github.com/jcupitt/lua-vips-bench).
 `lua-vips` uses ffi and needs either
 - luajit >= 2.0 or
-- standard Lua (5.1 up to 5.4) combined with the [`luaffi-tkl`](https://luarocks.org/modules/sudheerhebbale/luaffi-tkl) Lua package.
+- standard Lua (5.1 up to 5.5) combined with the [`luaffi-tkl`](https://luarocks.org/modules/sudheerhebbale/luaffi-tkl) Lua package.
 
 On the x64 architecture `lua-vips` is continuously tested
-- on Linux and MacOS with Lua 5.1, 5.2, 5.3, 5.4 and openresty-luajit
-- on Windows using [MSYS2 MinGW-w64](https://www.msys2.org/) with Lua 5.3, 5.4 and luajit
+- on Linux and MacOS with Lua 5.1, 5.2, 5.3, 5.4, 5.5 and openresty-luajit
+- on Windows using [MSYS2 MinGW-w64](https://www.msys2.org/) with Lua 5.3, 5.4, 5.5 and luajit
 
 `lua-vips`  should work on arm64 (recently tested on a Pinephone Pro using PostmarketOS) and possibly x86 (currently untested)
 as well.
@@ -695,7 +695,7 @@ Installing `lua-vips` on Windows is a bit harder than on Unix systems. We recomm
    ```shell
       pacman -Syuu
    ```
-4. Install the build tools (including Lua 5.4 and Luarocks) via
+4. Install the build tools (including Lua 5.5 and Luarocks) via
    ```shell
       pacman -S git make mingw-w64-x86_64-toolchain mingw-w64-x86_64-lua-luarocks
    ```
@@ -709,7 +709,7 @@ Installing `lua-vips` on Windows is a bit harder than on Unix systems. We recomm
          mingw-w64-x86_64-imagemagick
          mingw-w64-x86_64-poppler
    ```
-6. Optionally: If you want to use `lua-vips` with LuaJIT instead of Lua 5.4 install LuaJIT via
+6. Optionally: If you want to use `lua-vips` with LuaJIT instead of Lua 5.5 install LuaJIT via
    ```shell
       pacman -S mingw-w64-x86_64-luajit
       luarocks config --scope system lua_version 5.1
