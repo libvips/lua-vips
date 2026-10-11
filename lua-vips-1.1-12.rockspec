@@ -22,7 +22,7 @@ description = {
 }
 
 dependencies = {
-    "lua >= 5.1, < 5.5",   -- standard Lua or LuaJIT >= 2.0
+    "lua >= 5.1, < 5.6",   -- standard Lua or LuaJIT >= 2.0
     "luaffi-tkl >= 1.0"    -- provided by VM with LuaJIT, use `luarocks config rocks_provided.luaffi-tkl 2.1-1` in that case
 }
 

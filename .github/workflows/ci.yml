@@ -7,15 +7,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit-openresty"]
+        luaVersion: ["5.1", "5.2", "5.3", "5.4", "5.5", "luajit-openresty"]
         os: ["ubuntu-latest", "macos-latest"]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: leafo/gh-actions-lua@v12
+      - uses: leafo/gh-actions-lua@v13
         with:
           luaVersion: ${{ matrix.luaVersion }}
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Lint with luacheck
         run: |
-          luarocks install luacheck
+          luarocks install luacheck --dev
           luacheck -q .
 
       - name: Busted tests
@@ -56,7 +56,8 @@ jobs:
           # Two tests are failing
           #- lua: { version: "5.1", msys2-name: "lua51", exe: "lua5.1" }
           - lua: { version: "5.3", msys2-name: "lua53", exe: "lua5.3" }
-          - lua: { version: "5.4", msys2-name: "lua", exe: "lua" }
+          - lua: { version: "5.4", msys2-name: "lua54", exe: "lua5.4" }
+          - lua: { version: "5.5", msys2-name: "lua", exe: "lua" }
           - lua: { version: "5.1", msys2-name: "luajit", exe: "luajit" }
 
     runs-on: windows-latest
@@ -65,7 +66,7 @@ jobs:
         shell: msys2 {0}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -106,7 +107,7 @@ jobs:
 
       - name: Lint with luacheck
         run: |
-          luarocks install luacheck
+          luarocks install luacheck --dev
           luacheck.bat -q .
 
       - name: Busted tests
